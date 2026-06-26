@@ -36,7 +36,6 @@
         .note-badge { display: inline-block; width: 45px; height: 45px; line-height: 45px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.3s; }
         @keyframes pulse-note { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); } 50% { transform: scale(1.3); box-shadow: 0 0 0 12px rgba(46, 204, 113, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
         .practice-active-note { animation: pulse-note 1.5s infinite; border: 4px solid #333; z-index: 10; position: relative; }
-        .practice-completed-note { opacity: 0.3; transform: scale(0.9); }
         .together-large-note { width: 75px !important; height: 75px !important; line-height: 75px !important; font-size: 28px !important; margin: 6px !important; border-width: 4px !important; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 2000; }
         .modal-box { background: white; padding: 35px 30px; border-radius: 20px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.4); max-width: 550px; width: 90%; }
@@ -68,7 +67,6 @@
             <button class="btn-large btn-free" onclick="window.enterAsFreeUser()">🎵 자유 이용자로 입장하기</button>
         </div>
 
-        <!-- 학생 입장 폼 -->
         <div class="entry-box hidden" id="entry-student-form">
             <h2 style="color: #3498db; margin-top: 0;">🧑‍🎓 학생 입장 준비</h2>
             <div style="background: #eaf2f8; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
@@ -99,7 +97,6 @@
         </div>
     </div>
 
-    <!-- 학생 대기 차단 스크린 -->
     <div id="student-blocker" class="hidden">
         <h2 style="color: #f1c40f; font-size: 4rem; margin-bottom: 10px; text-shadow: 0 4px 10px rgba(0,0,0,0.5);">⏳ 대기 중</h2>
         <p style="font-size: 1.6rem; line-height: 1.5;">선생님의 활동 승인을 기다리고 있습니다.<br>태블릿을 그대로 두고 잠시만 기다려주세요!</p>
@@ -108,7 +105,6 @@
         </div>
     </div>
 
-    <!-- 카메라 촬영 모달 -->
     <div id="camera-modal" class="hidden">
         <h3 style="color: white; font-size: 1.8rem; margin-bottom: 20px;">내 얼굴을 예쁘게 찍어보세요!</h3>
         <video id="camera-video" autoplay playsinline></video>
@@ -132,7 +128,6 @@
             <button class="tab-btn" onclick="window.setMode('multi')" id="tab-multi" style="background-color: #e74c3c; color: white; border-color: #e74c3c;">📡 실시간 합주</button>
         </div>
 
-        <!-- 접속 관리 (교사용) -->
         <div id="panel-dashboard" class="control-panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px;">
                 <h3 style="color: #9b59b6; font-size: 1.8rem; margin: 0;">👨‍👩‍👧‍👦 학생 접속 관리 보드</h3>
@@ -145,10 +140,7 @@
             <div class="profile-container" id="teacher-dashboard-grid"></div>
         </div>
 
-        <div id="panel-free" class="control-panel hidden">
-            <h3 style="font-size: 1.8rem;">자유 연주 모드</h3><p style="font-size: 1.2rem;">아래의 핸드벨을 마우스나 터치로 눌러 자유롭게 연주해 보세요!</p>
-        </div>
-        
+        <div id="panel-free" class="control-panel hidden"><h3 style="font-size: 1.8rem;">자유 연주 모드</h3><p style="font-size: 1.2rem;">아래의 핸드벨을 마우스나 터치로 눌러 자유롭게 연주해 보세요!</p></div>
         <div id="panel-game" class="control-panel hidden"><h3>소리 맞추기 게임</h3><p>준비 중입니다.</p></div>
         <div id="panel-maker" class="control-panel hidden"><h3>악보 만들기</h3><p>준비 중입니다.</p></div>
         <div id="panel-practice" class="control-panel hidden"><h3>지정곡 연습</h3><p>준비 중입니다.</p></div>
@@ -181,7 +173,6 @@
             <p id="multi-role-guide" style="margin-top: 10px; font-size: 1.1rem; font-weight: bold; background: #eee; padding: 10px; border-radius: 10px;">💡 진행 방식: 무작위 지목 (모든 학생에게 내 차례가 랜덤으로 주어집니다!)</p>
         </div>
 
-        <!-- 핸드벨 건반 표시 영역 -->
         <div class="bell-area-container no-print">
             <div class="bell-container" id="bells"></div>
         </div>
@@ -206,7 +197,6 @@
 
         window.db = database; window.dbRef = ref; window.dbSet = set; window.dbOnValue = onValue; window.dbUpdate = update; window.dbGet = get; window.dbOnDisconnect = onDisconnect;
 
-        // 변수 초기화
         let audioCtx;
         const frequencies = { 'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25 };
         const noteNames = { 'C4': '도', 'D4': '레', 'E4': '미', 'F4': '파', 'G4': '솔', 'A4': '라', 'B4': '시', 'C5': '도' };
@@ -220,6 +210,12 @@
             'rabbit': [['G4','E4','E4'],['G4','E4','C4'],['D4','E4','D4','C4'],['E4','G4','C5'],['G4','C5','G4','C5'],['G4','E4','G4'],['D4','F4','E4','D4','C4']],
             'same': [['C4','E4','G4'],['C4','E4','G4'],['A4','A4','A4','G4'],['F4','F4','F4'],['E4','E4','E4'],['D4','D4','D4','C4']]
         };
+
+        // ★ [안전장치 1] 구형 기기용 배열 펴기 함수 (오류 방지)
+        function getFlatSong(songKey) {
+            var arr = songData[songKey] || songData['airplane'];
+            return arr.reduce(function(acc, val) { return acc.concat(val); }, []);
+        }
 
         window.currentMode = 'free';
         window.myRole = -1; // -1: 자유이용, 0: 교사, 1~6: 학생
@@ -265,7 +261,7 @@
 
         window.setMode = function(mode) {
             window.currentMode = mode;
-            document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('active'); if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${mode}'`)) btn.classList.add('active'); });
+            document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('active'); if (btn.getAttribute('onclick') && btn.getAttribute('onclick').indexOf(`'${mode}'`) !== -1) btn.classList.add('active'); });
             document.querySelectorAll('.control-panel').forEach(panel => panel.classList.add('hidden'));
             const targetPanel = document.getElementById(`panel-${mode}`); if (targetPanel) targetPanel.classList.remove('hidden');
 
@@ -284,9 +280,6 @@
             }
         }
 
-        // ==========================================
-        // 입장 관련 (선생님/학생/자유)
-        // ==========================================
         window.enterAsTeacher = function() { 
             const teacherRef = window.dbRef(window.db, 'classSession/teacherActive');
             window.dbGet(teacherRef).then((snapshot) => {
@@ -300,7 +293,7 @@
                     document.getElementById('tab-dashboard').style.display = 'inline-block'; 
                     document.getElementById('tab-multi').style.display = 'inline-block';
                     window.setMode('dashboard'); 
-                    window.renderTeacherDashboard(); // ★ 즉시 동기화
+                    window.renderTeacherDashboard(); 
                 }
             }).catch(e => {
                 window.dbSet(teacherRef, true); window.dbOnDisconnect(teacherRef).set(false); 
@@ -309,7 +302,7 @@
                 document.getElementById('main-app').classList.remove('hidden'); 
                 document.getElementById('main-app').style.display = 'flex';
                 window.setMode('dashboard'); 
-                window.renderTeacherDashboard(); // ★ 즉시 동기화
+                window.renderTeacherDashboard(); 
             });
         }
         
@@ -361,7 +354,6 @@
         window.capturePhoto = function() { const video = document.getElementById('camera-video'); const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 300; const ctx = canvas.getContext('2d'); const size = Math.min(video.videoWidth, video.videoHeight); const x = (video.videoWidth - size) / 2; const y = (video.videoHeight - size) / 2; ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, x, y, size, size, 0, 0, 300, 300); window.studentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8); document.getElementById('entry-photo-preview').src = window.studentPhotoBase64; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; window.closeCamera(); }
         window.handleEntryFileUpload = function(event) { const file = event.target.files[0]; if (file) { let fileName = file.name; let nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.')) || fileName; if(!document.getElementById('entry-name').value) { document.getElementById('entry-name').value = nameWithoutExt; } const reader = new FileReader(); reader.onload = function(e) { window.studentPhotoBase64 = e.target.result; document.getElementById('entry-photo-preview').src = window.studentPhotoBase64; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; }; reader.readAsDataURL(file); } }
 
-        // ★ [강력한 보완] 대시보드 렌더링
         window.renderTeacherDashboard = function() {
             try {
                 if(window.myRole !== 0) return; 
@@ -418,9 +410,6 @@
             }
         }
 
-        // ==========================================
-        // 파이어베이스 통신 및 멀티플레이
-        // ==========================================
         window.initMultiplayer = function() {
             sessionRef = window.dbRef(window.db, 'classSession/state');
             studentsRef = window.dbRef(window.db, 'classSession/students');
@@ -451,7 +440,7 @@
             });
         };
         
-        // ★ [추가 안전장치] 교사 화면 놓침 방지 힐링 루프
+        // ★ [안전장치 2] 교사 화면 놓침 방지 힐링 루프 (데이터 꼬임 방지)
         setInterval(() => {
             if (window.myRole === 0 && window.currentMode === 'dashboard') {
                 window.renderTeacherDashboard();
@@ -472,19 +461,20 @@
 
                 const song = document.getElementById('multi-song-select').value;
                 const bellVis = document.getElementById('multi-bell-visibility').value;
-                const flatSong = (songData[song] || songData['airplane']).flat();
+                const flatSong = getFlatSong(song);
                 const randomSequence = [];
                 for(let i=0; i<flatSong.length; i++) { const randomIdx = Math.floor(Math.random() * activeIds.length); randomSequence.push(activeIds[randomIdx]); }
 
                 const newState = { isPlaying: true, song: song, currentIndex: 0, playerCount: activeIds.length, bellVisibility: bellVis, roleSequence: randomSequence };
                 
-                // ★ UI 즉각 반응 보장
+                // ★ UI 즉각 반응 (Zero-Delay)
                 currentMultiState = newState;
                 window.updateMultiplayerUI();
 
                 window.dbSet(sessionRef, newState).catch(e => { alert("통신 오류가 발생했습니다."); console.error(e); });
             } catch (err) {
                 console.error("Start Error:", err);
+                alert("시작 중 시스템 내부 오류가 발생했습니다: " + err.message);
             }
         }
 
@@ -498,7 +488,7 @@
 
         function getNoteColorClass(note) { return note ? note.toLowerCase() : 'c4'; }
 
-        // ★ [강력한 보완] UI 업데이트 함수
+        // ★ [안전장치 3] UI 업데이트 함수 전체 예외 방어막 추가
         window.updateMultiplayerUI = function() {
             try {
                 if(window.myRole < 0) return; 
@@ -510,7 +500,7 @@
                     const playerCount = currentMultiState.playerCount || 1; 
                     const bellVis = currentMultiState.bellVisibility || '8'; 
                     const songKey = currentMultiState.song || 'airplane';
-                    multiFlatSong = (songData[songKey] || songData['airplane']).flat();
+                    const multiFlatSong = getFlatSong(songKey);
                     
                     if (currentMultiState.currentIndex >= multiFlatSong.length) {
                         statusText.innerText = "✨ 합주 완성! ✨"; statusText.style.color = "#8E44AD"; targetNoteEl.innerHTML = "";
@@ -527,7 +517,7 @@
                     const targetRole = safeSequence[currentMultiState.currentIndex] || 1; 
                     
                     if (window.myRole === 0) {
-                        // 선생님 뷰
+                        // 교사 화면
                         statusText.innerText = `진행: ${currentMultiState.currentIndex + 1} / ${multiFlatSong.length}`; statusText.style.color = "#333";
                         const stInfo = window.currentStudents ? window.currentStudents[targetRole] : null; 
                         const stName = stInfo ? stInfo.name : `${targetRole}번 학생`;
@@ -541,7 +531,7 @@
                         });
                         
                     } else if (!(window.currentStudents && window.currentStudents[window.myRole] && window.currentStudents[window.myRole].status === 'allowed')) {
-                        // 관전
+                        // 관전 화면
                         statusText.innerText = `관전 모드입니다.`; statusText.style.color = "#95a5a6"; targetNoteEl.innerHTML = `<span style="font-size:2rem; color:#aaa;">👀</span>`;
                         document.querySelectorAll('.bell').forEach(b => { b.classList.add('multi-bell-hidden'); b.classList.remove('practice-active-note'); });
 
@@ -550,14 +540,15 @@
                         statusText.innerText = "내 차례입니다! 올바른 건반을 누르세요!"; statusText.style.color = "#2ECC71";
                         targetNoteEl.innerHTML = `<span class="note-badge ${getNoteColorClass(currentNote)} together-large-note" style="font-size: 3rem; width: 100px; height: 100px; line-height: 100px;">${noteNames[currentNote]}</span>`;
                         
-                        let numBells = parseInt(bellVis) || 8; let visibleBells = [currentNote]; 
+                        let numBells = parseInt(bellVis) || 8; 
+                        let visibleBells = [currentNote]; 
                         if (numBells < 8) { 
                             let availableOthers = notes.filter(n => n !== currentNote); 
                             for (let i = 0; i < numBells - 1; i++) { 
                                 let pickIndex = (currentMultiState.currentIndex + i * 3) % availableOthers.length; 
                                 visibleBells.push(availableOthers[pickIndex]); availableOthers.splice(pickIndex, 1); 
                             } 
-                        } else { visibleBells = [...notes]; }
+                        } else { visibleBells = notes.slice(); }
 
                         const myInfo = window.currentStudents[window.myRole];
                         const hintMode = myInfo ? myInfo.hintMode : 'none';
@@ -567,7 +558,7 @@
                             const bellNote = b.id.split('-')[1];
                             if(bellNote) b.innerHTML = `<span>${noteNames[bellNote]}</span>`;
 
-                            if (visibleBells.includes(bellNote)) {
+                            if (visibleBells.indexOf(bellNote) !== -1) {
                                 if (bellNote === currentNote) {
                                     if (hintMode === 'arrow') { b.classList.add('practice-active-note'); } 
                                     else if (hintMode === 'avatar') {
@@ -578,7 +569,7 @@
                             } else { b.classList.add('multi-bell-hidden'); }
                         });
                     } else {
-                        // 남의 차례
+                        // 다른 친구 차례 (스포일러 차단)
                         statusText.innerText = `쉿! 다른 친구 차례입니다.`; statusText.style.color = "#95a5a6";
                         targetNoteEl.innerHTML = `<span style="font-size:4.5rem; margin-bottom:10px; display:inline-block;">🤫</span><br><span style="font-size:1.5rem; color:#aaa;">대기 중... ⏳</span>`;
                         document.querySelectorAll('.bell').forEach(b => { b.classList.add('multi-bell-hidden'); b.classList.remove('practice-active-note'); });
@@ -603,7 +594,7 @@
                 if (window.myRole === 0) { window.playSound(note, true); return; } 
                 
                 const songKey = currentMultiState.song || 'airplane';
-                const flatSong = (songData[songKey] || songData['airplane']).flat();
+                const flatSong = getFlatSong(songKey);
                 const currentNote = flatSong[currentMultiState.currentIndex];
                 const safeSequence = currentMultiState.roleSequence || [];
                 const targetRole = safeSequence[currentMultiState.currentIndex];
