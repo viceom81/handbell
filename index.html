@@ -36,14 +36,14 @@
 
         /* 모둠 학생 관리 폼 스타일 */
         .profile-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 20px; width: 100%; }
-        .profile-card { background: #f9f9f9; padding: 15px; border-radius: 12px; border: 3px solid #eee; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; transition: all 0.3s; }
+        .profile-card { background: #f9f9f9; padding: 15px; border-radius: 12px; border: 3px solid #eee; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; transition: all 0.3s; position: relative; }
         .preview-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 4px solid #ddd; margin: 5px auto; display: block; }
         .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; }
 
         /* 핸드벨 UI 영역 */
         .bell-area-container { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 1200px; flex-shrink: 0; position: relative; padding-bottom: 10px; }
         .bell-container { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 10px; } 
-        .bell { width: 80px; height: 14vh; min-height: 90px; max-height: 130px; border-radius: 40px 40px 10px 10px; display: flex; align-items: flex-end; justify-content: center; font-weight: bold; font-size: 1.5rem; padding-bottom: 15px; cursor: pointer; box-shadow: 0 8px 12px rgba(0,0,0,0.2); transition: transform 0.1s, box-shadow 0.1s, filter 0.2s, border 0.2s; border: 5px solid transparent; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+        .bell { position: relative; width: 80px; height: 14vh; min-height: 90px; max-height: 130px; border-radius: 40px 40px 10px 10px; display: flex; align-items: flex-end; justify-content: center; font-weight: bold; font-size: 1.5rem; padding-bottom: 15px; cursor: pointer; box-shadow: 0 8px 12px rgba(0,0,0,0.2); transition: transform 0.1s, box-shadow 0.1s, filter 0.2s, border 0.2s; border: 5px solid transparent; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
         .bell:active, .bell.playing { transform: translateY(5px); box-shadow: 0 3px 5px rgba(0,0,0,0.2); filter: brightness(1.2); }
         .success-pop { transform: scale(1.15) translateY(-10px) !important; filter: brightness(1.4) drop-shadow(0 0 20px #ffeb3b); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes shake { 0%, 100% { transform: translateX(0) translateY(-5px); } 20%, 60% { transform: translateX(-6px) translateY(-5px); } 40%, 80% { transform: translateX(6px) translateY(-5px); } }
@@ -96,12 +96,15 @@
 
         /* 카메라 전용 모달 */
         #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        #camera-video { width: 100%; max-width: 400px; border-radius: 20px; border: 4px solid #fff; background: black; transform: scaleX(-1); /* 거울모드 */ }
+        #camera-video { width: 100%; max-width: 400px; border-radius: 20px; border: 4px solid #fff; background: black; transform: scaleX(-1); }
+
+        /* ★ [신규] 사진 힌트(정답 건반 위) 스타일 */
+        .bell-hint-photo { position: absolute; top: -65px; left: 50%; transform: translateX(-50%); width: 55px; height: 55px; border-radius: 50%; border: 4px solid #E74C3C; box-shadow: 0 4px 15px rgba(231,76,60,0.5); z-index: 100; pointer-events: none; animation: bounceHint 1s infinite; object-fit: cover; background: white; }
+        @keyframes bounceHint { 0%, 100% { top: -65px; } 50% { top: -75px; } }
     </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        // ★ [수정] get, onDisconnect 기능 추가 (교사 중복 접속 방지용)
         import { getDatabase, ref, set, onValue, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         // 선생님의 고유 파이어베이스 열쇠
@@ -216,11 +219,10 @@
                 <h3 style="color: #9b59b6; font-size: 1.8rem; margin: 0;">👨‍👩‍👧‍👦 학생 접속 관리 보드</h3>
                 <div>
                     <button class="action-btn" onclick="resetAllStudents()" style="background-color: #e74c3c; margin: 0;">🔄 학생 전체 초기화</button>
-                    <!-- ★ [추가] 교사 로그아웃 기능 -->
                     <button class="action-btn" onclick="teacherLogout()" style="background-color: #34495e; margin: 0; margin-left: 10px;">🚪 교사 로그아웃</button>
                 </div>
             </div>
-            <p style="font-size: 1.1rem; color: #555; margin-bottom: 20px;">학생들이 접속하면 아래에 표시됩니다. 활동을 허용할 학생만 <b>[승인]</b> 버튼을 눌러주세요.</p>
+            <p style="font-size: 1.1rem; color: #555; margin-bottom: 20px;">학생들이 접속하면 아래에 표시됩니다. 학생별로 <b>[💡 힌트]</b> 난이도를 다르게 설정해 줄 수 있습니다!</p>
             <div class="profile-container" id="teacher-dashboard-grid"></div>
         </div>
 
@@ -300,16 +302,10 @@
                         <option value="star">작은 별</option> <option value="joy">환희의 송가</option> <option value="rabbit">산토끼</option> <option value="same">똑같아요</option>
                     </select>
                     
-                    <!-- ★ 건반 갯수 제어 드롭다운 1~8개 -->
                     <select id="multi-bell-visibility" class="setting-select" style="max-width: 190px; padding: 10px; font-size:1.2rem; font-weight:bold;" onchange="updateBellVisibility()">
-                        <option value="1">건반 1개 띄우기</option>
-                        <option value="2">건반 2개 띄우기</option>
-                        <option value="3">건반 3개 띄우기</option>
-                        <option value="4">건반 4개 띄우기</option>
-                        <option value="5">건반 5개 띄우기</option>
-                        <option value="6">건반 6개 띄우기</option>
-                        <option value="7">건반 7개 띄우기</option>
-                        <option value="8" selected>전체 건반(8개) 띄우기</option>
+                        <option value="1">건반 1개 띄우기</option> <option value="2">건반 2개 띄우기</option> <option value="3">건반 3개 띄우기</option>
+                        <option value="4">건반 4개 띄우기</option> <option value="5">건반 5개 띄우기</option> <option value="6">건반 6개 띄우기</option>
+                        <option value="7">건반 7개 띄우기</option> <option value="8" selected>전체 건반(8개) 띄우기</option>
                     </select>
                     
                     <span style="font-size:1.2rem; font-weight:bold; background:white; padding:10px 15px; border-radius:8px; border: 2px solid #ccc; color:#2c3e50;">참여 인원: <b id="auto-player-count" style="color:#e74c3c; font-size:1.4rem;">0</b>명</span>
@@ -369,7 +365,6 @@
         let myRole = -1; // -1: 미정, 0: 교사, 1~6: 학생
         let studentPhotoBase64 = ''; 
 
-        // 통신 상태 변수
         let sessionRef = null;
         let studentsRef = null;
         let currentMultiState = { isPlaying: false, song: 'airplane', currentIndex: 0, playerCount: 6, roleSequence: [], bellVisibility: '8' };
@@ -431,60 +426,34 @@
             if (targetPanel) targetPanel.classList.remove('hidden');
 
             document.querySelectorAll('.bell').forEach(b => b.classList.remove('game-bell-hidden', 'multi-bell-hidden', 'success-pop', 'selected-bell', 'error-shake', 'practice-active-note'));
-            
-            if(myRole > 0 && mode !== 'multi') {
-                document.getElementById('main-tabs').style.display = 'none';
-                setMode('multi');
-                return;
-            }
+            hideMultiplayerArrow();
+            document.querySelectorAll('.bell-hint-photo').forEach(el => el.remove());
+
+            if(myRole > 0 && mode !== 'multi') { document.getElementById('main-tabs').style.display = 'none'; setMode('multi'); return; }
             if (mode === 'multi') {
                 const teacherControls = document.getElementById('multi-teacher-controls');
-                if (teacherControls) {
-                    if (myRole === 0) teacherControls.classList.remove('hidden');
-                    else teacherControls.classList.add('hidden');
-                }
+                if (teacherControls) { if (myRole === 0) teacherControls.classList.remove('hidden'); else teacherControls.classList.add('hidden'); }
                 updateMultiplayerUI();
             }
         }
 
-        // ==========================================
-        // ★ [수정] 입장 로직 (교사 중복접속 방지 완벽 차단)
-        // ==========================================
         window.enterAsTeacher = function() { 
             const teacherRef = window.dbRef(window.db, 'classSession/teacherActive');
-            
             window.dbGet(teacherRef).then((snapshot) => {
                 if (snapshot.exists() && snapshot.val() === true) {
-                    // ★ 다른 기기에서 접속 중일 경우 단호하게 접근 차단
-                    alert("🚨 이미 다른 기기에서 선생님으로 접속 중입니다.\n\n선생님 권한은 한 기기에서만 사용할 수 있습니다.\n(비정상 종료로 인한 오류라면 약 1분 뒤 자동으로 권한이 해제됩니다.)");
-                    return; 
-                } else {
-                    proceedAsTeacher(teacherRef);
-                }
-            }).catch(e => {
-                proceedAsTeacher(teacherRef);
-            });
+                    if(confirm("이미 다른 기기에서 선생님으로 접속 중입니다.\n기존 접속을 해제하고 현재 기기에서 선생님으로 입장하시겠습니까?")) { proceedAsTeacher(teacherRef); }
+                } else { proceedAsTeacher(teacherRef); }
+            }).catch(e => { proceedAsTeacher(teacherRef); });
         }
         
         function proceedAsTeacher(teacherRef) {
-            window.dbSet(teacherRef, true);
-            window.dbOnDisconnect(teacherRef).set(false); 
-            
-            myRole = 0; 
-            document.getElementById('entry-screen').style.display = 'none'; 
-            document.getElementById('main-app').classList.remove('hidden'); 
-            document.getElementById('tab-dashboard').style.display = 'inline-block'; 
+            window.dbSet(teacherRef, true); window.dbOnDisconnect(teacherRef).set(false); 
+            myRole = 0; document.getElementById('entry-screen').style.display = 'none'; document.getElementById('main-app').classList.remove('hidden'); document.getElementById('tab-dashboard').style.display = 'inline-block'; 
             setMode('dashboard'); 
         }
 
-        // ★ [추가] 교사 전용 로그아웃 버튼 기능
         window.teacherLogout = function() {
-            if(confirm("선생님 접속을 종료하고 첫 화면으로 돌아가시겠습니까?")) {
-                const teacherRef = window.dbRef(window.db, 'classSession/teacherActive');
-                window.dbSet(teacherRef, false).then(() => {
-                    location.reload();
-                });
-            }
+            if(confirm("선생님 접속을 종료하고 첫 화면으로 돌아가시겠습니까?")) { const teacherRef = window.dbRef(window.db, 'classSession/teacherActive'); window.dbSet(teacherRef, false).then(() => { location.reload(); }); }
         }
 
         window.showStudentForm = function() { document.getElementById('entry-selection').style.display = 'none'; document.getElementById('entry-student-form').classList.remove('hidden'); updateEntrySlotUI(); }
@@ -502,7 +471,7 @@
             if(!slot) { alert("빈 자리가 없습니다! 선생님께 문의하세요."); return; }
             if(!name && !studentPhotoBase64) { alert("이름을 입력하거나 사진을 등록해주세요!"); return; }
             const finalName = name || `학생 ${slot}`; myRole = parseInt(slot);
-            window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { name: finalName, photo: studentPhotoBase64, status: 'waiting' });
+            window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { name: finalName, photo: studentPhotoBase64, status: 'waiting', hintMode: 'none' });
             document.getElementById('entry-screen').style.display = 'none'; document.getElementById('main-app').classList.remove('hidden'); document.getElementById('main-tabs').style.display = 'none'; 
             setMode('multi'); checkMyStatus(); 
         }
@@ -513,6 +482,7 @@
         window.capturePhoto = function() { const video = document.getElementById('camera-video'); const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 300; const ctx = canvas.getContext('2d'); const size = Math.min(video.videoWidth, video.videoHeight); const x = (video.videoWidth - size) / 2; const y = (video.videoHeight - size) / 2; ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, x, y, size, size, 0, 0, 300, 300); studentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8); document.getElementById('entry-photo-preview').src = studentPhotoBase64; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; window.closeCamera(); }
         window.handleEntryFileUpload = function(event) { const file = event.target.files[0]; if (file) { let fileName = file.name; let nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.')) || fileName; if(!document.getElementById('entry-name').value) { document.getElementById('entry-name').value = nameWithoutExt; } const reader = new FileReader(); reader.onload = function(e) { studentPhotoBase64 = e.target.result; document.getElementById('entry-photo-preview').src = studentPhotoBase64; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; }; reader.readAsDataURL(file); } }
 
+        // ★ [추가] 선생님 대시보드 - 개별 힌트 설정 기능 반영
         function renderTeacherDashboard() {
             if(myRole !== 0) return; const grid = document.getElementById('teacher-dashboard-grid'); let html = '';
             for(let i=1; i<=6; i++) {
@@ -520,7 +490,29 @@
                 if(st) {
                     const statusColor = st.status === 'allowed' ? '#2ECC71' : '#E74C3C'; const statusText = st.status === 'allowed' ? '✅ 활동 허용' : '⏳ 대기 중';
                     const imgHtml = st.photo ? `<img src="${st.photo}" class="preview-img" style="border-color:${statusColor}">` : `<div class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee; border-color:${statusColor}; font-size:2.5rem;">👤</div>`;
-                    html += `<div class="profile-card" style="border-color: ${statusColor}"><h4 style="margin:0 0 10px 0; color: #333;">${i}번: ${st.name}</h4>${imgHtml}<div class="status-badge" style="color:${statusColor}; background:rgba(255,255,255,0.8);">${statusText}</div><div style="display:flex; gap:5px; width:100%;">${st.status === 'waiting' ? `<button onclick="setStudentStatus(${i}, 'allowed')" style="flex:2; background:#2ecc71; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">승인</button>` : `<button onclick="setStudentStatus(${i}, 'waiting')" style="flex:2; background:#f39c12; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">대기로 변경</button>`}<button onclick="kickStudent(${i})" style="flex:1; background:#e74c3c; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">삭제</button></div></div>`;
+                    
+                    html += `<div class="profile-card" style="border-color: ${statusColor}">
+                                <h4 style="margin:0 0 10px 0; color: #333;">${i}번: ${st.name}</h4>
+                                ${imgHtml}
+                                <div class="status-badge" style="color:${statusColor}; background:rgba(255,255,255,0.8);">${statusText}</div>`;
+                    
+                    // 활동 허용인 학생에게만 힌트 조절 옵션 제공
+                    if (st.status === 'allowed') {
+                        html += `<div style="margin-bottom: 10px; font-size: 0.9rem; width:100%; display:flex; flex-direction:column; align-items:center;">
+                                    <label style="font-weight:bold; color:#555; margin-bottom:3px;">💡 개별 힌트 모드</label>
+                                    <select onchange="updateStudentHint(${i}, this.value)" style="padding: 5px; border-radius: 5px; width:90%; border:2px solid #ccc; font-weight:bold;">
+                                        <option value="none" ${st.hintMode === 'none' || !st.hintMode ? 'selected' : ''}>없음 (스스로 찾기)</option>
+                                        <option value="arrow" ${st.hintMode === 'arrow' ? 'selected' : ''}>화살표로 알려주기</option>
+                                        <option value="photo" ${st.hintMode === 'photo' ? 'selected' : ''}>정답 건반 위 사진</option>
+                                    </select>
+                                </div>`;
+                    }
+                                
+                    html += `   <div style="display:flex; gap:5px; width:100%;">
+                                    ${st.status === 'waiting' ? `<button onclick="setStudentStatus(${i}, 'allowed')" style="flex:2; background:#2ecc71; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">승인</button>` : `<button onclick="setStudentStatus(${i}, 'waiting')" style="flex:2; background:#f39c12; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">대기로 변경</button>`}
+                                    <button onclick="kickStudent(${i})" style="flex:1; background:#e74c3c; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">삭제</button>
+                                </div>
+                             </div>`;
                 } else {
                     html += `<div class="profile-card" style="opacity: 0.6; border-style: dashed;"><h4 style="margin:0 0 10px 0; color: #999;">${i}번 자리</h4><div class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#ddd; border-color:#ccc; font-size:2.5rem;">🈳</div><div style="margin-top:15px; color:#777; font-weight:bold;">접속 대기 중...</div></div>`;
                 }
@@ -528,9 +520,10 @@
             grid.innerHTML = html;
         }
 
-        window.setStudentStatus = function(slot, status) { window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { status: status }); }
+        window.setStudentStatus = function(slot, status) { window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { status: status, hintMode: 'none' }); }
         window.kickStudent = function(slot) { if(confirm(`${slot}번 학생 정보를 삭제하시겠습니까?`)) { window.dbSet(window.dbRef(window.db, `classSession/students/${slot}`), null); } }
-        
+        window.updateStudentHint = function(slot, mode) { window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { hintMode: mode }); }
+
         window.resetAllStudents = function() { 
             if(confirm("모든 학생 접속을 초기화하시겠습니까?\n\n※ 확인을 누르면 대기/승인 여부에 상관없이 모든 학생의 기기가 강제로 첫 화면으로 돌아갑니다.")) { 
                 window.dbSet(studentsRef, null); 
@@ -551,7 +544,7 @@
         }
 
         // ==========================================
-        // ★ [4] 통신 및 실시간 합주 로직
+        // ★ [4] 통신 및 실시간 합주 로직 (개별 힌트 연동)
         // ==========================================
         window.initMultiplayer = function() {
             sessionRef = window.dbRef(window.db, 'classSession/state');
@@ -560,11 +553,9 @@
             window.dbOnValue(studentsRef, (snap) => {
                 const students = snap.val() || {};
                 
-                // ★ [완벽 초기화 로직] 내 정보가 사라졌다면 무조건 로비 화면으로 강제 새로고침 (쫓겨남)
                 if (myRole > 0 && !students[myRole]) {
                     alert("선생님에 의해 강제 연결 해제 또는 초기화되었습니다.\n처음 화면으로 돌아갑니다.");
-                    location.reload(); 
-                    return; 
+                    location.reload(); return; 
                 }
 
                 window.currentStudents = students;
@@ -578,12 +569,13 @@
                 if (myRole === 0) renderTeacherDashboard();
                 if (myRole > 0) checkMyStatus();
                 
-                let count = 0;
-                for(let i=1; i<=6; i++) { if(students[i] && students[i].status === 'allowed') count++; }
-                window.currentApprovedCount = count > 0 ? count : 1;
+                let activeIds = [];
+                for(let i=1; i<=6; i++) { if(students[i] && students[i].status === 'allowed') activeIds.push(i); }
+                window.currentApprovedCount = activeIds.length > 0 ? activeIds.length : 1;
+                window.currentActiveIds = activeIds; // 승인된 학생 ID 배열 저장
                 
                 const cntEl = document.getElementById('auto-player-count');
-                if(cntEl) cntEl.innerText = count; 
+                if(cntEl) cntEl.innerText = window.currentApprovedCount; 
                 
                 if (currentMode === 'multi') updateMultiplayerUI();
             });
@@ -607,18 +599,8 @@
 
         window.startMultiplayer = function() {
             if(myRole !== 0) return;
-            
-            const activeIds = [];
-            for(let i=1; i<=6; i++) {
-                if(window.currentStudents && window.currentStudents[i] && window.currentStudents[i].status === 'allowed') {
-                    activeIds.push(i);
-                }
-            }
-            
-            if(activeIds.length === 0) {
-                alert("승인된 학생이 없습니다. [접속 관리] 탭에서 학생을 먼저 승인해주세요!");
-                return;
-            }
+            const activeIds = window.currentActiveIds || [];
+            if(activeIds.length === 0) { alert("승인된 학생이 없습니다. [접속 관리] 탭에서 학생을 먼저 승인해주세요!"); return; }
 
             const song = document.getElementById('multi-song-select').value;
             const bellVis = document.getElementById('multi-bell-visibility').value;
@@ -642,13 +624,33 @@
 
         window.stopMultiplayer = function() {
             if(myRole !== 0) return;
-            window.dbSet(sessionRef, {
-                isPlaying: false,
-                song: 'airplane',
-                currentIndex: 0,
-                playerCount: window.currentApprovedCount,
-                roleSequence: []
-            });
+            window.dbSet(sessionRef, { isPlaying: false, song: 'airplane', currentIndex: 0, playerCount: window.currentApprovedCount, roleSequence: [] });
+        }
+
+        // 특정 엘리먼트에서 특정 엘리먼트로 화살표 그리는 전용 함수
+        function drawMultiplayerArrow(noteStr) {
+            const svgOverlay = document.getElementById('hint-svg-overlay');
+            const arrowPath = document.getElementById('hint-arrow-path');
+            const noteEl = document.querySelector('#multi-target-note .note-badge');
+            const targetBellEl = document.getElementById(`bell-${noteStr}`);
+            
+            if (!noteEl || !targetBellEl) { svgOverlay.style.display = 'none'; return; }
+            
+            const noteRect = noteEl.getBoundingClientRect();
+            const bellRect = targetBellEl.getBoundingClientRect();
+            if (noteRect.width === 0 || bellRect.width === 0) { svgOverlay.style.display = 'none'; return; }
+
+            svgOverlay.style.display = 'block';
+            const startX = noteRect.left + noteRect.width / 2; const startY = noteRect.bottom + 5;
+            const endX = bellRect.left + bellRect.width / 2; const endY = bellRect.top - 5;
+            const controlY1 = startY + (endY - startY) * 0.3; const controlY2 = endY - (endY - startY) * 0.3;
+            const d = `M ${startX} ${startY} C ${startX} ${controlY1}, ${endX} ${controlY2}, ${endX} ${endY}`;
+            arrowPath.setAttribute('d', d);
+        }
+
+        function hideMultiplayerArrow() {
+            const svgOverlay = document.getElementById('hint-svg-overlay');
+            if(svgOverlay) svgOverlay.style.display = 'none';
         }
 
         function updateMultiplayerUI() {
@@ -657,6 +659,10 @@
             const statusText = document.getElementById('multi-status-text');
             const targetNoteEl = document.getElementById('multi-target-note');
             
+            // 기존 힌트 청소
+            document.querySelectorAll('.bell-hint-photo').forEach(el => el.remove());
+            hideMultiplayerArrow();
+
             if (currentMultiState.isPlaying) {
                 const playerCount = currentMultiState.playerCount || 1;
                 const bellVis = currentMultiState.bellVisibility || '8'; 
@@ -676,9 +682,10 @@
 
                 const currentNote = multiFlatSong[currentMultiState.currentIndex];
                 const safeSequence = currentMultiState.roleSequence || [];
-                const targetRole = safeSequence[currentMultiState.currentIndex] || 1; // 안전 장치
+                const targetRole = safeSequence[currentMultiState.currentIndex] || 1; 
                 
                 if (myRole === 0) {
+                    // 선생님 화면
                     statusText.innerText = `현재 진행 상황: ${currentMultiState.currentIndex + 1} / ${multiFlatSong.length}`;
                     statusText.style.color = "#333";
                     
@@ -708,9 +715,12 @@
                     document.querySelectorAll('.bell').forEach(b => { b.classList.add('multi-bell-hidden'); b.classList.remove('practice-active-note'); });
 
                 } else if (myRole === targetRole) {
+                    // ★ 내 차례일 때 (힌트 모드 적용)
+                    const myInfo = window.currentStudents[myRole];
+                    const myHintMode = myInfo.hintMode || 'none';
+
                     statusText.innerText = "내 차례입니다! 악보를 보고 올바른 건반을 누르세요!";
                     statusText.style.color = "#2ECC71";
-                    
                     targetNoteEl.innerHTML = `<span class="note-badge ${getNoteColorClass(currentNote)} together-large-note" style="font-size: 3rem; width: 100px; height: 100px; line-height: 100px;">${noteNames[currentNote]}</span>`;
                     
                     let numBells = parseInt(bellVis) || 8;
@@ -732,6 +742,7 @@
                         const bellNote = b.id.split('-')[1];
                         
                         if (visibleBells.includes(bellNote)) {
+                            // 건반 1개 모드일 때만 반짝임
                             if (numBells === 1 && bellNote === currentNote) {
                                 b.classList.add('practice-active-note');
                             }
@@ -739,10 +750,22 @@
                             b.classList.add('multi-bell-hidden');
                         }
                     });
+
+                    // 힌트 적용
+                    if (myHintMode === 'photo') {
+                        const targetBell = document.getElementById(`bell-${currentNote}`);
+                        if (targetBell) {
+                            const imgHtml = myInfo.photo ? `<img src="${myInfo.photo}" class="bell-hint-photo">` : `<div class="bell-hint-photo" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:25px;border-color:#E74C3C;">👤</div>`;
+                            targetBell.insertAdjacentHTML('beforeend', imgHtml);
+                        }
+                    } else if (myHintMode === 'arrow') {
+                        setTimeout(() => { drawMultiplayerArrow(currentNote); }, 50);
+                    }
+
                 } else {
+                    // 내 차례가 아닐 때 (쉿! 이모지)
                     statusText.innerText = `쉿! 지금은 다른 친구 차례입니다.`;
                     statusText.style.color = "#95a5a6";
-                    
                     targetNoteEl.innerHTML = `<span style="font-size:4.5rem; margin-bottom:10px; display:inline-block;">🤫</span><br><span style="font-size:1.5rem; color:#aaa;">대기 중... ⏳</span>`;
                     
                     document.querySelectorAll('.bell').forEach(b => { 
@@ -761,6 +784,17 @@
                 document.querySelectorAll('.bell').forEach(b => b.classList.remove('multi-bell-hidden', 'practice-active-note'));
             }
         }
+
+        window.addEventListener('resize', () => {
+            if(currentMode === 'multi' && currentMultiState.isPlaying) {
+                const safeSequence = currentMultiState.roleSequence || [];
+                const targetRole = safeSequence[currentMultiState.currentIndex];
+                if(myRole === targetRole && window.currentStudents[myRole] && window.currentStudents[myRole].hintMode === 'arrow') {
+                    const currentNote = songData[currentMultiState.song].flat()[currentMultiState.currentIndex];
+                    drawMultiplayerArrow(currentNote);
+                }
+            }
+        });
 
         function handleBellClick(note) {
             initAudio();
