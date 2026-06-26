@@ -471,6 +471,8 @@
             if(!slot) { alert("빈 자리가 없습니다! 선생님께 문의하세요."); return; }
             if(!name && !studentPhotoBase64) { alert("이름을 입력하거나 사진을 등록해주세요!"); return; }
             const finalName = name || `학생 ${slot}`; myRole = parseInt(slot);
+            
+            // ★ [추가] 학생 등록 시 기본 힌트 모드는 'none'
             window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { name: finalName, photo: studentPhotoBase64, status: 'waiting', hintMode: 'none' });
             document.getElementById('entry-screen').style.display = 'none'; document.getElementById('main-app').classList.remove('hidden'); document.getElementById('main-tabs').style.display = 'none'; 
             setMode('multi'); checkMyStatus(); 
@@ -520,9 +522,16 @@
             grid.innerHTML = html;
         }
 
-        window.setStudentStatus = function(slot, status) { window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { status: status, hintMode: 'none' }); }
+        window.setStudentStatus = function(slot, status) { 
+            window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { status: status, hintMode: 'none' }); 
+        }
+        
         window.kickStudent = function(slot) { if(confirm(`${slot}번 학생 정보를 삭제하시겠습니까?`)) { window.dbSet(window.dbRef(window.db, `classSession/students/${slot}`), null); } }
-        window.updateStudentHint = function(slot, mode) { window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { hintMode: mode }); }
+        
+        // ★ [추가] 학생별 힌트 정보 파이어베이스에 업데이트
+        window.updateStudentHint = function(slot, mode) {
+            window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { hintMode: mode });
+        }
 
         window.resetAllStudents = function() { 
             if(confirm("모든 학생 접속을 초기화하시겠습니까?\n\n※ 확인을 누르면 대기/승인 여부에 상관없이 모든 학생의 기기가 강제로 첫 화면으로 돌아갑니다.")) { 
