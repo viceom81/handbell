@@ -905,7 +905,9 @@
                     const stName = window.currentStudents[targetRole] ? window.currentStudents[targetRole].name : `${targetRole}번 친구`;
                     statusText.innerText = `쉿! 지금은 [ ${stName} ] 차례입니다.`;
                     statusText.style.color = "#95a5a6";
-                    targetNoteEl.innerHTML = `<span class="note-badge ${getNoteColorClass(currentNote)} together-large-note" style="opacity: 0.3;">${noteNames[currentNote]}</span><br><span style="font-size:1.5rem; color:#aaa;">대기 중... ⏳</span>`;
+                    
+                    // ★ [수정됨] 다른 친구 차례일 때는 흐릿한 음표도 완전히 숨기고 쉿 이모지 표시!
+                    targetNoteEl.innerHTML = `<span style="font-size:4.5rem; margin-bottom:10px; display:inline-block;">🤫</span><br><span style="font-size:1.5rem; color:#aaa;">대기 중... ⏳</span>`;
                     
                     // 건반 모두 숨겨서 오클릭 및 방해 방지
                     document.querySelectorAll('.bell').forEach(b => { 
