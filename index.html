@@ -5,54 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>스마트 핸드벨 교실</title>
     <style>
-        :root { --bg-color: #f8f9fa; --text-color: #333; --primary-color: #4a90e2; --border-color: #ddd; }
-        html, body { height: 100%; overflow: hidden; margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; justify-content: space-between; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-        input, select, button, textarea { -webkit-user-select: auto !important; user-select: auto !important; touch-action: manipulation; }
-        h1 { color: var(--primary-color); margin-top: 5px; margin-bottom: 10px; text-align: center; font-size: 2.2rem; flex-shrink: 0; }
-        .tabs { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; flex-shrink: 0; }
-        .tab-btn { padding: 10px 20px; font-size: 1.1rem; font-weight: bold; border: 2px solid var(--primary-color); background-color: white; color: var(--primary-color); border-radius: 30px; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
-        .tab-btn.active { background-color: var(--primary-color); color: white; }
-        .tab-btn:active, button.action-btn:active { transform: scale(0.95); opacity: 0.8; }
-        .control-panel { background: white; padding: 15px 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 1200px; text-align: center; margin-bottom: 10px; box-sizing: border-box; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
+        :root { --bg-color: #f8f9fa; --primary-color: #4a90e2; }
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: var(--bg-color); margin: 0; display: flex; flex-direction: column; align-items: center; height: 100vh; }
+        #entry-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .entry-box { background: white; padding: 40px; border-radius: 20px; border: 2px solid #ddd; text-align: center; width: 90%; max-width: 400px; }
+        .btn-large { padding: 15px; font-size: 1.2rem; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; width: 100%; margin-bottom: 10px; color: white; }
+        .control-panel { background: white; padding: 20px; border-radius: 15px; width: 95%; max-width: 1000px; margin-top: 10px; display: flex; flex-direction: column; }
         .hidden { display: none !important; }
-        .multi-bell-hidden { visibility: hidden !important; pointer-events: none !important; position: absolute; }
-        .profile-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 20px; width: 100%; }
-        .profile-card { background: #f9f9f9; padding: 15px; border-radius: 12px; border: 3px solid #eee; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; transition: all 0.3s; }
-        .preview-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 4px solid #ddd; margin: 5px auto; display: block; }
-        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; }
-        .bell-area-container { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 1200px; flex-shrink: 0; position: relative; padding-bottom: 10px; }
-        .bell-container { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 10px; } 
-        .bell { width: 80px; height: 14vh; min-height: 90px; max-height: 130px; border-radius: 40px 40px 10px 10px; display: flex; align-items: flex-end; justify-content: center; font-weight: bold; font-size: 1.5rem; padding-bottom: 15px; cursor: pointer; box-shadow: 0 8px 12px rgba(0,0,0,0.2); transition: transform 0.1s, box-shadow 0.1s, filter 0.2s, border 0.2s; border: 5px solid transparent; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-        .bell:active, .bell.playing { transform: translateY(5px); box-shadow: 0 3px 5px rgba(0,0,0,0.2); filter: brightness(1.2); }
-        .success-pop { transform: scale(1.15) translateY(-10px) !important; filter: brightness(1.4) drop-shadow(0 0 20px #ffeb3b); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes shake { 0%, 100% { transform: translateX(0) translateY(-5px); } 20%, 60% { transform: translateX(-6px) translateY(-5px); } 40%, 80% { transform: translateX(6px) translateY(-5px); } }
-        .error-shake { animation: shake 0.4s ease-in-out; border-color: #E74C3C !important; box-shadow: 0 8px 15px rgba(231, 76, 60, 0.4); }
-        .selected-bell { border: 5px solid #333 !important; transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.3); }
-        .game-bell-hidden { display: none !important; }
-        .c4 { background-color: #E74C3C; color: white; } .d4 { background-color: #E67E22; color: white; } .e4 { background-color: #F1C40F; color: black; } .f4 { background-color: #2ECC71; color: white; } .g4 { background-color: #3498DB; color: white; } .a4 { background-color: #1A5276; color: white; } .b4 { background-color: #8E44AD; color: white; } .c5 { background-color: #FFFFFF; color: black; border-color: #ccc; }
-        button.action-btn { padding: 10px 20px; margin: 5px; font-size: 1.1rem; background-color: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: transform 0.1s; -webkit-tap-highlight-color: transparent; }
-        .score-text { font-size: 1.4rem; font-weight: bold; margin-top: 10px; min-height: 32px; }
-        .sheet-display { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; margin-top: 10px; padding: 15px; background: #f0f0f0; border-radius: 10px; min-height: 60px; }
-        .note-badge { display: inline-block; width: 45px; height: 45px; line-height: 45px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 18px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.3s; }
-        @keyframes pulse-note { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); } 50% { transform: scale(1.3); box-shadow: 0 0 0 12px rgba(46, 204, 113, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); } }
-        .practice-active-note { animation: pulse-note 1.5s infinite; border: 4px solid #333; z-index: 10; position: relative; }
-        .practice-completed-note { opacity: 0.3; transform: scale(0.9); }
-        .together-large-note { width: 75px !important; height: 75px !important; line-height: 75px !important; font-size: 28px !important; margin: 6px !important; border-width: 4px !important; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-box { background: white; padding: 35px 30px; border-radius: 20px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.4); max-width: 550px; width: 90%; }
-        #entry-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; box-sizing: border-box; }
-        .entry-box { background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; border: 4px solid var(--primary-color); animation: fadeIn 0.5s; }
-        .btn-large { padding: 20px; font-size: 1.6rem; font-weight: bold; border-radius: 15px; border: none; cursor: pointer; width: 100%; margin-bottom: 15px; transition: transform 0.2s, box-shadow 0.2s; color: white; }
-        .btn-teacher { background: #e74c3c; } .btn-student { background: #3498db; } .btn-free { background: #27ae60; }
-        #student-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 2500; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        #camera-video { width: 100%; max-width: 400px; border-radius: 20px; border: 4px solid #fff; background: black; transform: scaleX(-1); }
+        .bell-container { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+        .bell { width: 70px; height: 100px; border-radius: 20px 20px 5px 5px; display: flex; align-items: flex-end; justify-content: center; font-weight: bold; padding-bottom: 10px; cursor: pointer; color: white; }
     </style>
+</head>
+<body>
+
+    <!-- 입장 로비 -->
+    <div id="entry-screen">
+        <div class="entry-box">
+            <h1>🎵 스마트 핸드벨</h1>
+            <button class="btn-large" style="background: #e74c3c;" onclick="window.enterAsTeacher()">👨‍🏫 선생님으로 입장</button>
+            <button class="btn-large" style="background: #3498db;" onclick="window.showStudentForm()">🧑‍🎓 학생(합주) 입장</button>
+            <button class="btn-large" style="background: #2ecc71;" onclick="window.enterAsFreeUser()">🎵 자유 이용자로 입장</button>
+        </div>
+        <!-- 학생 입장 폼은 나중에 동적으로 나타남 -->
+    </div>
+
+    <!-- 메인 앱 영역 -->
+    <div id="main-app" class="hidden" style="width: 100%; height: 100%;">
+        <div class="tabs">
+            <button class="tab-btn" onclick="window.setMode('dashboard')" id="tab-dashboard">👨‍👩‍👧‍👦 접속 관리</button>
+            <button class="tab-btn" onclick="window.setMode('free')">자유 연주</button>
+            <button class="tab-btn" onclick="window.setMode('multi')">📡 실시간 합주</button>
+        </div>
+        <div id="panel-dashboard" class="control-panel">접속 관리 보드...</div>
+        <div id="panel-free" class="control-panel hidden">자유 연주 모드...</div>
+        <div id="panel-multi" class="control-panel hidden">실시간 합주 모드...</div>
+        <div class="bell-container" id="bells"></div>
+    </div>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, set, onValue, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyBLs7v08fBQ8a1lv0-PWk_kWBnxy1xG6F8",
             authDomain: "handbell-class.firebaseapp.com",
@@ -63,76 +55,47 @@
             appId: "1:923483706226:web:2d150a12c2c0307595c3eb"
         };
         const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        window.db = database; window.dbRef = ref; window.dbSet = set; window.dbOnValue = onValue; window.dbUpdate = update; window.dbGet = get; window.dbOnDisconnect = onDisconnect;
-        window.firebaseLoaded = true;
-        if (typeof window.initMultiplayer === 'function') window.initMultiplayer();
-    </script>
-</head>
-<body>
-    <div id="entry-screen" style="display:flex;">
-        <div class="entry-box" id="entry-selection">
-            <h1 style="font-size: 2.8rem; margin-bottom: 30px;">🎵 스마트 핸드벨</h1>
-            <button class="btn-large btn-teacher" onclick="window.enterAsTeacher()">👨‍🏫 선생님으로 입장</button>
-            <button class="btn-large btn-student" onclick="window.showStudentForm()">🧑‍🎓 학생으로 입장</button>
-            <button class="btn-large btn-free" onclick="window.enterAsFreeUser()">🎵 자유 이용자로 입장</button>
-        </div>
-        <div class="entry-box hidden" id="entry-student-form">
-            <h2 style="color: #3498db;">🧑‍🎓 학생 입장</h2>
-            <select id="entry-slot-select" style="width: 100%; padding: 12px; font-size: 1.1rem; border-radius: 8px; margin-top: 10px;"></select>
-            <input type="text" id="entry-name" placeholder="이름 입력" style="width: 100%; padding: 12px; border-radius: 8px; margin-top: 10px;">
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn-large btn-student" style="flex: 2; margin: 0;" onclick="window.joinAsStudent()">🚀 입장</button>
-                <button class="btn-large" style="background: #95a5a6; flex: 1; margin: 0;" onclick="window.backToEntrySelection()">취소</button>
-            </div>
-        </div>
-    </div>
-    <div id="student-blocker" class="hidden"><h2>⏳ 대기 중</h2><div id="blocker-name"></div></div>
-    <div id="camera-modal" class="hidden"><video id="camera-video" autoplay playsinline></video><button onclick="window.capturePhoto()">📸 촬영</button><button onclick="window.closeCamera()">취소</button></div>
-    <div id="main-app" class="hidden" style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
-        <h1 class="no-print">🎵 스마트 핸드벨 교실</h1>
-        <div class="tabs no-print" id="main-tabs">
-            <button class="tab-btn active" data-mode="dashboard" onclick="setMode('dashboard')" id="tab-dashboard">👨‍👩‍👧‍👦 접속 관리</button>
-            <button class="tab-btn" data-mode="free" onclick="setMode('free')">자유 연주</button>
-            <button class="tab-btn" data-mode="multi" onclick="setMode('multi')">📡 실시간 합주</button>
-        </div>
-        <div id="panel-dashboard" class="control-panel">
-            <button class="action-btn" onclick="window.resetAllStudents()">🔄 전체 초기화 및 퇴장</button>
-            <button class="action-btn" onclick="window.teacherLogout()">🚪 교사 로그아웃</button>
-            <div class="profile-container" id="teacher-dashboard-grid"></div>
-        </div>
-        <div id="panel-free" class="control-panel hidden"><h3>자유 연주</h3></div>
-        <div id="panel-multi" class="control-panel hidden">
-            <div id="multi-teacher-controls" class="hidden">
-                <select id="multi-bell-visibility" onchange="window.updateBellVisibility()"><option value="1">건반 1개</option><option value="8" selected>건반 8개</option></select>
-                <button class="action-btn" onclick="window.startMultiplayer()">▶ 시작</button>
-                <button class="action-btn" onclick="window.stopMultiplayer()">⏹ 중지</button>
-            </div>
-            <div id="multi-student-view"><h2 id="multi-status-text"></h2><div id="multi-target-note"></div></div>
-        </div>
-        <div class="bell-area-container"><div class="bell-container" id="bells"></div></div>
-    </div>
-    <script>
-        // 전역 함수 노출
-        window.enterAsTeacher = enterAsTeacher;
-        window.showStudentForm = showStudentForm;
-        window.backToEntrySelection = backToEntrySelection;
-        window.joinAsStudent = joinAsStudent;
-        window.enterAsFreeUser = enterAsFreeUser;
-        window.resetAllStudents = resetAllStudents;
-        window.teacherLogout = teacherLogout;
-        window.startMultiplayer = startMultiplayer;
-        window.stopMultiplayer = stopMultiplayer;
-        window.updateBellVisibility = updateBellVisibility;
-        window.capturePhoto = capturePhoto;
-        window.closeCamera = closeCamera;
-        window.openCamera = openCamera;
-        window.handleEntryFileUpload = handleEntryFileUpload;
+        const db = getDatabase(app);
+        
+        // 전역 함수 등록
+        window.enterAsTeacher = async () => {
+            const teacherRef = ref(db, 'classSession/teacherActive');
+            const snap = await get(teacherRef);
+            if (snap.val() === true) { alert("이미 교사가 접속 중입니다."); return; }
+            await set(teacherRef, true);
+            onDisconnect(teacherRef).set(false);
+            window.myRole = 0;
+            document.getElementById('entry-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            window.setMode('dashboard');
+        };
 
-        // ... (나머지 로직 동일)
-        function enterAsFreeUser() { myRole = -2; document.getElementById('entry-screen').style.display = 'none'; document.getElementById('main-app').classList.remove('hidden'); setMode('free'); }
-        function teacherLogout() { const teacherRef = window.dbRef(window.db, 'classSession/teacherActive'); window.dbSet(teacherRef, false).then(() => location.reload()); }
-        // (합주 로직 및 기타 생략된 부분은 위에서 구현한 내용과 동일하게 유지)
+        window.enterAsFreeUser = () => {
+            window.myRole = -1; // 일반 이용자
+            document.getElementById('entry-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            window.setMode('free');
+        };
+
+        window.showStudentForm = () => {
+            alert("학생 입장 폼 연결 중...");
+        };
+
+        window.setMode = (mode) => {
+            document.querySelectorAll('.control-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById('panel-' + mode).classList.remove('hidden');
+        };
+
+        // 초기 핸드벨 생성
+        const notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5'];
+        const container = document.getElementById('bells');
+        notes.forEach(note => {
+            const b = document.createElement('div');
+            b.className = 'bell ' + note.toLowerCase();
+            b.style.backgroundColor = '#4a90e2';
+            b.innerText = note;
+            container.appendChild(b);
+        });
     </script>
 </body>
 </html>
