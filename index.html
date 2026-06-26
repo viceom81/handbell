@@ -243,6 +243,7 @@
         }
     </style>
 
+    <!-- ★ 파이어베이스 실시간 통신 SDK 추가 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -266,6 +267,12 @@
         window.dbSet = set;
         window.dbOnValue = onValue;
         window.dbUpdate = update;
+
+        // 파이어베이스 로딩 완료 신호 보내기
+        window.firebaseLoaded = true;
+        if (typeof window.initMultiplayer === 'function') {
+            window.initMultiplayer();
+        }
     </script>
 </head>
 <body>
@@ -278,21 +285,22 @@
         <button class="tab-btn" data-mode="maker" onclick="setMode('maker')">악보 만들기</button>
         <button class="tab-btn" data-mode="practice" onclick="setMode('practice')">지정곡 연습</button>
         <button class="tab-btn" data-mode="together" onclick="setMode('together')">🤝 2인 연주</button>
-        <button class="tab-btn" data-mode="multi" onclick="setMode('multi')" style="background-color: #e74c3c; color: white; border-color: #e74c3c;">📡 6인 실시간 합주</button>
+        <button class="tab-btn" data-mode="multi" onclick="setMode('multi')" style="background-color: #e74c3c; color: white; border-color: #e74c3c;">📡 실시간 합주 (1~6인)</button>
     </div>
 
+    <!-- ★ 기기별 학생 번호 선택기 (멀티플레이용) - 고정 음표 표시 제거! -->
     <div id="device-role-selector" class="no-print" style="background: #fff3e0; padding: 10px; border-radius: 10px; border: 2px dashed #f39c12; margin-bottom: 10px; text-align: center; width: 100%; max-width: 1200px;">
-        <strong style="color: #d35400; font-size: 1.2rem; margin-right: 10px;">태블릿 역할 선택:</strong>
+        <strong style="color: #d35400; font-size: 1.2rem; margin-right: 10px;">내 태블릿 번호 선택:</strong>
         <select id="my-player-number" style="padding: 8px; font-size: 1.1rem; border-radius: 8px; border: 2px solid #e67e22; background: white; font-weight: bold;">
             <option value="0">👩‍🏫 선생님 (진행자)</option>
-            <option value="1">🔴 1번 학생 (도)</option>
-            <option value="2">🟠 2번 학생 (레)</option>
-            <option value="3">🟡 3번 학생 (미)</option>
-            <option value="4">🟢 4번 학생 (파)</option>
-            <option value="5">🔵 5번 학생 (솔)</option>
-            <option value="6">🟣 6번 학생 (라, 시, 높은도)</option>
+            <option value="1">🔴 1번 학생</option>
+            <option value="2">🟠 2번 학생</option>
+            <option value="3">🟡 3번 학생</option>
+            <option value="4">🟢 4번 학생</option>
+            <option value="5">🔵 5번 학생</option>
+            <option value="6">🟣 6번 학생</option>
         </select>
-        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #555;">※ 각 태블릿마다 자신의 번호를 선택해두세요. 선생님 기기에서 시작을 누르면 해당 번호의 차례에만 화면이 뜹니다.</p>
+        <p style="margin: 5px 0 0 0; font-size: 0.9rem; color: #555;">※ 각 태블릿마다 번호를 하나씩 겹치지 않게 선택해두세요. 선생님이 연주를 시작하면 배정된 역할 화면만 나타납니다.</p>
     </div>
 
     <div id="panel-profile" class="control-panel">
@@ -300,7 +308,7 @@
         <p style="margin-bottom: 15px; font-size: 1.1rem;">함께 연주하기를 위해 참가하는 모둠원의 정보만 등록해 주세요!<br><span style="font-size:14px; color:#e74c3c;">(이름을 직접 타이핑하면 연주자 목록에 실시간으로 추가됩니다)</span></p>
         
         <div class="profile-container" id="profile-grid"></div>
-        <button class="action-btn" onclick="saveProfileAndStart()" style="font-size: 1.3rem; padding: 15px 40px; background-color: var(--primary-color);">✅ 지정곡 연습하러 가기</button>
+        <button class="action-btn" onclick="saveProfileAndStart()" style="font-size: 1.3rem; padding: 15px 40px; background-color: var(--primary-color);">✅ 적용하고 합주하러 가기</button>
     </div>
 
     <div id="panel-free" class="control-panel hidden">
@@ -352,6 +360,7 @@
     <div id="panel-practice" class="control-panel hidden">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <h3 style="color: #3498DB; margin: 0; font-size: 1.8rem;">지정곡 연습</h3>
+            <!-- 공간 절약을 위해 설정 모달 띄우기 버튼 배치 -->
             <button class="action-btn" onclick="openPracticeSettings()" style="background-color: #3498DB; margin: 0; padding: 8px 18px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(52,152,219,0.3);">⚙️ 설정 및 곡 선택</button>
         </div>
         
@@ -362,9 +371,7 @@
         </div>
         
         <div id="practice-status" class="score-text" style="margin-bottom: 5px; font-weight: bold; min-height: 30px;">⚙️ 상단의 설정 버튼을 눌러 곡을 선택하세요.</div>
-        
         <div id="practice-avatar-area" style="display: flex; flex-direction: column; align-items: center; margin-bottom: 10px;"></div>
-        
         <div id="practice-sheet" class="sheet-display" style="flex: 1; align-items: flex-start; align-content: flex-start; overflow-y: auto;"></div>
     </div>
 
@@ -378,35 +385,50 @@
         <div id="together-display" class="together-display-area" style="flex: 1; align-items: flex-start; align-content: flex-start; overflow-y: auto;"></div>
     </div>
 
+    <!-- ★ 대망의 6인 실시간 합주 패널 -->
     <div id="panel-multi" class="control-panel hidden">
-        <h3 style="color: #e74c3c; font-size: 1.8rem; margin-top: 0;">📡 6인 실시간 합주 (태블릿 연동)</h3>
+        <h3 style="color: #e74c3c; font-size: 1.8rem; margin-top: 0;">📡 실시간 합주 (태블릿 연동)</h3>
         
+        <!-- 선생님용 컨트롤러 -->
         <div id="multi-teacher-controls" class="hidden" style="background: #fdf2e9; padding: 15px; border-radius: 10px; border: 2px solid #e74c3c; margin-bottom: 15px;">
-            <p style="font-weight: bold; color: #c0392b; margin-top: 0;">👨‍🏫 선생님 전용 컨트롤러</p>
-            <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-                <select id="multi-song-select" class="setting-select" style="max-width: 200px;">
+            <p style="font-weight: bold; color: #c0392b; margin-top: 0; margin-bottom: 10px;">👨‍🏫 선생님 전용 컨트롤러</p>
+            <div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                <select id="multi-song-select" class="setting-select" style="max-width: 150px; padding: 8px;">
                     <option value="airplane">비행기</option> <option value="butterfly">나비야</option> <option value="school">학교종</option>
                     <option value="star">작은 별</option> <option value="joy">환희의 송가</option> <option value="rabbit">산토끼</option> <option value="same">똑같아요</option>
                 </select>
-                <button class="action-btn" onclick="startMultiplayer()" style="background-color: #e74c3c;">▶ 전체 시작</button>
-                <button class="action-btn" onclick="stopMultiplayer()" style="background-color: #95a5a6;">⏹ 중지/초기화</button>
+                <!-- 자동 인원 조절을 위한 선택기 추가 -->
+                <select id="multi-player-count" class="setting-select" style="max-width: 130px; padding: 8px;">
+                    <option value="1">👤 1명 참여</option>
+                    <option value="2">👥 2명 참여</option>
+                    <option value="3">👥 3명 참여</option>
+                    <option value="4">👥 4명 참여</option>
+                    <option value="5">👥 5명 참여</option>
+                    <option value="6" selected>👥 6명 참여</option>
+                </select>
+                <button class="action-btn" onclick="startMultiplayer()" style="background-color: #e74c3c; margin: 0; padding: 8px 15px;">▶ 전체 시작</button>
+                <button class="action-btn" onclick="stopMultiplayer()" style="background-color: #95a5a6; margin: 0; padding: 8px 15px;">⏹ 중지</button>
             </div>
         </div>
 
+        <!-- 학생 및 상황 표시 화면 -->
         <div id="multi-student-view" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1;">
             <h2 id="multi-status-text" style="font-size: 1.6rem; color: #555;">선생님의 시작 신호를 기다리는 중...</h2>
             <div id="multi-target-note" style="margin: 20px 0; min-height: 80px; display: flex; flex-direction: column; align-items: center;"></div>
         </div>
         
-        <p style="margin-top: 10px; font-size: 1.1rem; font-weight: bold; background: #eee; padding: 10px; border-radius: 10px;">
-            💡 역할 안내: 1번(도) / 2번(레) / 3번(미) / 4번(파) / 5번(솔) / 6번(라,시,도)
+        <!-- 동적으로 변하는 역할 안내 박스 -->
+        <p id="multi-role-guide" style="margin-top: 10px; font-size: 1.1rem; font-weight: bold; background: #eee; padding: 10px; border-radius: 10px;">
+            💡 선생님 기기에서 시작 버튼을 누르면 참여 인원수에 맞춰 핸드벨 역할이 자동 배정됩니다!
         </p>
     </div>
 
+    <!-- 핸드벨 건반 및 화살표 영역 -->
     <div class="bell-area-container no-print">
         <div id="sequence-slots" class="sequence-container hidden"></div>
         <div class="bell-container" id="bells"></div>
         
+        <!-- 스크롤 방지를 위해 플로팅 스위치를 건반 우측 영역 안에 배치 -->
         <div id="global-hint-wrapper" class="hint-toggle-wrapper hidden no-print">
             <div class="hint-toggle-label">🎯 화살표</div>
             <label class="switch">
@@ -415,6 +437,10 @@
             </label>
         </div>
     </div>
+
+    <!-- ============================================== -->
+    <!--                  모달 (팝업) 창                 -->
+    <!-- ============================================== -->
 
     <div id="practice-settings-modal" class="modal-overlay hidden">
         <div class="modal-box" style="border: 4px solid #3498DB;">
@@ -519,7 +545,6 @@
         const frequencies = { 'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88, 'C5': 523.25 };
         const noteNames = { 'C4': '도', 'D4': '레', 'E4': '미', 'F4': '파', 'G4': '솔', 'A4': '라', 'B4': '시', 'C5': '도' };
         
-        // 게임 모드 크래시 해결을 위한 색상 정의 추가
         const noteColors = {
             'C4': { bg: '#E74C3C', color: 'white' },
             'D4': { bg: '#E67E22', color: 'white' },
@@ -533,26 +558,26 @@
         const notes = Object.keys(frequencies);
         let currentMode = 'profile';
 
-        // 전역 상태 변수들
         let isHintArrowOn = false;
         let isAudioUnlocked = false;
         let gameSequenceTimeout = null; 
         let isMakerPlaying = false;     
 
-        // ★ [멀티플레이] 통신 상태 변수 및 설정
-        const sessionRef = window.dbRef(window.db, 'classSession');
-        let currentMultiState = { isPlaying: false, song: 'airplane', currentIndex: 0 };
+        // ★ [멀티플레이] 통신 상태 변수
+        let sessionRef = null;
+        let currentMultiState = { isPlaying: false, song: 'airplane', currentIndex: 0, playerCount: 6 };
         let multiFlatSong = [];
         
-        // 각 음표가 몇 번 학생의 역할인지 지정합니다. (선생님 요청사항 반영)
-        const noteToRole = {
-            'C4': 1, // 1번 학생: 도
-            'D4': 2, // 2번 학생: 레
-            'E4': 3, // 3번 학생: 미
-            'F4': 4, // 4번 학생: 파
-            'G4': 5, // 5번 학생: 솔
-            'A4': 6, 'B4': 6, 'C5': 6 // 6번 학생: 라, 시, 높은도
-        };
+        // ★ [다이내믹 매핑 함수] 인원수에 맞춰 음표(역할)를 자동 분배합니다.
+        function getNoteRoleMap(playerCount) {
+            const map = {};
+            const allNotes = Object.keys(frequencies); // 도, 레, 미, 파, 솔, 라, 시, 높은도
+            allNotes.forEach((note, idx) => {
+                // 음표를 순서대로 인원수만큼 나눈 나머지에 +1 하여 분배 (1번부터 N번까지 골고루)
+                map[note] = (idx % playerCount) + 1;
+            });
+            return map;
+        }
 
         function resumeAudio() {
             try {
@@ -619,7 +644,6 @@
             const svgOverlay = document.getElementById('hint-svg-overlay');
             if (svgOverlay) svgOverlay.style.display = 'none';
 
-            // 플로팅 힌트 스위치 표시 여부
             const hintWrapper = document.getElementById('global-hint-wrapper');
             if (mode === 'practice' || mode === 'together') {
                 hintWrapper.classList.remove('hidden');
@@ -644,16 +668,15 @@
                 } else {
                     document.getElementById('multi-teacher-controls').classList.add('hidden');
                 }
-                updateMultiplayerUI(); // 파이어베이스 데이터 기준으로 화면 렌더링
+                updateMultiplayerUI(); 
             }
         }
 
-        // 역할 변경 시 즉각 반영
+        // 태블릿 번호 변경 시 즉각 반영
         document.getElementById('my-player-number').addEventListener('change', () => {
             if (currentMode === 'multi') setMode('multi');
         });
 
-        // --- 모달 설정창 열기/닫기 로직 ---
         function openPracticeSettings() { document.getElementById('practice-settings-modal').classList.remove('hidden'); }
         function closePracticeSettings() { document.getElementById('practice-settings-modal').classList.add('hidden'); }
         function applyPracticeSettings() {
@@ -666,7 +689,6 @@
         function openTogetherSettings() { document.getElementById('together-settings-modal').classList.remove('hidden'); }
         function closeTogetherSettings() { document.getElementById('together-settings-modal').classList.add('hidden'); }
 
-        // 플로팅 힌트 토글 로직
         function toggleHintArrow() {
             const switchEl = document.getElementById('global-hint-switch');
             isHintArrowOn = switchEl.checked;
@@ -703,7 +725,6 @@
                 const noteRect = activeNoteEl.getBoundingClientRect();
                 const bellRect = targetBellEl.getBoundingClientRect();
 
-                // 화면에서 숨겨졌거나 0크기일 경우
                 if (noteRect.width === 0 || bellRect.width === 0) {
                     svgOverlay.style.display = 'none'; return;
                 }
@@ -725,51 +746,75 @@
             }
         }
         
-        // 창 크기 변경 및 패널 내부 스크롤 시 화살표 위치 업데이트
         window.addEventListener('resize', renderHintArrow);
         document.querySelectorAll('.control-panel').forEach(panel => {
             panel.addEventListener('scroll', renderHintArrow);
         });
 
         // ==========================================
-        // ★ [멀티플레이] 6인 실시간 합주 핵심 로직
+        // ★ [멀티플레이] 실시간 합주 핵심 로직
         // ==========================================
         
-        // 파이어베이스에서 신호가 올 때마다 자동으로 실행되는 함수
-        window.dbOnValue(sessionRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                currentMultiState = data;
-                if (currentMode === 'multi') updateMultiplayerUI();
-            }
-        });
+        // 파이어베이스 데이터 연결 및 수신 (로드 완료 후 실행)
+        window.initMultiplayer = function() {
+            sessionRef = window.dbRef(window.db, 'classSession');
+            window.dbOnValue(sessionRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    currentMultiState = data;
+                    if (currentMode === 'multi') updateMultiplayerUI();
+                }
+            });
+        };
+
+        // 스크립트가 이미 로드되었다면 즉시 실행
+        if (window.firebaseLoaded) {
+            window.initMultiplayer();
+        }
 
         // 선생님이 시작 버튼을 누를 때
         function startMultiplayer() {
             const song = document.getElementById('multi-song-select').value;
+            const playerCount = parseInt(document.getElementById('multi-player-count').value);
             window.dbSet(sessionRef, {
                 isPlaying: true,
                 song: song,
-                currentIndex: 0
+                currentIndex: 0,
+                playerCount: playerCount
             });
         }
 
-        // 선생님이 초기화 버튼을 누를 때
+        // 선생님이 중지/초기화 버튼을 누를 때
         function stopMultiplayer() {
+            const playerCount = parseInt(document.getElementById('multi-player-count').value);
             window.dbSet(sessionRef, {
                 isPlaying: false,
                 song: 'airplane',
-                currentIndex: 0
+                currentIndex: 0,
+                playerCount: playerCount
             });
         }
 
-        // 파이어베이스 데이터에 따라 학생 및 선생님의 화면을 바꿔주는 마법의 함수
+        // 파이어베이스 데이터에 따라 학생 및 선생님의 화면을 바꿔주는 함수
         function updateMultiplayerUI() {
             const myRole = parseInt(document.getElementById('my-player-number').value);
             const statusText = document.getElementById('multi-status-text');
             const targetNoteEl = document.getElementById('multi-target-note');
+            const guideEl = document.getElementById('multi-role-guide');
             
             if (currentMultiState.isPlaying) {
+                const playerCount = currentMultiState.playerCount || 6;
+                const noteRoleMap = getNoteRoleMap(playerCount);
+                
+                // 가이드 텍스트 자동 업데이트
+                let helpText = "💡 현재 역할 배정: ";
+                for (let i = 1; i <= playerCount; i++) {
+                    const myNotes = Object.keys(noteRoleMap).filter(n => noteRoleMap[n] === i).map(n => noteNames[n]);
+                    helpText += `${i}번(${myNotes.join(', ')})`;
+                    if (i < playerCount) helpText += " / ";
+                }
+                guideEl.innerText = helpText;
+
                 multiFlatSong = songData[currentMultiState.song].flat();
                 
                 // 합주가 끝났을 때
@@ -787,7 +832,7 @@
 
                 // 현재 연주해야 할 음표와 담당 학생 번호 계산
                 const currentNote = multiFlatSong[currentMultiState.currentIndex];
-                const targetRole = noteToRole[currentNote];
+                const targetRole = noteRoleMap[currentNote];
                 
                 if (myRole === 0) {
                     // 선생님 화면
@@ -796,6 +841,16 @@
                     targetNoteEl.innerHTML = `<span class="note-badge ${getNoteColorClass(currentNote)} together-large-note" style="margin-bottom:10px;">${noteNames[currentNote]}</span><br><span style="font-size:1.5rem; color:#e74c3c; font-weight:bold;">지금은 [ ${targetRole}번 학생 ] 차례입니다!</span>`;
                     document.querySelectorAll('.bell').forEach(b => b.classList.remove('multi-bell-hidden', 'practice-active-note'));
                     
+                } else if (myRole > playerCount) {
+                    // 선택된 인원수보다 높은 번호의 학생인 경우 (관전)
+                    statusText.innerText = `이번 합주는 ${playerCount}인용으로 진행 중입니다.`;
+                    statusText.style.color = "#95a5a6";
+                    targetNoteEl.innerHTML = `<span style="font-size:2rem; color:#aaa;">관전 모드 👀</span>`;
+                    document.querySelectorAll('.bell').forEach(b => {
+                        b.classList.add('multi-bell-hidden');
+                        b.classList.remove('practice-active-note');
+                    });
+
                 } else if (myRole === targetRole) {
                     // 내 차례일 때 화면!
                     statusText.innerText = "내 차례입니다! 아래 반짝이는 건반을 누르세요!";
@@ -825,12 +880,13 @@
             } else {
                 // 연주 시작 전 대기 상태
                 if (myRole === 0) {
-                    statusText.innerText = "위에서 곡을 선택하고 전체 시작을 누르세요.";
+                    statusText.innerText = "참여 인원과 곡을 선택하고 전체 시작을 누르세요.";
                 } else {
                     statusText.innerText = "선생님의 시작 신호를 기다리는 중입니다...";
                 }
                 statusText.style.color = "#555";
                 targetNoteEl.innerHTML = "";
+                guideEl.innerText = "💡 선생님 기기에서 시작 버튼을 누르면 참여 인원수에 맞춰 핸드벨 역할이 자동 배정됩니다!";
                 document.querySelectorAll('.bell').forEach(b => b.classList.remove('multi-bell-hidden', 'practice-active-note'));
             }
         }
@@ -859,8 +915,11 @@
                 const myRole = parseInt(document.getElementById('my-player-number').value);
                 if (myRole === 0) { playSound(note, true); return; } // 선생님은 그냥 소리만 남
                 
+                const playerCount = currentMultiState.playerCount || 6;
+                const noteRoleMap = getNoteRoleMap(playerCount);
+
                 const currentNote = songData[currentMultiState.song].flat()[currentMultiState.currentIndex];
-                const targetRole = noteToRole[currentNote];
+                const targetRole = noteRoleMap[currentNote];
                 
                 // 내 차례이고, 정답 건반을 눌렀을 때만 파이어베이스로 다음 음표로 넘어가라고 신호 보냄
                 if (myRole === targetRole && note === currentNote) {
@@ -919,6 +978,8 @@
         function saveProfileAndStart() {
             const firstValid = studentProfiles.find(p => p.name !== '' || p.photo !== '');
             if (firstValid) { document.getElementById('maker-display-name').innerText = firstValid.name !== '' ? `${firstValid.name}의 악보` : '🎵 나의 핸드벨 악보'; if (firstValid.photo) { document.getElementById('maker-display-photo').src = firstValid.photo; document.getElementById('maker-display-photo').classList.remove('hidden'); document.getElementById('maker-profile-header').classList.remove('hidden'); } else { document.getElementById('maker-profile-header').classList.add('hidden'); } }
+            
+            // 모둠 설정 저장 시, 6인 합주 참여 인원수 자동 업데이트
             const practiceBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.innerText.includes('지정곡 연습')); if(practiceBtn) practiceBtn.click();
         }
 
@@ -928,6 +989,16 @@
             const prev1 = p1Sel.value; const prev2 = p2Sel.value; const prevPrac = pracSel.value;
             p1Sel.innerHTML = ''; p2Sel.innerHTML = ''; pracSel.innerHTML = '';
             let validStudents = studentProfiles.map((p, index) => ({ ...p, originalIndex: index })).filter(p => p.name !== '' || p.photo !== '');
+            
+            // ★ 참여 인원 자동 감지 후 실시간 합주 옵션값 자동 세팅
+            const multiPlayerCountEl = document.getElementById('multi-player-count');
+            if (multiPlayerCountEl) {
+                let validStudentsCount = validStudents.length;
+                if (validStudentsCount === 0) validStudentsCount = 1;
+                if (validStudentsCount > 6) validStudentsCount = 6;
+                multiPlayerCountEl.value = validStudentsCount;
+            }
+
             if (validStudents.length === 0) validStudents = [ { name: '학생 1', photo: '', originalIndex: 0 }, { name: '학생 2', photo: '', originalIndex: 1 } ];
             validStudents.forEach((p) => { const displayName = p.name !== '' ? p.name : `학생 ${p.originalIndex + 1}`; p1Sel.add(new Option(displayName, p.originalIndex)); p2Sel.add(new Option(displayName, p.originalIndex)); pracSel.add(new Option(displayName, p.originalIndex)); });
             p1Sel.value = Array.from(p1Sel.options).some(opt => opt.value === prev1) ? prev1 : validStudents[0].originalIndex; p2Sel.value = Array.from(p2Sel.options).some(opt => opt.value === prev2) ? prev2 : (validStudents.length > 1 ? validStudents[1].originalIndex : validStudents[0].originalIndex); pracSel.value = Array.from(pracSel.options).some(opt => opt.value === prevPrac) ? prevPrac : validStudents[0].originalIndex;
