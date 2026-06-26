@@ -5,42 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>스마트 핸드벨 교실</title>
     <style>
-        :root {
-            --bg-color: #f8f9fa;
-            --text-color: #333;
-            --primary-color: #4a90e2;
-            --border-color: #ddd;
-        }
-
-        /* 기본 레이아웃 및 폰트 */
+        :root { --bg-color: #f8f9fa; --text-color: #333; --primary-color: #4a90e2; --border-color: #ddd; }
         html, body { height: 100%; overflow: hidden; margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background-color: var(--bg-color); color: var(--text-color);
-            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
-        }
+        body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; flex-direction: column; align-items: center; justify-content: space-between; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
         input, select, button, textarea { -webkit-user-select: auto !important; user-select: auto !important; touch-action: manipulation; }
-
         h1 { color: var(--primary-color); margin-top: 5px; margin-bottom: 10px; text-align: center; font-size: 2.2rem; flex-shrink: 0; }
-
-        /* 탭 메뉴 */
         .tabs { display: flex; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; flex-shrink: 0; }
         .tab-btn { padding: 10px 20px; font-size: 1.1rem; font-weight: bold; border: 2px solid var(--primary-color); background-color: white; color: var(--primary-color); border-radius: 30px; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
         .tab-btn.active { background-color: var(--primary-color); color: white; }
         .tab-btn:active, button.action-btn:active { transform: scale(0.95); opacity: 0.8; }
-
-        /* 컨트롤 패널 (중앙 영역) */
         .control-panel { background: white; padding: 15px 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 1200px; text-align: center; margin-bottom: 10px; box-sizing: border-box; flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
         .hidden { display: none !important; }
         .multi-bell-hidden { visibility: hidden !important; pointer-events: none !important; }
-
-        /* 모둠 학생 관리 폼 스타일 */
         .profile-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 20px; width: 100%; }
         .profile-card { background: #f9f9f9; padding: 15px; border-radius: 12px; border: 3px solid #eee; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; transition: all 0.3s; }
         .preview-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 4px solid #ddd; margin: 5px auto; display: block; }
         .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; }
-
-        /* 핸드벨 UI 영역 */
         .bell-area-container { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 1200px; flex-shrink: 0; position: relative; padding-bottom: 10px; }
         .bell-container { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; margin-top: 10px; } 
         .bell { width: 80px; height: 14vh; min-height: 90px; max-height: 130px; border-radius: 40px 40px 10px 10px; display: flex; align-items: flex-end; justify-content: center; font-weight: bold; font-size: 1.5rem; padding-bottom: 15px; cursor: pointer; box-shadow: 0 8px 12px rgba(0,0,0,0.2); transition: transform 0.1s, box-shadow 0.1s, filter 0.2s, border 0.2s; border: 5px solid transparent; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
@@ -50,11 +30,7 @@
         .error-shake { animation: shake 0.4s ease-in-out; border-color: #E74C3C !important; box-shadow: 0 8px 15px rgba(231, 76, 60, 0.4); }
         .selected-bell { border: 5px solid #333 !important; transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.3); }
         .game-bell-hidden { display: none !important; }
-
-        /* 색상 정의 */
         .c4 { background-color: #E74C3C; color: white; } .d4 { background-color: #E67E22; color: white; } .e4 { background-color: #F1C40F; color: black; } .f4 { background-color: #2ECC71; color: white; } .g4 { background-color: #3498DB; color: white; } .a4 { background-color: #1A5276; color: white; } .b4 { background-color: #8E44AD; color: white; } .c5 { background-color: #FFFFFF; color: black; border-color: #ccc; }
-
-        /* 공통 버튼 & UI */
         button.action-btn { padding: 10px 20px; margin: 5px; font-size: 1.1rem; background-color: #4CAF50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: transform 0.1s; -webkit-tap-highlight-color: transparent; }
         .score-text { font-size: 1.4rem; font-weight: bold; margin-top: 10px; min-height: 32px; }
         .sheet-display { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; margin-top: 10px; padding: 15px; background: #f0f0f0; border-radius: 10px; min-height: 60px; }
@@ -68,8 +44,6 @@
         .note-with-avatar { display: flex; flex-direction: column; align-items: center; margin: 6px 8px; position: relative; }
         .tiny-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 4px solid #ccc; margin-bottom: 5px; box-shadow: 0 3px 6px rgba(0,0,0,0.15); transition: all 0.3s; }
         .active-tiny-avatar { border-color: #2ecc71 !important; transform: scale(1.15); box-shadow: 0 0 15px rgba(46, 204, 113, 0.6); }
-
-        /* 모달 및 스위치 UI */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 2000; }
         .modal-box { background: white; padding: 35px 30px; border-radius: 20px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.4); max-width: 550px; width: 90%; }
         .setting-row { display: flex; gap: 15px; align-items: center; justify-content: center; margin-bottom: 15px; width: 100%; flex-wrap: wrap;}
@@ -82,23 +56,17 @@
         .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #E74C3C; } input:checked + .slider:before { transform: translateX(26px); }
         #hint-svg-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; display: none; }
-
-        /* ★ [신규] 로비 및 대기 스크린 스타일 */
         #entry-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; box-sizing: border-box; }
         .entry-box { background: white; padding: 40px 30px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 100%; border: 4px solid var(--primary-color); animation: fadeIn 0.5s; }
         .btn-large { padding: 20px; font-size: 1.6rem; font-weight: bold; border-radius: 15px; border: none; cursor: pointer; width: 100%; margin-bottom: 15px; transition: transform 0.2s, box-shadow 0.2s; color: white; }
         .btn-teacher { background: #e74c3c; box-shadow: 0 8px 15px rgba(231,76,60,0.3); }
         .btn-student { background: #3498db; box-shadow: 0 8px 15px rgba(52,152,219,0.3); }
         .btn-large:active { transform: scale(0.95); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        
         #student-blocker { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.95); z-index: 2500; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* 카메라 전용 모달 */
         #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        #camera-video { width: 100%; max-width: 400px; border-radius: 20px; border: 4px solid #fff; background: black; transform: scaleX(-1); /* 거울모드 */ }
+        #camera-video { width: 100%; max-width: 400px; border-radius: 20px; border: 4px solid #fff; background: black; transform: scaleX(-1); }
     </style>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -789,6 +757,16 @@
             const statusText = document.getElementById('multi-status-text');
             const targetNoteEl = document.getElementById('multi-target-note');
             const guideEl = document.getElementById('multi-role-guide');
+            const teacherControls = document.getElementById('multi-teacher-controls');
+            
+            // ★ 선생님 화면일 때 교사 전용 컨트롤러(곡 선택 등) 보이기
+            if (teacherControls) {
+                if (myRole === 0) {
+                    teacherControls.classList.remove('hidden');
+                } else {
+                    teacherControls.classList.add('hidden');
+                }
+            }
             
             if (currentMultiState.isPlaying) {
                 const playerCount = currentMultiState.playerCount || 6;
@@ -885,7 +863,7 @@
         }
 
         // ==========================================
-        // 기타 유틸리티 함수 (기존과 동일)
+        // 기타 유틸리티 함수
         // ==========================================
         function getNoteColorClass(note) { return note.toLowerCase(); }
         function updateTogetherPlayerSelects() {
