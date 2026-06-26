@@ -149,7 +149,6 @@
             <h3 style="font-size: 1.8rem;">자유 연주 모드</h3><p style="font-size: 1.2rem;">아래의 핸드벨을 마우스나 터치로 눌러 자유롭게 연주해 보세요!</p>
         </div>
         
-        <!-- 게임, 악보, 연습 기능용 빈 패널 공간 -->
         <div id="panel-game" class="control-panel hidden"><h3>소리 맞추기 게임</h3><p>준비 중입니다.</p></div>
         <div id="panel-maker" class="control-panel hidden"><h3>악보 만들기</h3><p>준비 중입니다.</p></div>
         <div id="panel-practice" class="control-panel hidden"><h3>지정곡 연습</h3><p>준비 중입니다.</p></div>
@@ -268,7 +267,7 @@
 
         window.setMode = function(mode) {
             window.currentMode = mode;
-            document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('active'); if (btn.getAttribute('onclick').includes(`'${mode}'`)) btn.classList.add('active'); });
+            document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('active'); if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${mode}'`)) btn.classList.add('active'); });
             document.querySelectorAll('.control-panel').forEach(panel => panel.classList.add('hidden'));
             const targetPanel = document.getElementById(`panel-${mode}`); if (targetPanel) targetPanel.classList.remove('hidden');
 
@@ -303,7 +302,7 @@
                     document.getElementById('tab-dashboard').style.display = 'inline-block'; 
                     document.getElementById('tab-multi').style.display = 'inline-block';
                     window.setMode('dashboard'); 
-                    window.renderTeacherDashboard(); // ★ 즉시 동기화
+                    window.renderTeacherDashboard(); // ★ 즉시 강제 동기화
                 }
             }).catch(e => {
                 window.dbSet(teacherRef, true); window.dbOnDisconnect(teacherRef).set(false); 
@@ -312,7 +311,7 @@
                 document.getElementById('main-app').classList.remove('hidden'); 
                 document.getElementById('main-app').style.display = 'flex';
                 window.setMode('dashboard'); 
-                window.renderTeacherDashboard(); // ★ 즉시 동기화
+                window.renderTeacherDashboard(); // ★ 즉시 강제 동기화
             });
         }
         
@@ -364,30 +363,38 @@
         window.capturePhoto = function() { const video = document.getElementById('camera-video'); const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 300; const ctx = canvas.getContext('2d'); const size = Math.min(video.videoWidth, video.videoHeight); const x = (video.videoWidth - size) / 2; const y = (video.videoHeight - size) / 2; ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, x, y, size, size, 0, 0, 300, 300); window.studentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8); document.getElementById('entry-photo-preview').src = window.studentPhotoBase64; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; window.closeCamera(); }
         window.handleEntryFileUpload = function(event) { const file = event.target.files[0]; if (file) { let fileName = file.name; let nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.')) || fileName; if(!document.getElementById('entry-name').value) { document.getElementById('entry-name').value = nameWithoutExt; } const reader = new FileReader(); reader.onload = function(e) { window.studentPhotoBase64 = e.target.result; document.getElementById('entry-photo-preview').src = window.studentPhotoBase64; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; }; reader.readAsDataURL(file); } }
 
+        // ★ [강력한 보완] 대시보드 렌더링 함수에 안전장치 추가
         window.renderTeacherDashboard = function() {
-            if(window.myRole !== 0) return; 
-            const grid = document.getElementById('teacher-dashboard-grid');
-            if(!grid) return;
-            let html = '';
-            for(let i=1; i<=6; i++) {
-                const st = window.currentStudents[i];
-                if(st) {
-                    const statusColor = st.status === 'allowed' ? '#2ECC71' : '#E74C3C'; const statusText = st.status === 'allowed' ? '✅ 활동 허용' : '⏳ 대기 중';
-                    const imgHtml = st.photo ? `<img src="${st.photo}" class="preview-img" style="border-color:${statusColor}">` : `<div class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee; border-color:${statusColor}; font-size:2.5rem;">👤</div>`;
-                    
-                    const hintHtml = `
-                        <select onchange="window.updateHintMode(${i}, this.value)" style="margin-top:10px; width:100%; padding:5px; font-size:0.9rem; border-radius:5px; border:2px solid #f1c40f;">
-                            <option value="none" ${st.hintMode==='none'||!st.hintMode?'selected':''}>💡 힌트: 없음 (스스로 찾기)</option>
-                            <option value="arrow" ${st.hintMode==='arrow'?'selected':''}>💡 힌트: 강조 표시</option>
-                            <option value="avatar" ${st.hintMode==='avatar'?'selected':''}>💡 힌트: 정답 위 사진 표시</option>
-                        </select>
-                    `;
-                    html += `<div class="profile-card" style="border-color: ${statusColor}"><h4 style="margin:0 0 10px 0; color: #333;">${i}번: ${st.name}</h4>${imgHtml}<div class="status-badge" style="color:${statusColor}; background:rgba(255,255,255,0.8);">${statusText}</div><div style="display:flex; gap:5px; width:100%;">${st.status === 'waiting' ? `<button onclick="window.setStudentStatus(${i}, 'allowed')" style="flex:2; background:#2ecc71; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">승인</button>` : `<button onclick="window.setStudentStatus(${i}, 'waiting')" style="flex:2; background:#f39c12; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">대기 처리</button>`}<button onclick="window.kickStudent(${i})" style="flex:1; background:#e74c3c; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">삭제</button></div>${hintHtml}</div>`;
-                } else {
-                    html += `<div class="profile-card" style="opacity: 0.6; border-style: dashed;"><h4 style="margin:0 0 10px 0; color: #999;">${i}번 자리</h4><div class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#ddd; border-color:#ccc; font-size:2.5rem;">🈳</div><div style="margin-top:15px; color:#777; font-weight:bold;">접속 대기 중...</div></div>`;
+            try {
+                if(window.myRole !== 0) return; 
+                const grid = document.getElementById('teacher-dashboard-grid');
+                if(!grid) return;
+                let html = '';
+                for(let i=1; i<=6; i++) {
+                    const st = window.currentStudents[i];
+                    if(st && typeof st === 'object') {
+                        const sName = st.name || '이름 없음';
+                        const sStatus = st.status || 'waiting';
+                        const sHint = st.hintMode || 'none';
+                        const statusColor = sStatus === 'allowed' ? '#2ECC71' : '#E74C3C'; const statusText = sStatus === 'allowed' ? '✅ 활동 허용' : '⏳ 대기 중';
+                        const imgHtml = st.photo ? `<img src="${st.photo}" class="preview-img" style="border-color:${statusColor}">` : `<div class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee; border-color:${statusColor}; font-size:2.5rem;">👤</div>`;
+                        
+                        const hintHtml = `
+                            <select onchange="window.updateHintMode(${i}, this.value)" style="margin-top:10px; width:100%; padding:5px; font-size:0.9rem; border-radius:5px; border:2px solid #f1c40f;">
+                                <option value="none" ${sHint==='none'?'selected':''}>💡 힌트: 없음 (스스로 찾기)</option>
+                                <option value="arrow" ${sHint==='arrow'?'selected':''}>💡 힌트: 강조 표시</option>
+                                <option value="avatar" ${sHint==='avatar'?'selected':''}>💡 힌트: 정답 위 사진 표시</option>
+                            </select>
+                        `;
+                        html += `<div class="profile-card" style="border-color: ${statusColor}"><h4 style="margin:0 0 10px 0; color: #333;">${i}번: ${sName}</h4>${imgHtml}<div class="status-badge" style="color:${statusColor}; background:rgba(255,255,255,0.8);">${statusText}</div><div style="display:flex; gap:5px; width:100%;">${sStatus === 'waiting' ? `<button onclick="window.setStudentStatus(${i}, 'allowed')" style="flex:2; background:#2ecc71; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">승인</button>` : `<button onclick="window.setStudentStatus(${i}, 'waiting')" style="flex:2; background:#f39c12; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">대기 처리</button>`}<button onclick="window.kickStudent(${i})" style="flex:1; background:#e74c3c; color:white; border:none; padding:8px; border-radius:5px; font-weight:bold; cursor:pointer;">삭제</button></div>${hintHtml}</div>`;
+                    } else {
+                        html += `<div class="profile-card" style="opacity: 0.6; border-style: dashed;"><h4 style="margin:0 0 10px 0; color: #999;">${i}번 자리</h4><div class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#ddd; border-color:#ccc; font-size:2.5rem;">🈳</div><div style="margin-top:15px; color:#777; font-weight:bold;">접속 대기 중...</div></div>`;
+                    }
                 }
+                grid.innerHTML = html;
+            } catch (e) {
+                console.error("Dashboard Render Error:", e);
             }
-            grid.innerHTML = html;
         }
 
         window.setStudentStatus = function(slot, status) { window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { status: status }); }
@@ -429,10 +436,9 @@
                     location.reload(); return; 
                 }
 
-                window.currentStudents = students;
+                window.currentStudents = students || {};
                 if(document.getElementById('entry-screen').style.display !== 'none') window.updateEntrySlotUI();
                 
-                // ★ 학생이 추가/변경될 때마다 선생님 대시보드 강제 갱신 보장
                 if (window.myRole === 0) window.renderTeacherDashboard();
                 if (window.myRole > 0) window.checkMyStatus();
                 
@@ -447,7 +453,14 @@
                 if (data) { currentMultiState = data; if (window.currentMode === 'multi' && window.myRole >= 0) updateMultiplayerUI(); }
             });
         };
-        // 최하단에서 초기화 함수 안전하게 호출 보장
+        
+        // ★ [추가 안전장치] 교사 로그인 후 놓친 데이터가 있어도 2초마다 힐링 렌더링
+        setInterval(() => {
+            if (window.myRole === 0 && window.currentMode === 'dashboard') {
+                window.renderTeacherDashboard();
+            }
+        }, 2000);
+
         window.firebaseLoaded = true;
         if (typeof window.initMultiplayer === 'function') window.initMultiplayer();
 
