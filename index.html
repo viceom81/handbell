@@ -204,7 +204,6 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // 파이어베이스 기능 window 전역 연결
         window.db = database; window.dbRef = ref; window.dbSet = set; window.dbOnValue = onValue; window.dbUpdate = update; window.dbGet = get; window.dbOnDisconnect = onDisconnect;
 
         // 변수 초기화
@@ -250,7 +249,6 @@
             if (highlight) { const bell = document.getElementById(`bell-${note}`); if (bell) { bell.classList.add('playing'); setTimeout(() => bell.classList.remove('playing'), 300); } }
         }
 
-        // 핸드벨 생성
         function createBells() {
             const container = document.getElementById('bells'); container.innerHTML = ''; 
             notes.forEach(note => {
@@ -273,7 +271,7 @@
 
             document.querySelectorAll('.bell').forEach(b => {
                 b.classList.remove('game-bell-hidden', 'multi-bell-hidden', 'success-pop', 'selected-bell', 'error-shake', 'practice-active-note');
-                b.innerHTML = `<span>${noteNames[b.id.split('-')[1]]}</span>`; 
+                const p = b.id.split('-')[1]; if(p) b.innerHTML = `<span>${noteNames[p]}</span>`; 
             });
             
             if (window.myRole > 0 && mode !== 'multi') { document.getElementById('main-tabs').style.display = 'none'; window.setMode('multi'); return; }
@@ -282,7 +280,7 @@
             if (mode === 'multi') {
                 const teacherControls = document.getElementById('multi-teacher-controls');
                 if (teacherControls) { if (window.myRole === 0) teacherControls.classList.remove('hidden'); else teacherControls.classList.add('hidden'); }
-                updateMultiplayerUI();
+                window.updateMultiplayerUI();
             }
         }
 
@@ -302,7 +300,7 @@
                     document.getElementById('tab-dashboard').style.display = 'inline-block'; 
                     document.getElementById('tab-multi').style.display = 'inline-block';
                     window.setMode('dashboard'); 
-                    window.renderTeacherDashboard(); // ★ 즉시 강제 동기화
+                    window.renderTeacherDashboard(); // ★ 즉시 동기화
                 }
             }).catch(e => {
                 window.dbSet(teacherRef, true); window.dbOnDisconnect(teacherRef).set(false); 
@@ -311,7 +309,7 @@
                 document.getElementById('main-app').classList.remove('hidden'); 
                 document.getElementById('main-app').style.display = 'flex';
                 window.setMode('dashboard'); 
-                window.renderTeacherDashboard(); // ★ 즉시 강제 동기화
+                window.renderTeacherDashboard(); // ★ 즉시 동기화
             });
         }
         
@@ -363,7 +361,7 @@
         window.capturePhoto = function() { const video = document.getElementById('camera-video'); const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 300; const ctx = canvas.getContext('2d'); const size = Math.min(video.videoWidth, video.videoHeight); const x = (video.videoWidth - size) / 2; const y = (video.videoHeight - size) / 2; ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, x, y, size, size, 0, 0, 300, 300); window.studentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.8); document.getElementById('entry-photo-preview').src = window.studentPhotoBase64; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; window.closeCamera(); }
         window.handleEntryFileUpload = function(event) { const file = event.target.files[0]; if (file) { let fileName = file.name; let nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.')) || fileName; if(!document.getElementById('entry-name').value) { document.getElementById('entry-name').value = nameWithoutExt; } const reader = new FileReader(); reader.onload = function(e) { window.studentPhotoBase64 = e.target.result; document.getElementById('entry-photo-preview').src = window.studentPhotoBase64; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; }; reader.readAsDataURL(file); } }
 
-        // ★ [강력한 보완] 대시보드 렌더링 함수에 안전장치 추가
+        // ★ [강력한 보완] 대시보드 렌더링
         window.renderTeacherDashboard = function() {
             try {
                 if(window.myRole !== 0) return; 
@@ -430,7 +428,6 @@
             window.dbOnValue(studentsRef, (snap) => {
                 const students = snap.val() || {};
                 
-                // 학생 강퇴 및 초기화 로직
                 if (window.myRole > 0 && !students[window.myRole]) {
                     alert("선생님에 의해 강제 연결 해제되었습니다.");
                     location.reload(); return; 
@@ -445,16 +442,16 @@
                 let count = 0; for(let i=1; i<=6; i++) { if(students[i] && students[i].status === 'allowed') count++; }
                 window.currentApprovedCount = count > 0 ? count : 1;
                 const cntEl = document.getElementById('auto-player-count'); if(cntEl) cntEl.innerText = count; 
-                if (window.currentMode === 'multi') updateMultiplayerUI();
+                if (window.currentMode === 'multi') window.updateMultiplayerUI();
             });
 
             window.dbOnValue(sessionRef, (snap) => {
                 const data = snap.val();
-                if (data) { currentMultiState = data; if (window.currentMode === 'multi' && window.myRole >= 0) updateMultiplayerUI(); }
+                if (data) { currentMultiState = data; if (window.currentMode === 'multi' && window.myRole >= 0) window.updateMultiplayerUI(); }
             });
         };
         
-        // ★ [추가 안전장치] 교사 로그인 후 놓친 데이터가 있어도 2초마다 힐링 렌더링
+        // ★ [추가 안전장치] 교사 화면 놓침 방지 힐링 루프
         setInterval(() => {
             if (window.myRole === 0 && window.currentMode === 'dashboard') {
                 window.renderTeacherDashboard();
@@ -467,104 +464,147 @@
         window.updateBellVisibility = function() { if(window.myRole !== 0) return; const bellVis = document.getElementById('multi-bell-visibility').value; if (currentMultiState && currentMultiState.isPlaying) { window.dbUpdate(sessionRef, { bellVisibility: bellVis }); } }
 
         window.startMultiplayer = function() {
-            if(window.myRole !== 0) return;
-            const activeIds = [];
-            for(let i=1; i<=6; i++) { if(window.currentStudents && window.currentStudents[i] && window.currentStudents[i].status === 'allowed') { activeIds.push(i); } }
-            if(activeIds.length === 0) { alert("승인된 학생이 없습니다."); return; }
+            try {
+                if(window.myRole !== 0) return;
+                const activeIds = [];
+                for(let i=1; i<=6; i++) { if(window.currentStudents && window.currentStudents[i] && window.currentStudents[i].status === 'allowed') { activeIds.push(i); } }
+                if(activeIds.length === 0) { alert("승인된 학생이 없습니다."); return; }
 
-            const song = document.getElementById('multi-song-select').value;
-            const bellVis = document.getElementById('multi-bell-visibility').value;
-            const flatSong = songData[song].flat();
-            const randomSequence = [];
-            for(let i=0; i<flatSong.length; i++) { const randomIdx = Math.floor(Math.random() * activeIds.length); randomSequence.push(activeIds[randomIdx]); }
+                const song = document.getElementById('multi-song-select').value;
+                const bellVis = document.getElementById('multi-bell-visibility').value;
+                const flatSong = (songData[song] || songData['airplane']).flat();
+                const randomSequence = [];
+                for(let i=0; i<flatSong.length; i++) { const randomIdx = Math.floor(Math.random() * activeIds.length); randomSequence.push(activeIds[randomIdx]); }
 
-            window.dbSet(sessionRef, { isPlaying: true, song: song, currentIndex: 0, playerCount: activeIds.length, bellVisibility: bellVis, roleSequence: randomSequence });
+                const newState = { isPlaying: true, song: song, currentIndex: 0, playerCount: activeIds.length, bellVisibility: bellVis, roleSequence: randomSequence };
+                
+                // ★ UI 즉각 반응 보장
+                currentMultiState = newState;
+                window.updateMultiplayerUI();
+
+                window.dbSet(sessionRef, newState).catch(e => { alert("통신 오류가 발생했습니다."); console.error(e); });
+            } catch (err) {
+                console.error("Start Error:", err);
+            }
         }
 
-        window.stopMultiplayer = function() { if(window.myRole !== 0) return; window.dbSet(sessionRef, { isPlaying: false, song: 'airplane', currentIndex: 0, playerCount: window.currentApprovedCount, roleSequence: [] }); }
+        window.stopMultiplayer = function() { 
+            if(window.myRole !== 0) return; 
+            const newState = { isPlaying: false, song: 'airplane', currentIndex: 0, playerCount: window.currentApprovedCount, roleSequence: [] };
+            currentMultiState = newState;
+            window.updateMultiplayerUI();
+            window.dbSet(sessionRef, newState); 
+        }
 
-        function getNoteColorClass(note) { return note.toLowerCase(); }
+        function getNoteColorClass(note) { return note ? note.toLowerCase() : 'c4'; }
 
-        function updateMultiplayerUI() {
-            if(window.myRole < 0) return; 
-            const statusText = document.getElementById('multi-status-text'); const targetNoteEl = document.getElementById('multi-target-note');
-            
-            if (currentMultiState.isPlaying) {
-                const playerCount = currentMultiState.playerCount || 1; const bellVis = currentMultiState.bellVisibility || '8'; 
-                multiFlatSong = songData[currentMultiState.song].flat();
+        // ★ [강력한 보완] UI 업데이트 함수
+        window.updateMultiplayerUI = function() {
+            try {
+                if(window.myRole < 0) return; 
+                const statusText = document.getElementById('multi-status-text'); 
+                const targetNoteEl = document.getElementById('multi-target-note');
+                if(!statusText || !targetNoteEl) return;
                 
-                if (currentMultiState.currentIndex >= multiFlatSong.length) {
-                    statusText.innerText = "✨ 합주 완성! ✨"; statusText.style.color = "#8E44AD"; targetNoteEl.innerHTML = "";
-                    document.querySelectorAll('.bell').forEach(b => { b.classList.remove('multi-bell-hidden', 'practice-active-note'); b.innerHTML=`<span>${noteNames[b.id.split('-')[1]]}</span>`; b.classList.add('success-pop'); setTimeout(() => b.classList.remove('success-pop'), 2000); }); return;
-                }
-
-                const currentNote = multiFlatSong[currentMultiState.currentIndex];
-                const safeSequence = currentMultiState.roleSequence || [];
-                const targetRole = safeSequence[currentMultiState.currentIndex] || 1; 
-                
-                if (window.myRole === 0) {
-                    // 선생님 뷰
-                    statusText.innerText = `진행: ${currentMultiState.currentIndex + 1} / ${multiFlatSong.length}`; statusText.style.color = "#333";
-                    const stInfo = window.currentStudents[targetRole]; const stName = stInfo ? stInfo.name : `${targetRole}번 학생`;
-                    const stPhotoHtml = (stInfo && stInfo.photo) ? `<img src="${stInfo.photo}" class="preview-img" style="border:4px solid #e74c3c; width:60px; height:60px;">` : `<div class="preview-img" style="border:4px solid #e74c3c; width:60px; height:60px; display:flex; align-items:center; justify-content:center; background:#eee; font-size:2rem;">👤</div>`;
-                    targetNoteEl.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; margin-bottom:15px;">${stPhotoHtml}<span style="font-size:1.5rem; color:#e74c3c; font-weight:bold; background:#fff3e0; padding:5px 15px; border-radius:20px;">[ ${stName} ] 차례!</span></div><span class="note-badge ${getNoteColorClass(currentNote)} together-large-note">${noteNames[currentNote]}</span>`;
-                    document.querySelectorAll('.bell').forEach(b => { b.classList.remove('multi-bell-hidden'); b.innerHTML=`<span>${noteNames[b.id.split('-')[1]]}</span>`; if(b.id === `bell-${currentNote}`) b.classList.add('practice-active-note'); else b.classList.remove('practice-active-note'); });
+                if (currentMultiState && currentMultiState.isPlaying) {
+                    const playerCount = currentMultiState.playerCount || 1; 
+                    const bellVis = currentMultiState.bellVisibility || '8'; 
+                    const songKey = currentMultiState.song || 'airplane';
+                    multiFlatSong = (songData[songKey] || songData['airplane']).flat();
                     
-                } else if (!(window.currentStudents && window.currentStudents[window.myRole] && window.currentStudents[window.myRole].status === 'allowed')) {
-                    statusText.innerText = `관전 모드입니다.`; statusText.style.color = "#95a5a6"; targetNoteEl.innerHTML = `<span style="font-size:2rem; color:#aaa;">👀</span>`;
-                    document.querySelectorAll('.bell').forEach(b => { b.classList.add('multi-bell-hidden'); b.classList.remove('practice-active-note'); });
+                    if (currentMultiState.currentIndex >= multiFlatSong.length) {
+                        statusText.innerText = "✨ 합주 완성! ✨"; statusText.style.color = "#8E44AD"; targetNoteEl.innerHTML = "";
+                        document.querySelectorAll('.bell').forEach(b => { 
+                            b.classList.remove('multi-bell-hidden', 'practice-active-note'); 
+                            const bNote = b.id.split('-')[1];
+                            if(bNote) b.innerHTML=`<span>${noteNames[bNote]}</span>`; 
+                            b.classList.add('success-pop'); setTimeout(() => b.classList.remove('success-pop'), 2000); 
+                        }); return;
+                    }
 
-                } else if (window.myRole === targetRole) {
-                    // ★ 학생 본인 차례
-                    statusText.innerText = "내 차례입니다! 올바른 건반을 누르세요!"; statusText.style.color = "#2ECC71";
-                    targetNoteEl.innerHTML = `<span class="note-badge ${getNoteColorClass(currentNote)} together-large-note" style="font-size: 3rem; width: 100px; height: 100px; line-height: 100px;">${noteNames[currentNote]}</span>`;
+                    const currentNote = multiFlatSong[currentMultiState.currentIndex];
+                    const safeSequence = currentMultiState.roleSequence || [];
+                    const targetRole = safeSequence[currentMultiState.currentIndex] || 1; 
                     
-                    let numBells = parseInt(bellVis) || 8; let visibleBells = [currentNote]; 
-                    if (numBells < 8) { let availableOthers = notes.filter(n => n !== currentNote); for (let i = 0; i < numBells - 1; i++) { let pickIndex = (currentMultiState.currentIndex + i * 3) % availableOthers.length; visibleBells.push(availableOthers[pickIndex]); availableOthers.splice(pickIndex, 1); } } 
-                    else { visibleBells = [...notes]; }
+                    if (window.myRole === 0) {
+                        // 선생님 뷰
+                        statusText.innerText = `진행: ${currentMultiState.currentIndex + 1} / ${multiFlatSong.length}`; statusText.style.color = "#333";
+                        const stInfo = window.currentStudents ? window.currentStudents[targetRole] : null; 
+                        const stName = stInfo ? stInfo.name : `${targetRole}번 학생`;
+                        const stPhotoHtml = (stInfo && stInfo.photo) ? `<img src="${stInfo.photo}" class="preview-img" style="border:4px solid #e74c3c; width:60px; height:60px;">` : `<div class="preview-img" style="border:4px solid #e74c3c; width:60px; height:60px; display:flex; align-items:center; justify-content:center; background:#eee; font-size:2rem;">👤</div>`;
+                        targetNoteEl.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; margin-bottom:15px;">${stPhotoHtml}<span style="font-size:1.5rem; color:#e74c3c; font-weight:bold; background:#fff3e0; padding:5px 15px; border-radius:20px;">[ ${stName} ] 차례!</span></div><span class="note-badge ${getNoteColorClass(currentNote)} together-large-note">${noteNames[currentNote]}</span>`;
+                        document.querySelectorAll('.bell').forEach(b => { 
+                            b.classList.remove('multi-bell-hidden'); 
+                            const bNote = b.id.split('-')[1];
+                            if(bNote) b.innerHTML=`<span>${noteNames[bNote]}</span>`; 
+                            if(b.id === `bell-${currentNote}`) b.classList.add('practice-active-note'); else b.classList.remove('practice-active-note'); 
+                        });
+                        
+                    } else if (!(window.currentStudents && window.currentStudents[window.myRole] && window.currentStudents[window.myRole].status === 'allowed')) {
+                        // 관전
+                        statusText.innerText = `관전 모드입니다.`; statusText.style.color = "#95a5a6"; targetNoteEl.innerHTML = `<span style="font-size:2rem; color:#aaa;">👀</span>`;
+                        document.querySelectorAll('.bell').forEach(b => { b.classList.add('multi-bell-hidden'); b.classList.remove('practice-active-note'); });
 
-                    const myInfo = window.currentStudents[window.myRole];
-                    const hintMode = myInfo ? myInfo.hintMode : 'none';
+                    } else if (window.myRole === targetRole) {
+                        // 본인 차례
+                        statusText.innerText = "내 차례입니다! 올바른 건반을 누르세요!"; statusText.style.color = "#2ECC71";
+                        targetNoteEl.innerHTML = `<span class="note-badge ${getNoteColorClass(currentNote)} together-large-note" style="font-size: 3rem; width: 100px; height: 100px; line-height: 100px;">${noteNames[currentNote]}</span>`;
+                        
+                        let numBells = parseInt(bellVis) || 8; let visibleBells = [currentNote]; 
+                        if (numBells < 8) { 
+                            let availableOthers = notes.filter(n => n !== currentNote); 
+                            for (let i = 0; i < numBells - 1; i++) { 
+                                let pickIndex = (currentMultiState.currentIndex + i * 3) % availableOthers.length; 
+                                visibleBells.push(availableOthers[pickIndex]); availableOthers.splice(pickIndex, 1); 
+                            } 
+                        } else { visibleBells = [...notes]; }
 
-                    document.querySelectorAll('.bell').forEach(b => {
-                        b.classList.remove('multi-bell-hidden', 'practice-active-note');
-                        const bellNote = b.id.split('-')[1];
-                        b.innerHTML = `<span>${noteNames[bellNote]}</span>`;
+                        const myInfo = window.currentStudents[window.myRole];
+                        const hintMode = myInfo ? myInfo.hintMode : 'none';
 
-                        if (visibleBells.includes(bellNote)) {
-                            if (bellNote === currentNote) {
-                                // 힌트 처리
-                                if (hintMode === 'arrow') {
-                                    b.classList.add('practice-active-note');
-                                } else if (hintMode === 'avatar') {
-                                    const ava = myInfo.photo ? `<img src="${myInfo.photo}" style="width:45px; height:45px; border-radius:50%; border:2px solid white; animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem; line-height:1; animation:bounce 1s infinite;">👤</div>`;
-                                    b.innerHTML = `${ava}<br><span>${noteNames[bellNote]}</span>`;
-                                } else {
-                                    if(numBells === 1) b.classList.add('practice-active-note');
+                        document.querySelectorAll('.bell').forEach(b => {
+                            b.classList.remove('multi-bell-hidden', 'practice-active-note');
+                            const bellNote = b.id.split('-')[1];
+                            if(bellNote) b.innerHTML = `<span>${noteNames[bellNote]}</span>`;
+
+                            if (visibleBells.includes(bellNote)) {
+                                if (bellNote === currentNote) {
+                                    if (hintMode === 'arrow') { b.classList.add('practice-active-note'); } 
+                                    else if (hintMode === 'avatar') {
+                                        const ava = myInfo.photo ? `<img src="${myInfo.photo}" style="width:45px; height:45px; border-radius:50%; border:2px solid white; animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem; line-height:1; animation:bounce 1s infinite;">👤</div>`;
+                                        b.innerHTML = `${ava}<br><span>${noteNames[bellNote]}</span>`;
+                                    } else { if(numBells === 1) b.classList.add('practice-active-note'); }
                                 }
-                            }
-                        } else {
-                            b.classList.add('multi-bell-hidden');
-                        }
-                    });
+                            } else { b.classList.add('multi-bell-hidden'); }
+                        });
+                    } else {
+                        // 남의 차례
+                        statusText.innerText = `쉿! 다른 친구 차례입니다.`; statusText.style.color = "#95a5a6";
+                        targetNoteEl.innerHTML = `<span style="font-size:4.5rem; margin-bottom:10px; display:inline-block;">🤫</span><br><span style="font-size:1.5rem; color:#aaa;">대기 중... ⏳</span>`;
+                        document.querySelectorAll('.bell').forEach(b => { b.classList.add('multi-bell-hidden'); b.classList.remove('practice-active-note'); });
+                    }
                 } else {
-                    // ★ 남의 차례 (스포일러 방지)
-                    statusText.innerText = `쉿! 다른 친구 차례입니다.`; statusText.style.color = "#95a5a6";
-                    targetNoteEl.innerHTML = `<span style="font-size:4.5rem; margin-bottom:10px; display:inline-block;">🤫</span><br><span style="font-size:1.5rem; color:#aaa;">대기 중... ⏳</span>`;
-                    document.querySelectorAll('.bell').forEach(b => { b.classList.add('multi-bell-hidden'); b.classList.remove('practice-active-note'); });
+                    if (window.myRole === 0) { statusText.innerText = "전체 시작을 누르세요."; } else { statusText.innerText = "선생님의 시작 신호를 기다리는 중..."; }
+                    statusText.style.color = "#555"; targetNoteEl.innerHTML = ""; 
+                    document.querySelectorAll('.bell').forEach(b => { 
+                        b.classList.remove('multi-bell-hidden', 'practice-active-note'); 
+                        const bNote = b.id.split('-')[1];
+                        if(bNote) b.innerHTML=`<span>${noteNames[bNote]}</span>`; 
+                    });
                 }
-            } else {
-                if (window.myRole === 0) { statusText.innerText = "전체 시작을 누르세요."; } else { statusText.innerText = "선생님의 시작 신호를 기다리는 중..."; }
-                statusText.style.color = "#555"; targetNoteEl.innerHTML = ""; document.querySelectorAll('.bell').forEach(b => { b.classList.remove('multi-bell-hidden', 'practice-active-note'); b.innerHTML=`<span>${noteNames[b.id.split('-')[1]]}</span>`; });
+            } catch(err) {
+                console.error("UI Update Error:", err);
             }
         }
 
         window.handleBellClick = function(note) {
             if (window.currentMode === 'multi') {
-                if (!currentMultiState.isPlaying) return;
+                if (!currentMultiState || !currentMultiState.isPlaying) return;
                 if (window.myRole === 0) { window.playSound(note, true); return; } 
                 
-                const currentNote = songData[currentMultiState.song].flat()[currentMultiState.currentIndex];
+                const songKey = currentMultiState.song || 'airplane';
+                const flatSong = (songData[songKey] || songData['airplane']).flat();
+                const currentNote = flatSong[currentMultiState.currentIndex];
                 const safeSequence = currentMultiState.roleSequence || [];
                 const targetRole = safeSequence[currentMultiState.currentIndex];
                 
