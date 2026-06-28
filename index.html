@@ -164,7 +164,7 @@
             <div id="maker-sheet" class="sheet-display" style="flex:1;"></div>
         </div>
 
-        <!-- ★ 5. 지정곡 연습 패널 (단계별 마디 시스템 적용) -->
+        <!-- ★ 5. 지정곡 연습 패널 (1음씩 단계 + 2~5단계 마디별 연습 적용) -->
         <div id="panel-practice" class="control-panel hidden">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 10px;">
                 <h3 style="margin:5px 0; color:#3498DB;">지정곡 연습</h3>
@@ -173,10 +173,11 @@
                         <option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option>
                     </select>
                     <select id="practice-stage-select" onchange="window.loadPracticeSong()" style="padding:5px; font-size:1rem; border-radius:5px; border:2px solid #3498DB;">
-                        <option value="1">1단계: 1마디씩 연습</option>
-                        <option value="2">2단계: 2마디씩 연습</option>
-                        <option value="4">3단계: 4마디씩 (한 줄) 연습</option>
-                        <option value="all" selected>4단계: 전체 곡 연습</option>
+                        <option value="note">1단계: 1음씩 연습 (집중)</option>
+                        <option value="1">2단계: 1마디씩 연습</option>
+                        <option value="2">3단계: 2마디씩 연습</option>
+                        <option value="4">4단계: 4마디씩 (한 줄) 연습</option>
+                        <option value="all" selected>5단계: 전체 곡 연습</option>
                     </select>
                 </div>
             </div>
@@ -258,7 +259,7 @@
         const noteNames = { 'C4':'도', 'D4':'레', 'E4':'미', 'F4':'파', 'G4':'솔', 'A4':'라', 'B4':'시', 'C5':'도' };
         const notes = Object.keys(frequencies);
         
-        // ★ 마디(Measure) 단위로 배열이 나뉘어 있는 원곡 데이터
+        // ★ 원곡 데이터: 마디 단위로 묶여있습니다.
         const songData = {
             'airplane': [['E4','D4','C4','D4'],['E4','E4','E4'],['D4','D4','D4'],['E4','G4','G4'],['E4','D4','C4','D4'],['E4','E4','E4'],['D4','D4','E4','D4'],['C4']],
             'butterfly': [['G4','E4','E4'],['F4','D4','D4'],['C4','D4','E4','F4'],['G4','G4','G4'],['G4','E4','E4'],['F4','D4','D4'],['C4','E4','G4','G4'],['E4','E4','E4']],
@@ -334,9 +335,10 @@
         window.playMakerSheet = function() { let i=0; function p(){ if(i>=makerSheet.length)return; window.playSound(makerSheet[i]); i++; setTimeout(p, 500); } p(); };
         
         // ==========================================
-        // ★ 3: 지정곡 연습 (마디별 단계 시스템 적용)
+        // ★ 3: 지정곡 연습 (1음씩 단계 + 2~5단계 마디별 연습 적용)
         // ==========================================
         let pracOriginalMeasures = []; 
+        let pracFlatSong = [];
         let pracStage = 'all'; 
         let pracCurrentBlock = 0; 
         let pracCurrentNotes = []; 
@@ -346,6 +348,7 @@
             const k = document.getElementById('practice-song-select').value; 
             pracStage = document.getElementById('practice-stage-select').value;
             pracOriginalMeasures = songData[k] || songData['airplane'];
+            pracFlatSong = getFlatSong(k);
             pracCurrentBlock = 0; pracMode = false; 
             document.getElementById('practice-status').innerText = "옵션을 선택하고 시작 버튼을 누르세요.";
             window.renderPracticeSheet(true); 
@@ -353,29 +356,47 @@
 
         window.renderPracticeSheet = function(isPreview = false) {
             const cont = document.getElementById('practice-sheet'); cont.innerHTML = '';
-            pracCurrentNotes = []; let startM = 0; let endM = pracOriginalMeasures.length;
+            pracCurrentNotes = []; 
 
-            if (!isPreview && pracStage !== 'all') {
-                const chunk = parseInt(pracStage);
-                startM = pracCurrentBlock;
-                endM = Math.min(pracCurrentBlock + chunk, pracOriginalMeasures.length);
-            }
-
-            let globalNoteIdx = 0;
-            for (let m = startM; m < endM; m++) {
-                const measureNotes = pracOriginalMeasures[m];
-                measureNotes.forEach(n => {
+            // ★ 1단계: 1음씩 연습 모드
+            if (pracStage === 'note') {
+                const n = isPreview ? pracFlatSong[0] : pracFlatSong[pracCurrentBlock];
+                if (n) {
                     pracCurrentNotes.push(n);
                     const sp = document.createElement('span');
-                    sp.className = `note-badge ${n.toLowerCase()}`;
-                    sp.id = `prac-n-${globalNoteIdx}`;
+                    // 1음씩 모드일때는 음표를 더 크게 보여줌
+                    sp.className = `note-badge ${n.toLowerCase()} together-large-note`; 
+                    sp.id = `prac-n-0`;
                     sp.innerText = noteNames[n];
                     cont.appendChild(sp);
-                    globalNoteIdx++;
-                });
-                // 마디 사이 구분선 (마지막 마디 제외)
-                if (m < endM - 1) {
-                    const divider = document.createElement('div'); divider.className = 'measure-divider'; cont.appendChild(divider);
+                }
+            } 
+            // ★ 2~5단계: 마디(Measure) 단위 시스템
+            else {
+                let startM = 0; let endM = pracOriginalMeasures.length;
+
+                if (!isPreview && pracStage !== 'all') {
+                    const chunk = parseInt(pracStage); // 1, 2, 4 마디
+                    startM = pracCurrentBlock;
+                    endM = Math.min(pracCurrentBlock + chunk, pracOriginalMeasures.length);
+                }
+
+                let globalNoteIdx = 0;
+                for (let m = startM; m < endM; m++) {
+                    const measureNotes = pracOriginalMeasures[m];
+                    measureNotes.forEach(n => {
+                        pracCurrentNotes.push(n);
+                        const sp = document.createElement('span');
+                        sp.className = `note-badge ${n.toLowerCase()}`;
+                        sp.id = `prac-n-${globalNoteIdx}`;
+                        sp.innerText = noteNames[n];
+                        cont.appendChild(sp);
+                        globalNoteIdx++;
+                    });
+                    // 마디 구분선 삽입 (마지막 마디 제외)
+                    if (m < endM - 1) {
+                        const divider = document.createElement('div'); divider.className = 'measure-divider'; cont.appendChild(divider);
+                    }
                 }
             }
             if (pracMode && pracCurrentNotes.length > 0) document.getElementById(`prac-n-0`).classList.add('practice-active-note');
@@ -458,13 +479,23 @@
                 else { document.getElementById('game-status').innerText="틀렸어요. 다시 들어보세요."; document.getElementById(`bell-${note}`).classList.add('error-shake'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); }
             }
             else if(window.currentMode === 'maker') { makerSheet.push(note); const sp=document.createElement('span'); sp.className=`note-badge ${note.toLowerCase()}`; sp.innerText=noteNames[note]; document.getElementById('maker-sheet').appendChild(sp); }
+            
+            // ★ 지정곡 연습 클릭 로직 업데이트 (1음 단위 지원)
             else if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
                 if(note === pracCurrentNotes[pracIdx]) { 
                     const el = document.getElementById(`prac-n-${pracIdx}`); if(el) { el.classList.remove('practice-active-note'); el.classList.add('practice-completed-note'); }
                     pracIdx++; 
-                    if(pracIdx < pracCurrentNotes.length) { const nel = document.getElementById(`prac-n-${pracIdx}`); if(nel) nel.classList.add('practice-active-note'); } 
+                    if(pracIdx < pracCurrentNotes.length) { 
+                        const nel = document.getElementById(`prac-n-${pracIdx}`); if(nel) nel.classList.add('practice-active-note'); 
+                    } 
                     else {
-                        if (pracStage !== 'all') {
+                        // 현재 표시된 블록을 다 친 경우 처리
+                        if (pracStage === 'note') {
+                            pracCurrentBlock++;
+                            if (pracCurrentBlock < pracFlatSong.length) {
+                                document.getElementById('practice-status').innerText = "참 잘했어요! 다음 음 🎵"; pracMode = false; setTimeout(() => { window.startPracticeInteractive(); }, 400);
+                            } else { document.getElementById('practice-status').innerText = "🎉 곡 전체를 마스터했어요! 대단해요! 🎉"; pracMode = false; pracCurrentBlock = 0; }
+                        } else if (pracStage !== 'all') {
                             pracCurrentBlock += parseInt(pracStage);
                             if (pracCurrentBlock < pracOriginalMeasures.length) {
                                 document.getElementById('practice-status').innerText = "참 잘했어요! 잠시 후 다음 단계로 넘어갑니다 🚀"; pracMode = false; setTimeout(() => { window.startPracticeInteractive(); }, 1500);
@@ -527,7 +558,7 @@
                     const sc = st.status==='allowed'?'#2ECC71':'#E74C3C'; const tx = st.status==='allowed'?'✅ 허용':'⏳ 대기';
                     const img = st.photo?`<img src="${st.photo}" class="preview-img" style="border-color:${sc}">`:`<div class="preview-img" style="display:flex;align-items:center;justify-content:center;border-color:${sc};font-size:2rem;">👤</div>`;
                     const hm = st.hintMode||'none';
-                    const hintSel = `<select onchange="window.updateHintMode(${i}, this.value)" style="margin-top:10px;width:100%;padding:5px;"><option value="none" ${hm==='none'?'selected':''}>💡 힌트 없음</option><option value="arrow" ${hm==='arrow'?'selected':''}>💡 화살표</option><option value="avatar" ${hm==='avatar'?'selected':''}>💡 정답위 사진</option></select>`;
+                    const hintSel = `<select onchange="window.updateHintMode(${i}, this.value)" style="margin-top:10px;width:100%;padding:5px;"><option value="none" ${hm==='none'?'selected':''}>💡 힌트 없음</option><option value="arrow" ${hm==='arrow'?'selected':''}>💡 실시간 화살표</option><option value="avatar" ${hm==='avatar'?'selected':''}>💡 정답위 내 사진</option></select>`;
                     html+=`<div class="profile-card" style="border-color:${sc}"><h4 style="margin:0 0 5px 0;">${i}번: ${st.name}</h4>${img}<div class="status-badge" style="color:${sc};">${tx}</div><div style="display:flex;gap:5px;width:100%;">${st.status==='waiting'?`<button onclick="window.setStudentStatus(${i}, 'allowed')" class="action-btn" style="flex:2;margin:0;">승인</button>`:`<button onclick="window.setStudentStatus(${i}, 'waiting')" class="action-btn" style="flex:2;background:#f39c12;margin:0;">대기</button>`}<button onclick="window.kickStudent(${i})" class="action-btn" style="flex:1;background:#e74c3c;margin:0;">삭제</button></div>${hintSel}</div>`;
                 } else { html+=`<div class="profile-card" style="opacity:0.5;border-style:dashed;"><h4>${i}번 자리</h4><div class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:2rem;">🈳</div><p>비어있음</p></div>`; }
             } grid.innerHTML=html;
@@ -581,14 +612,14 @@
 
                     const cNote = fs[currentMultiState.currentIndex]; const seq = currentMultiState.roleSequence || []; const tRole = seq[currentMultiState.currentIndex] || 1;
                     
-                    if (window.myRole === 0) { 
+                    if (window.myRole === 0) { // 선생님
                         stx.innerText=`진행: ${currentMultiState.currentIndex+1} / ${fs.length}`; stx.style.color="#333";
-                        const nInfo = window.currentStudents[tRole]; const nm = nInfo?nInfo.name:`${tRole}번`; const pho = nInfo&&nInfo.photo?`<img src="${nInfo.photo}" class="preview-img" style="border:4px solid #e74c3c; width:50px; height:50px;">`:`<div class="preview-img" style="border:4px solid #e74c3c; width:50px; height:50px; display:flex; align-items:center; justify-content:center; background:#eee; font-size:1.5rem;">👤</div>`;
+                        const nInfo = window.currentStudents[tRole]; const nm = nInfo?nInfo.name:`${tRole}번`; const pho = nInfo&&nInfo.photo?`<img src="${nInfo.photo}" class="preview-img" style="border:4px solid #e74c3c;width:50px;height:50px;">`:`<div class="preview-img" style="border:4px solid #e74c3c;width:50px;height:50px;display:flex;align-items:center;justify-content:center;background:#eee;font-size:1.5rem;">👤</div>`;
                         tel.innerHTML = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">${pho}<span style="font-size:1.2rem;color:#e74c3c;font-weight:bold;background:#fff3e0;padding:5px 15px;border-radius:20px;">[ ${nm} ] 차례!</span></div><span class="note-badge ${cNote.toLowerCase()} together-large-note" id="teacher-target-note">${noteNames[cNote]}</span>`;
                         document.querySelectorAll('.bell').forEach(b=>{b.classList.remove('multi-bell-hidden','practice-active-note'); b.innerHTML=`<span>${noteNames[b.id.split('-')[1]]}</span>`; if(b.id===`bell-${cNote}`) { b.classList.add('practice-active-note'); setTimeout(()=>{window.drawArrow(document.getElementById('teacher-target-note'), b);}, 50); } });
                     } else if (!(window.currentStudents[window.myRole] && window.currentStudents[window.myRole].status==='allowed')) {
                         stx.innerText="관전 모드"; tel.innerHTML="👀"; document.querySelectorAll('.bell').forEach(b=>b.classList.add('multi-bell-hidden'));
-                    } else if (window.myRole === tRole) { 
+                    } else if (window.myRole === tRole) { // 내 차례
                         stx.innerText="내 차례입니다! 연주하세요!"; stx.style.color="#2ECC71";
                         tel.innerHTML = `<span class="note-badge ${cNote.toLowerCase()} together-large-note" id="student-target-note">${noteNames[cNote]}</span>`;
                         
@@ -606,7 +637,7 @@
                                 }
                             } else { b.classList.add('multi-bell-hidden'); }
                         });
-                    } else { 
+                    } else { // 남의 차례
                         stx.innerText="쉿! 대기하세요."; stx.style.color="#95a5a6"; tel.innerHTML=`<span style="font-size:4rem;">🤫</span>`;
                         document.querySelectorAll('.bell').forEach(b=>{b.classList.add('multi-bell-hidden'); b.classList.remove('practice-active-note'); });
                     }
