@@ -18,7 +18,7 @@
         .btn-large:active { transform: scale(0.95); }
         
         /* 메인 앱 레이아웃 (100인치 꽉 차게) */
-        #main-app { display: flex; flex-direction: column; height: 100vh; width: 100%; max-width: 1600px; margin: 0 auto; padding: 1vh 1vw; }
+        #main-app { display: flex; flex-direction: column; height: 100vh; width: 100%; max-width: 1800px; margin: 0 auto; padding: 1vh 1vw; }
         h1 { margin: 1vh 0; font-size: 2.2rem; text-align: center; color: var(--primary-color); flex-shrink: 0; }
         
         /* 탭 메뉴 */
@@ -26,8 +26,8 @@
         .tab-btn { padding: 12px 25px; font-size: 1.3rem; font-weight: bold; border: 3px solid var(--primary-color); background: white; color: var(--primary-color); border-radius: 30px; cursor: pointer; transition: 0.2s; }
         .tab-btn.active { background: var(--primary-color); color: white; }
         
-        /* 중앙 컨트롤 패널 (남는 높이를 모두 차지하되, 밖으로 넘치지 않음) */
-        .control-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; padding: 15px 30px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; text-align: center; margin-bottom: 1.5vh; }
+        /* 중앙 컨트롤 패널 (건반이 커진 만큼 알아서 줄어듦) */
+        .control-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; padding: 15px 30px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; text-align: center; margin-bottom: 1vh; }
         .hidden { display: none !important; }
         .action-btn { padding: 12px 20px; margin: 5px; font-size: 1.2rem; background-color: #4CAF50; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
         .score-text { font-size: 1.6rem; font-weight: bold; margin-top: 5px; min-height: 35px; }
@@ -36,7 +36,7 @@
         .profile-card { background: #f9f9f9; padding: 15px; border-radius: 15px; border: 3px solid #eee; display: flex; flex-direction: column; align-items: center; }
         .preview-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 4px solid #ddd; margin: 5px auto; display: block; }
         
-        /* 음표/악보 영역 (내부 스크롤 허용, 밖으로 삐져나가지 않음) */
+        /* 음표/악보 영역 */
         .sheet-display { flex: 1; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-content: flex-start; margin-top: 10px; padding: 20px; background: #f0f0f0; border-radius: 15px; width: 100%; }
         .note-badge { display: inline-block; width: 60px; height: 60px; line-height: 60px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); transition: all 0.2s ease-out; }
         .together-large-note { width: 90px !important; height: 90px !important; line-height: 90px !important; font-size: 34px !important; margin: 8px !important; border-width: 5px !important; }
@@ -44,11 +44,11 @@
         .practice-completed-note { opacity: 0.3; transform: scale(0.9); }
         .measure-divider { width: 4px; height: 50px; background-color: #999; border-radius: 2px; margin: 5px 8px; }
 
-        /* ★ 하단 건반 영역 (높이를 30%로 큼직하게 고정) */
-        .bell-area-container { flex: 0 0 28vh; width: 100%; padding-bottom: 2vh; }
-        .bell-container { display: flex; justify-content: center; gap: 1vw; height: 100%; align-items: flex-end; } 
-        .bell { height: 100%; width: 10vw; max-width: 140px; border-radius: 60px 60px 15px 15px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; font-weight: bold; font-size: 2.2rem; padding-bottom: 20px; cursor: pointer; box-shadow: 0 10px 15px rgba(0,0,0,0.25); border: 5px solid transparent; transition: transform 0.1s, filter 0.1s; }
-        .bell:active, .bell.playing { transform: translateY(8px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); filter: brightness(1.2); }
+        /* ★ 하단 건반 영역 (높이를 38%로 아주 큼직하게 고정, 악보창은 줄어듦) */
+        .bell-area-container { flex: 0 0 38vh; width: 100%; padding-bottom: 2vh; }
+        .bell-container { display: flex; justify-content: center; gap: 1.2vw; height: 100%; align-items: flex-end; } 
+        .bell { height: 100%; width: 11vw; max-width: 160px; border-radius: 70px 70px 15px 15px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; font-weight: bold; font-size: 2.8rem; padding-bottom: 20px; cursor: pointer; box-shadow: 0 12px 18px rgba(0,0,0,0.25); border: 5px solid transparent; transition: transform 0.1s, filter 0.1s; }
+        .bell:active, .bell.playing { transform: translateY(10px); box-shadow: 0 4px 6px rgba(0,0,0,0.2); filter: brightness(1.2); }
         .multi-bell-hidden { visibility: hidden !important; pointer-events: none !important; position: absolute; } 
         .error-shake { border-color: #E74C3C !important; transform: translateX(8px); }
         
@@ -69,15 +69,16 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         
+        /* ★ 팝업 애니메이션 (자유 연주 피드백용) */
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        .pop-animation { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
         #camera-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         #camera-video { width: 100%; max-width: 600px; border-radius: 20px; border: 4px solid #fff; background: black; transform: scaleX(-1); }
 
         #hint-svg-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none; }
         @keyframes dash { to { stroke-dashoffset: -20; } }
         .dash-anim { stroke-dasharray: 10, 10; animation: dash 0.5s linear infinite; }
-        
-        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
-        .pop-animation { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     </style>
 </head>
 <body>
@@ -119,7 +120,6 @@
         <div id="blocker-name" style="font-size: 2.5rem; font-weight: bold; color: #3498db; margin-top: 30px;"></div>
     </div>
 
-    <!-- 카메라 모달 -->
     <div id="camera-modal" class="modal-overlay hidden">
         <div class="modal-box" style="background: rgba(0,0,0,0.8); padding:40px;">
             <video id="camera-video" autoplay playsinline style="width:100%; border-radius:20px; transform: scaleX(-1);"></video>
@@ -156,7 +156,7 @@
             <div class="profile-container" id="teacher-dashboard-grid"></div>
         </div>
 
-        <!-- ★ 2. 자유 연주 (치고 있는 음표 표시 반영) -->
+        <!-- ★ 2. 자유 연주 (치고 있는 음표 팝업) -->
         <div id="panel-free" class="control-panel hidden">
             <h3 style="margin:10px 0; font-size:2rem;">자유 연주 모드</h3>
             <p style="font-size: 1.4rem; color: #555;">아래 건반을 마음껏 연주해 보세요!</p>
@@ -191,7 +191,7 @@
                 <h3 style="margin:0; color:#3498DB; font-size:2rem;">지정곡 연습</h3>
                 <div style="display:flex; gap:10px;">
                     <select id="practice-song-select" onchange="window.loadPracticeSong()" style="padding:10px; font-size:1.2rem; border-radius:8px;">
-                        <option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option>
+                        <option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option><option value="star">작은 별</option>
                     </select>
                     <select id="practice-stage-select" onchange="window.loadPracticeSong()" style="padding:10px; font-size:1.2rem; border-radius:8px; border:2px solid #3498DB;">
                         <option value="note">1단계: 1음씩 연습</option><option value="1">2단계: 1마디씩 연습</option><option value="2">3단계: 2마디씩 연습</option><option value="4">4단계: 4마디씩</option><option value="all" selected>5단계: 전체 곡</option>
@@ -211,7 +211,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 10px;">
                 <h3 style="margin:0; color:#e67e22; font-size:2rem;">🤝 2인 함께 연주</h3>
                 <div>
-                    <select id="together-song-select" style="padding:10px; font-size:1.2rem; border-radius:8px; margin-right:10px;"><option value="airplane">비행기</option><option value="butterfly">나비야</option></select>
+                    <select id="together-song-select" style="padding:10px; font-size:1.2rem; border-radius:8px; margin-right:10px;"><option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option></select>
                     <button class="action-btn" onclick="window.openTogetherSettings()" style="background:#e67e22;">⚙️ 설정</button>
                     <button class="action-btn" onclick="window.applyTogetherSettings()" style="background:#3498DB;">▶ 연주 시작</button>
                 </div>
@@ -336,7 +336,7 @@
             document.getElementById(`panel-${mode}`).classList.remove('hidden');
             document.querySelectorAll('.bell').forEach(b => { b.classList.remove('multi-bell-hidden', 'practice-active-note'); b.innerHTML = `<span>${noteNames[b.id.split('-')[1]]}</span>`; });
             
-            // 탭 전환 시 자유 연주 피드백 창 초기화
+            // 탭 이동 시 자유 연주 피드백 화면 비우기
             if (mode !== 'free') document.getElementById('free-play-display').innerHTML = '';
 
             if (window.myRole > 0 && mode !== 'multi') { document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); return; }
@@ -349,9 +349,8 @@
         };
 
         // ==========================================
-        // 자유 연주, 소리 맞추기, 악보 만들기 로직
+        // 1 & 2: 소리 맞추기 게임 & 악보 만들기
         // ==========================================
-        
         let gameTarget = '';
         window.startGameMode = function() { gameTarget = notes[Math.floor(Math.random()*notes.length)]; window.playSound(gameTarget, false); document.getElementById('game-status').innerText="방금 들은 소리의 건반을 누르세요!"; document.getElementById('btn-replay-game').style.display='inline-block'; };
         window.replayGameNote = function() { if(gameTarget) window.playSound(gameTarget, false); };
@@ -361,7 +360,7 @@
         window.playMakerSheet = function() { let i=0; function p(){ if(i>=makerSheet.length)return; window.playSound(makerSheet[i]); i++; setTimeout(p, 500); } p(); };
         
         // ==========================================
-        // 지정곡 연습 (마디별 단계 시스템 적용)
+        // 3: 지정곡 연습 (마디별 단계 시스템 적용)
         // ==========================================
         let pracOriginalMeasures = []; let pracFlatSong = []; let pracStage = 'all'; let pracCurrentBlock = 0; let pracCurrentNotes = []; let pracIdx = 0; let pracMode = false;
 
@@ -417,7 +416,7 @@
         };
         
         // ==========================================
-        // 2인 함께 연주 (설정창 & 가시성)
+        // 4: 🤝 2인 함께 연주 (단일 기기 교대)
         // ==========================================
         let togSong = []; let togIdx = 0; let togMode = false; let togAssign = []; let togChunk = 'all';
 
@@ -470,12 +469,12 @@
         };
 
         // ==========================================
-        // 전체 공통 터치(클릭) 이벤트 핸들러
+        // ★ 전체 공통 터치(클릭) 이벤트 핸들러
         // ==========================================
         window.handleBellClick = function(note) {
             window.playSound(note);
 
-            // ★ 1. 자유 연주 피드백
+            // ★ 자유 연주 시각화 피드백 적용
             if(window.currentMode === 'free') {
                 const display = document.getElementById('free-play-display');
                 if (display) {
@@ -483,7 +482,10 @@
                     sp.className = `note-badge ${note.toLowerCase()} together-large-note pop-animation`;
                     sp.innerText = noteNames[note];
                     display.appendChild(sp);
-                    if (display.childNodes.length > 7) { display.removeChild(display.firstChild); }
+                    // 최근 8개까지만 남기고 삭제 (화면 안넘치게)
+                    while (display.children.length > 8) {
+                        display.removeChild(display.firstElementChild);
+                    }
                 }
             }
             else if(window.currentMode === 'game' && gameTarget) {
