@@ -68,8 +68,6 @@
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        
-        /* 팝업 애니메이션 */
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
         .pop-animation { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
@@ -120,7 +118,6 @@
         <div id="blocker-name" style="font-size: 2.5rem; font-weight: bold; color: #3498db; margin-top: 30px;"></div>
     </div>
 
-    <!-- 카메라 모달 -->
     <div id="camera-modal" class="modal-overlay hidden">
         <div class="modal-box" style="background: rgba(0,0,0,0.8); padding:40px;">
             <video id="camera-video" autoplay playsinline style="width:100%; border-radius:20px; transform: scaleX(-1);"></video>
@@ -174,13 +171,13 @@
             <div id="game-status" class="score-text" style="color:#8E44AD; font-size:1.8rem; margin-top:20px;">시작 버튼을 눌러주세요.</div>
         </div>
 
-        <!-- ★ 4. 악보 만들기 (설정창으로 버튼들 뺌) -->
+        <!-- ★ 4. 악보 만들기 (설정창 버튼으로 분리 완료) -->
         <div id="panel-maker" class="control-panel hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom: 15px; margin-bottom: 10px;">
                 <h3 style="margin:0; color:#9b59b6; font-size:2rem;">악보 만들기</h3>
-                <button class="action-btn" onclick="window.openMakerSettings()" style="background:#9b59b6; font-size:1.2rem;">⚙️ 설정</button>
+                <button class="action-btn" onclick="window.openMakerSettings()" style="background:#9b59b6; margin:0; font-size:1.3rem;">⚙️ 옵션</button>
             </div>
-            <div id="maker-sheet" class="sheet-display" style="flex:1; align-items:flex-start; align-content:flex-start;"></div>
+            <div id="maker-sheet" class="sheet-display" style="flex:1; margin:0; align-items:flex-start; align-content:flex-start;"></div>
         </div>
 
         <!-- 5. 지정곡 연습 -->
@@ -241,15 +238,16 @@
             <div class="bell-container" id="bells"></div>
         </div>
     </div>
+
     <!-- ★ 악보 만들기 설정 모달 -->
     <div id="maker-settings-modal" class="modal-overlay hidden">
         <div class="modal-box" style="border: 4px solid #9b59b6; max-width: 500px;">
-            <h3 style="color: #9b59b6; margin-top: 0; margin-bottom: 25px; font-size: 2rem;">🎵 악보 만들기 설정</h3>
-            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
-                <button class="action-btn" onclick="window.playMakerSheet()" style="background:#9b59b6; padding: 15px 30px; font-size: 1.4rem;">▶ 들어보기</button>
-                <button class="action-btn" onclick="window.clearMakerSheet()" style="background:#E74C3C; padding: 15px 30px; font-size: 1.4rem;">🗑️ 비우기</button>
+            <h3 style="color: #9b59b6; margin-top: 0; margin-bottom: 25px; font-size: 2rem;">🎵 악보 옵션</h3>
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
+                <button class="action-btn" onclick="window.playMakerSheet()" style="background:#9b59b6; padding: 15px 30px; font-size: 1.5rem;">▶ 들어보기</button>
+                <button class="action-btn" onclick="window.clearMakerSheet()" style="background:#E74C3C; padding: 15px 30px; font-size: 1.5rem;">🗑️ 비우기</button>
             </div>
-            <div style="margin-top: 25px;">
+            <div style="margin-top: 30px;">
                 <button class="action-btn" onclick="window.closeMakerSettings()" style="background-color: #95a5a6; padding: 10px 40px; font-size: 1.3rem;">닫기</button>
             </div>
         </div>
@@ -348,7 +346,6 @@
             document.getElementById(`panel-${mode}`).classList.remove('hidden');
             document.querySelectorAll('.bell').forEach(b => { b.classList.remove('multi-bell-hidden', 'practice-active-note'); b.innerHTML = `<span>${noteNames[b.id.split('-')[1]]}</span>`; });
             
-            // 탭 이동 시 자유 연주 피드백 화면 초기화
             if (mode !== 'free') document.getElementById('free-play-display').innerHTML = '';
 
             if (window.myRole > 0 && mode !== 'multi') { document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); return; }
@@ -367,6 +364,7 @@
         window.startGameMode = function() { gameTarget = notes[Math.floor(Math.random()*notes.length)]; window.playSound(gameTarget, false); document.getElementById('game-status').innerText="방금 들은 소리의 건반을 누르세요!"; document.getElementById('btn-replay-game').style.display='inline-block'; };
         window.replayGameNote = function() { if(gameTarget) window.playSound(gameTarget, false); };
         
+        // ★ 악보 만들기 설정 모달 로직
         let makerSheet = [];
         window.openMakerSettings = function() { document.getElementById('maker-settings-modal').classList.remove('hidden'); };
         window.closeMakerSettings = function() { document.getElementById('maker-settings-modal').classList.add('hidden'); };
@@ -430,7 +428,7 @@
         };
         
         // ==========================================
-        // 4: 🤝 2인 함께 연주 (단일 기기 교대)
+        // 4: 🤝 2인 함께 연주
         // ==========================================
         let togSong = []; let togIdx = 0; let togMode = false; let togAssign = []; let togChunk = 'all';
 
@@ -495,7 +493,6 @@
                     sp.className = `note-badge ${note.toLowerCase()} together-large-note pop-animation`;
                     sp.innerText = noteNames[note];
                     display.appendChild(sp);
-                    // 최근 8개까지만 남기고 자연스럽게 밀려남
                     while (display.children.length > 8) { display.removeChild(display.firstElementChild); }
                 }
             }
@@ -505,7 +502,7 @@
             }
             else if(window.currentMode === 'maker') { 
                 makerSheet.push(note); 
-                const sp=document.createElement('span'); sp.className=`note-badge ${note.toLowerCase()}`; sp.innerText=noteNames[note]; document.getElementById('maker-sheet').appendChild(sp); 
+                const sp=document.createElement('span'); sp.className=`note-badge ${note.toLowerCase()} pop-animation`; sp.innerText=noteNames[note]; document.getElementById('maker-sheet').appendChild(sp); 
             }
             else if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
                 if(note === pracCurrentNotes[pracIdx]) { 
@@ -549,7 +546,7 @@
         };
 
         // ==========================================
-        // 파이어베이스 및 로비 기능 
+        // 파이어베이스 및 로비 기능
         // ==========================================
         window.enterAsTeacher = function() { 
             const tRef = window.dbRef(window.db, 'classSession/teacherActive');
