@@ -96,11 +96,10 @@
             <button class="btn-large" style="background: #2ecc71;" onclick="window.enterAsFreeUser()">🎵 자유 이용자 입장</button>
         </div>
 
-        <!-- ★ 학생 입장 폼 (앨범 선택 버튼 추가) -->
         <div class="entry-box hidden" id="entry-student-form">
             <h2 style="color: #3498db; margin-top: 0; font-size:2.5rem;">🧑‍🎓 학생 입장</h2>
             <select id="entry-slot-select" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #3498db; font-weight:bold;"></select>
-            <input type="text" id="entry-name" placeholder="이름 입력 (또는 앨범 사진 선택 시 자동입력)" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #ccc;">
+            <input type="text" id="entry-name" placeholder="이름 입력 (또는 앨범 선택 시 자동입력)" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #ccc;">
             
             <div style="margin-bottom: 20px; text-align:center;">
                 <img id="entry-photo-preview" class="preview-img hidden" src="" style="width:100px; height:100px; border-color:#3498db; margin: 0 auto 10px auto;">
@@ -143,7 +142,6 @@
 
         <div class="tabs no-print" id="main-tabs">
             <button class="tab-btn active" onclick="window.setMode('dashboard')" id="tab-dashboard" style="border-color:#9b59b6;">👨‍👩‍👧‍👦 접속 관리</button>
-            <!-- ★ 자유 이용자용 연주자 등록 버튼 -->
             <button class="tab-btn hidden" onclick="window.openFreeUserRegistration()" id="tab-free-reg" style="background-color:#27ae60; color:white; border-color:#27ae60;">👤 연주자 등록</button>
             <button class="tab-btn" onclick="window.setMode('free')">자유 연주</button>
             <button class="tab-btn" onclick="window.setMode('game')">소리 맞추기</button>
@@ -264,7 +262,6 @@
                 <div id="free-user-photo-placeholder" class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:3rem; border-color:#2ecc71; width:100px; height:100px;">👤</div>
                 <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
                     <button class="action-btn" onclick="window.openCamera('free')" style="background: #2ecc71; padding:12px 20px;">📷 카메라</button>
-                    <!-- ★ 앨범 선택 버튼이 여기에 있습니다. -->
                     <label for="free-user-file" class="action-btn" style="background: #16a085; cursor: pointer; padding:12px 20px; display:inline-block; margin:5px;">📁 앨범 선택</label>
                     <input type="file" id="free-user-file" accept="image/*" style="display:none;" onchange="window.handleFreeUserFile(event)">
                 </div>
@@ -367,6 +364,7 @@
                     <option value="2">2개씩 보이고 교대</option>
                     <option value="3">3개씩 보이고 교대</option>
                     <option value="4">4개씩 보이고 교대</option>
+                    <option value="line">한 줄씩(마디) 보이고 교대</option>
                     <option value="all" selected>전체 악보 보며 교대</option>
                 </select>
             </div>
@@ -403,11 +401,8 @@
         function getFlatSong(key) { var arr = songData[key] || songData['airplane']; return arr.reduce(function(acc, val) { return acc.concat(val); }, []); }
 
         window.currentMode = 'free'; window.myRole = -1; window.studentPhotoBase64 = ''; window.currentStudents = {}; window.currentApprovedCount = 1;
-        
-        // ★ 전역 상태 (단일 기기용 선택된 연주자 번호)
         window.singleActiveSlot = 1; 
         
-        // ★ 자유 이용자 6개 슬롯 뼈대 세팅
         window.localStudents = {
             1: { name: '1번 연주자', photo: '', hintMode: 'none', color: '#e74c3c' },
             2: { name: '2번 연주자', photo: '', hintMode: 'none', color: '#3498db' },
@@ -473,7 +468,7 @@
         };
 
         // ==========================================
-        // ★ 자유 이용자 로컬 데이터 처리 및 사진 업로드
+        // 자유 이용자 로컬 데이터 처리 (사진 업로드 복구됨)
         // ==========================================
         window.openFreeUserRegistration = function() { 
             document.getElementById('free-user-reg-modal').classList.remove('hidden'); 
@@ -481,7 +476,6 @@
         };
         window.closeFreeUserReg = function() { document.getElementById('free-user-reg-modal').classList.add('hidden'); };
         
-        // ★ 앨범에서 사진 선택 시 실행되는 함수
         window.handleFreeUserFile = function(event) {
             const file = event.target.files[0];
             if (file) {
@@ -531,7 +525,7 @@
         };
 
         // ==========================================
-        // ★ 공통 연주자 1명 6슬롯 선택 (설정 모달)
+        // 공통 연주자 선택 창 생성
         // ==========================================
         window.populatePlayerSelect = function(selectId) {
             const sel = document.getElementById(selectId);
@@ -539,7 +533,7 @@
             for(let i=1; i<=6; i++) {
                 const st = window.currentStudents[i];
                 let nm = `${i}번 연주자`;
-                if(st && st.name) nm = `${i}번: ${st.name}`;
+                if(st && st.name && !st.name.includes('번 연주자')) nm = `${i}번: ${st.name}`;
                 sel.add(new Option(nm, i));
             }
             sel.value = window.singleActiveSlot || 1;
@@ -553,7 +547,6 @@
             if(mode==='game') title = '🎮 게임 설정';
             if(mode==='maker') title = '🎵 악보 만들기 설정';
             document.getElementById('single-settings-title').innerText = title;
-            
             window.populatePlayerSelect('single-player-select');
             
             if(mode==='maker') document.getElementById('maker-extra-controls').classList.remove('hidden');
@@ -622,6 +615,7 @@
             pracOriginalMeasures = songData[k] || songData['airplane'];
             pracFlatSong = getFlatSong(k);
             pracCurrentBlock = 0; pracMode = false; window.hideArrow();
+            document.getElementById('practice-status').innerText = "설정 완료! [▶ 자동 연주]나 [🎯 따라 치기]를 누르세요.";
         };
 
         window.renderPracticeSheet = function(isPreview = false) {
@@ -704,20 +698,45 @@
             let p2Profile = window.currentStudents[p2Id] || { name: '학생 2', photo: '', hintMode: 'none' };
             p1Profile.color = '#3498db'; p2Profile.color = '#e74c3c';
 
-            togSong = getFlatSong(song); togIdx = 0; togMode = true; togAssign = []; window.hideArrow();
-            let chunkNum = togChunk === 'all' ? 1 : parseInt(togChunk); let currentPlayer = 1; let count = 0;
-            for(let i=0; i<togSong.length; i++) { togAssign.push(currentPlayer === 1 ? p1Profile : p2Profile); count++; if(count >= chunkNum) { currentPlayer = currentPlayer === 1 ? 2 : 1; count = 0; } }
+            togSong = getFlatSong(song); togIdx = 0; togMode = true; togAssign = []; window.hideArrow(); window.togLineMap = [];
+            
+            if (togChunk === 'line') {
+                const originalMeasures = songData[song] || songData['airplane'];
+                let currentPlayer = 1; let globalIdx = 0;
+                originalMeasures.forEach((measure, mIdx) => {
+                    measure.forEach(n => {
+                        togAssign.push(currentPlayer === 1 ? p1Profile : p2Profile);
+                        window.togLineMap[globalIdx++] = mIdx;
+                    });
+                    currentPlayer = currentPlayer === 1 ? 2 : 1; 
+                });
+            } else {
+                let chunkNum = togChunk === 'all' ? 1 : parseInt(togChunk); let currentPlayer = 1; let count = 0;
+                for(let i=0; i<togSong.length; i++) { 
+                    togAssign.push(currentPlayer === 1 ? p1Profile : p2Profile); 
+                    count++; 
+                    if(count >= chunkNum) { currentPlayer = currentPlayer === 1 ? 2 : 1; count = 0; } 
+                }
+            }
             document.getElementById('together-status').innerText = "연주 시작! 내 사진이 있는 음표를 치세요!";
             window.renderTogetherSheet(); 
         };
 
         window.renderTogetherSheet = function() {
             const cont = document.getElementById('together-sheet'); cont.innerHTML = '';
-            let chunkNum = togChunk === 'all' ? togSong.length : parseInt(togChunk);
-
+            
             togSong.forEach((n, i) => {
                 const profile = togAssign[i]; const wrap = document.createElement('div'); wrap.className = 'note-with-avatar'; wrap.id = `tog-wrap-${i}`;
-                if (togChunk !== 'all') { const blockIndex = Math.floor(i / chunkNum); const currentBlockIndex = Math.floor(togIdx / chunkNum); if (blockIndex !== currentBlockIndex) wrap.style.display = 'none'; }
+                
+                if (togChunk === 'line') {
+                    const currentLine = (togIdx < togSong.length) ? window.togLineMap[togIdx] : window.togLineMap[togSong.length - 1];
+                    if (window.togLineMap[i] !== currentLine) wrap.style.display = 'none';
+                } else if (togChunk !== 'all') { 
+                    let chunkNum = parseInt(togChunk);
+                    const blockIndex = Math.floor(i / chunkNum); const currentBlockIndex = Math.floor(togIdx / chunkNum); 
+                    if (blockIndex !== currentBlockIndex) wrap.style.display = 'none'; 
+                }
+                
                 const imgHtml = profile.photo ? `<img src="${profile.photo}" class="tiny-avatar" id="tog-ava-${i}" style="border-color:${profile.color||'#ccc'};">` : `<div class="tiny-avatar" id="tog-ava-${i}" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:2rem;line-height:1;border-color:${profile.color||'#ccc'};">👤</div>`;
                 wrap.innerHTML = `${imgHtml}<span class="note-badge ${n.toLowerCase()} together-large-note" id="tog-n-${i}">${noteNames[n]}</span>`;
                 cont.appendChild(wrap);
@@ -729,7 +748,9 @@
             }
         };
 
+        // ==========================================
         // ★ 로컬 힌트 표시 통합 함수
+        // ==========================================
         window.updateLocalHint = function() {
             if (window.currentMode === 'game' && gameTarget) {
                 const myInfo = window.currentStudents[window.singleActiveSlot] || {hintMode:'none'};
@@ -783,7 +804,7 @@
         };
 
         // ==========================================
-        // ★ 전체 공통 터치(클릭) 및 오답 음소거 처리 로직
+        // ★ 전체 공통 터치(클릭) 및 오답 음소거 처리
         // ==========================================
         window.handleBellClick = function(note) {
             let shouldPlaySound = true;
@@ -795,13 +816,9 @@
                 if(note !== togSong[togIdx]) shouldPlaySound = false;
             }
             else if (window.currentMode === 'multi' && currentMultiState && currentMultiState.isPlaying && window.myRole > 0) {
-                const fs = getFlatSong(currentMultiState.song); 
-                const cNote = fs[currentMultiState.currentIndex];
-                const sSeq = currentMultiState.roleSequence || []; 
-                const tRole = sSeq[currentMultiState.currentIndex];
-                if (window.myRole === tRole && note !== cNote) {
-                    shouldPlaySound = false;
-                }
+                const fs = getFlatSong(currentMultiState.song); const cNote = fs[currentMultiState.currentIndex];
+                const sSeq = currentMultiState.roleSequence || []; const tRole = sSeq[currentMultiState.currentIndex];
+                if (window.myRole === tRole && note !== cNote) { shouldPlaySound = false; }
             }
 
             if (shouldPlaySound) window.playSound(note);
@@ -854,8 +871,11 @@
                     document.getElementById(`tog-n-${togIdx}`).classList.remove('practice-active-note'); document.getElementById(`tog-ava-${togIdx}`).classList.remove('active-tiny-avatar'); document.getElementById(`tog-wrap-${togIdx}`).classList.add('practice-completed-note');
                     togIdx++;
                     if(togIdx < togSong.length) { 
-                        let chunkNum = togChunk === 'all' ? togSong.length : parseInt(togChunk); 
-                        if (togChunk !== 'all' && togIdx % chunkNum === 0) { window.renderTogetherSheet(); } 
+                        let needRender = false;
+                        if (togChunk === 'line') { if (window.togLineMap[togIdx] !== window.togLineMap[togIdx - 1]) needRender = true; } 
+                        else if (togChunk !== 'all') { let chunkNum = parseInt(togChunk); if (togIdx % chunkNum === 0) needRender = true; }
+
+                        if (needRender) { window.renderTogetherSheet(); } 
                         else { document.getElementById(`tog-n-${togIdx}`).classList.add('practice-active-note'); document.getElementById(`tog-ava-${togIdx}`).classList.add('active-tiny-avatar'); window.updateLocalHint(); } 
                     } 
                     else { document.querySelectorAll('.bell').forEach(b => { b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`; }); togMode = false; document.getElementById('together-status').innerText = "🎉 멋진 협동 연주였어요! 🎉"; }
