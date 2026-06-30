@@ -98,13 +98,9 @@
 
         <div class="entry-box hidden" id="entry-student-form">
             <h2 style="color: #3498db; margin-top: 0; font-size:2.5rem;">🧑‍🎓 학생 입장</h2>
-            
-            <!-- 선점된 자리는 보이지 않게 처리 -->
             <select id="entry-slot-select" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 10px; border-radius:10px; border: 2px solid #3498db; font-weight:bold;"></select>
             <div id="empty-slot-indicator" style="margin-bottom: 15px; font-size: 1.1rem; color: #e74c3c; font-weight: bold;"></div>
-            
             <input type="text" id="entry-name" placeholder="이름 입력 (또는 앨범 선택 시 자동입력)" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #ccc;">
-            
             <div style="margin-bottom: 20px; text-align:center;">
                 <img id="entry-photo-preview" class="preview-img hidden" src="" style="width:100px; height:100px; border-color:#3498db; margin: 0 auto 10px auto;">
                 <div id="entry-photo-placeholder" class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:3rem; border-color:#3498db; width:100px; height:100px; margin: 0 auto 10px auto;">👤</div>
@@ -114,7 +110,6 @@
                     <input type="file" id="entry-file-upload" accept="image/*" style="display:none;" onchange="window.handleEntryFileUpload(event)">
                 </div>
             </div>
-
             <div style="display: flex; gap: 10px;">
                 <button class="btn-large" style="background: #3498db; flex: 2; margin:0;" onclick="window.joinAsStudent()">🚀 입장하기</button>
                 <button class="btn-large" style="background: #95a5a6; flex: 1; margin:0;" onclick="window.backToEntrySelection()">취소</button>
@@ -196,6 +191,8 @@
                 <h3 style="margin:0; color:#9b59b6; font-size:2rem;">악보 만들기</h3>
                 <button class="action-btn" onclick="window.openMakerSettings()" style="background:#9b59b6; margin:0; font-size:1.3rem;">⚙️ 옵션 설정</button>
             </div>
+            <!-- 따라 치기 상태 안내 -->
+            <div id="maker-status" class="score-text hidden" style="color:#9b59b6; font-size:1.6rem; margin:10px 0 0 0; text-align:center;">🎯 지정된 건반을 누르세요!</div>
             <div id="maker-sheet" class="sheet-display" style="flex:1; margin:0; margin-top:10px; align-items:flex-start; align-content:flex-start;"></div>
         </div>
 
@@ -237,7 +234,6 @@
             </div>
         </div>
 
-        <!-- 하단 건반 영역 -->
         <div class="bell-area-container no-print">
             <div class="bell-container" id="bells"></div>
         </div>
@@ -296,10 +292,14 @@
                 <span class="setting-label">현재 연주자:</span>
                 <select id="single-player-select" class="setting-select" style="font-weight:bold; border-color:#34495e;"></select>
             </div>
-            <div id="maker-extra-controls" class="hidden" style="margin-top:20px; border-top:2px solid #eee; padding-top:20px;">
-                <button class="action-btn" onclick="window.playMakerSheet()" style="background:#9b59b6; padding: 12px 25px; font-size: 1.3rem;">▶ 악보 들어보기</button>
-                <button class="action-btn" onclick="window.clearMakerSheet()" style="background:#E74C3C; padding: 12px 25px; font-size: 1.3rem;">🗑️ 악보 비우기</button>
+            
+            <!-- ★ 악보 만들기 전용 따라 치기 버튼 추가 -->
+            <div id="maker-extra-controls" class="hidden" style="margin-top:20px; border-top:2px solid #eee; padding-top:20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+                <button class="action-btn" onclick="window.playMakerSheet()" style="background:#9b59b6; padding: 12px 25px; font-size: 1.3rem;">▶ 들어보기</button>
+                <button class="action-btn" onclick="window.startMakerInteractive()" style="background:#3498DB; padding: 12px 25px; font-size: 1.3rem;">🎯 따라 치기</button>
+                <button class="action-btn" onclick="window.clearMakerSheet()" style="background:#E74C3C; padding: 12px 25px; font-size: 1.3rem;">🗑️ 비우기</button>
             </div>
+
             <div style="display: flex; justify-content: center; margin-top: 30px;">
                 <button class="action-btn" onclick="window.applySingleSettings()" style="background-color: #34495e; padding: 12px 40px; font-size: 1.4rem;">✅ 확인</button>
             </div>
@@ -454,6 +454,7 @@
         };
         window.hideArrow = function() { document.getElementById('hint-svg-overlay').style.display = 'none'; };
 
+        // ★ 탭 이동 시 팝업 및 상태 초기화 보장
         window.setMode = function(mode) {
             window.currentMode = mode; window.hideArrow();
             document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('active'); if(btn.getAttribute('onclick').indexOf(`'${mode}'`) !== -1) btn.classList.add('active'); });
@@ -462,6 +463,11 @@
             document.querySelectorAll('.bell').forEach(b => { b.classList.remove('multi-bell-hidden', 'practice-active-note'); b.innerHTML = `<span>${noteNames[b.id.split('-')[1]]}</span>`; });
             
             if (mode !== 'free') document.getElementById('free-play-display').innerHTML = '';
+            
+            // 악보 만들기 모드 초기화
+            makerPlayMode = false;
+            const ms = document.getElementById('maker-status');
+            if(ms) ms.classList.add('hidden');
 
             if (window.myRole !== null && window.myRole > 0 && mode !== 'multi') { document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); return; }
             if (window.myRole === -1 && mode === 'multi') { alert("자유 이용자는 실시간 합주에 참여할 수 없습니다."); window.setMode('free'); return; }
@@ -473,7 +479,7 @@
         };
 
         // ==========================================
-        // ★ 자유 이용자 로컬 데이터 처리 및 사진 업로드
+        // 자유 이용자 로컬 데이터 및 사진 업로드 
         // ==========================================
         window.openFreeUserRegistration = function() { 
             document.getElementById('free-user-reg-modal').classList.remove('hidden'); 
@@ -530,7 +536,7 @@
         };
 
         // ==========================================
-        // ★ 공통 연주자 선택 창 생성
+        // 공통 연주자 선택 (설정 모달들)
         // ==========================================
         window.populatePlayerSelect = function(selectId) {
             const sel = document.getElementById(selectId);
@@ -555,8 +561,13 @@
             
             window.populatePlayerSelect('single-player-select');
             
-            if(mode==='maker') document.getElementById('maker-extra-controls').classList.remove('hidden');
-            else document.getElementById('maker-extra-controls').classList.add('hidden');
+            if(mode==='maker') {
+                document.getElementById('maker-extra-controls').classList.remove('hidden');
+                document.getElementById('maker-extra-controls').style.display = 'flex';
+            } else {
+                document.getElementById('maker-extra-controls').classList.add('hidden');
+                document.getElementById('maker-extra-controls').style.display = 'none';
+            }
 
             document.getElementById('single-settings-modal').classList.remove('hidden');
         };
@@ -568,16 +579,65 @@
         };
 
         // ==========================================
-        // 1 & 2: 소리 맞추기 게임 & 악보 만들기
+        // 1. 소리 맞추기 게임
         // ==========================================
         let gameTarget = '';
         window.startGameMode = function() { gameTarget = notes[Math.floor(Math.random()*notes.length)]; window.playSound(gameTarget, false); document.getElementById('game-status').innerText="방금 들은 소리의 건반을 누르세요!"; document.getElementById('btn-replay-game').style.display='inline-block'; window.updateLocalHint();};
         window.replayGameNote = function() { if(gameTarget) window.playSound(gameTarget, false); };
         
+        // ==========================================
+        // ★ 2. 악보 만들기 (따라 치기 기능 추가)
+        // ==========================================
         let makerSheet = [];
+        let makerPlayMode = false;
+        let makerPlayIdx = 0;
+
         window.openMakerSettings = function() { window.openSingleSettings('maker'); };
-        window.clearMakerSheet = function() { makerSheet=[]; document.getElementById('maker-sheet').innerHTML=''; document.getElementById('single-settings-modal').classList.add('hidden'); };
-        window.playMakerSheet = function() { document.getElementById('single-settings-modal').classList.add('hidden'); let i=0; function p(){ if(i>=makerSheet.length)return; window.playSound(makerSheet[i]); i++; setTimeout(p, 500); } p(); };
+        
+        window.clearMakerSheet = function() { 
+            makerSheet=[]; makerPlayMode = false; makerPlayIdx = 0;
+            document.getElementById('maker-sheet').innerHTML=''; 
+            window.hideArrow();
+            document.getElementById('maker-status').classList.add('hidden');
+            document.querySelectorAll('.bell').forEach(b => { b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`; });
+            document.getElementById('single-settings-modal').classList.add('hidden'); 
+        };
+        
+        window.playMakerSheet = function() { 
+            document.getElementById('single-settings-modal').classList.add('hidden'); 
+            let i=0; 
+            function p(){ 
+                if(i>=makerSheet.length)return; 
+                window.playSound(makerSheet[i]); 
+                i++; setTimeout(p, 500); 
+            } 
+            p(); 
+        };
+
+        window.startMakerInteractive = function() {
+            if(makerSheet.length === 0) { alert("먼저 건반을 눌러 악보를 만들어주세요!"); return; }
+            
+            // 현재 연주자 정보 저장 (설정창에서 고른 값)
+            window.singleActiveSlot = document.getElementById('single-player-select').value;
+            
+            document.getElementById('single-settings-modal').classList.add('hidden');
+            document.getElementById('maker-status').classList.remove('hidden');
+            document.getElementById('maker-status').innerText = "🎯 내가 만든 악보를 따라 쳐보세요!";
+            
+            makerPlayMode = true;
+            makerPlayIdx = 0;
+            
+            // 모든 음표 초기화
+            document.querySelectorAll('#maker-sheet .note-badge').forEach(n => {
+                n.classList.remove('practice-active-note', 'practice-completed-note');
+            });
+            
+            // 첫 번째 음표 빛나게
+            const firstNoteEl = document.getElementById(`maker-n-0`);
+            if(firstNoteEl) firstNoteEl.classList.add('practice-active-note');
+            
+            window.updateLocalHint();
+        };
         
         // ==========================================
         // 3: 지정곡 연습
@@ -621,8 +681,6 @@
             pracOriginalMeasures = songData[k] || songData['airplane'];
             pracFlatSong = getFlatSong(k);
             pracCurrentBlock = 0; pracMode = false; window.hideArrow();
-            document.getElementById('practice-status').innerText = "설정 완료! [▶ 자동 연주]나 [🎯 따라 치기]를 누르세요.";
-            window.renderPracticeSheet(true); 
         };
 
         window.renderPracticeSheet = function(isPreview = false) {
@@ -771,6 +829,25 @@
                     }
                 });
             }
+            // ★ 악보 만들기 따라 치기 힌트
+            else if(window.currentMode === 'maker' && makerPlayMode && makerPlayIdx < makerSheet.length) {
+                const cNote = makerSheet[makerPlayIdx];
+                const myInfo = window.currentStudents[window.singleActiveSlot] || {hintMode:'none'};
+                const hm = myInfo.hintMode || 'none';
+                
+                document.querySelectorAll('.bell').forEach(b => {
+                    b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
+                    if(bn === cNote) {
+                        if(hm === 'arrow') {
+                            b.classList.add('practice-active-note');
+                            setTimeout(()=> { const stEl = document.getElementById(`maker-n-${makerPlayIdx}`); if(stEl) window.drawArrow(stEl, b); }, 50);
+                        } else if(hm === 'avatar') {
+                            const ava = myInfo.photo ? `<img src="${myInfo.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`;
+                            b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`;
+                        }
+                    }
+                });
+            }
             else if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
                 const cNote = pracCurrentNotes[pracIdx];
                 const myInfo = window.currentStudents[window.singleActiveSlot] || {hintMode:'none'};
@@ -817,7 +894,11 @@
         window.handleBellClick = function(note) {
             let shouldPlaySound = true;
 
-            if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
+            // ★ 틀렸을 때 음소거 처리
+            if(window.currentMode === 'maker' && makerPlayMode && makerPlayIdx < makerSheet.length) {
+                if(note !== makerSheet[makerPlayIdx]) shouldPlaySound = false;
+            }
+            else if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
                 if(note !== pracCurrentNotes[pracIdx]) shouldPlaySound = false;
             }
             else if(window.currentMode === 'together' && togMode && togIdx < togSong.length) {
@@ -831,6 +912,7 @@
 
             if (shouldPlaySound) window.playSound(note);
 
+            // ★ 기능별 시각적 피드백 및 로직 진행
             if(window.currentMode === 'free') {
                 const display = document.getElementById('free-play-display');
                 if (display) {
@@ -846,8 +928,38 @@
                 else { document.getElementById('game-status').innerText="틀렸어요. 다시 들어보세요."; document.getElementById(`bell-${note}`).classList.add('error-shake'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); }
             }
             else if(window.currentMode === 'maker') { 
-                makerSheet.push(note); 
-                const sp=document.createElement('span'); sp.className=`note-badge ${note.toLowerCase()} pop-animation`; sp.innerText=noteNames[note]; document.getElementById('maker-sheet').appendChild(sp); 
+                if (makerPlayMode) {
+                    // ★ 내가 만든 악보 따라 치기 진행 중
+                    if(note === makerSheet[makerPlayIdx]) { 
+                        window.hideArrow();
+                        const el = document.getElementById(`maker-n-${makerPlayIdx}`); 
+                        if(el) { el.classList.remove('practice-active-note'); el.classList.add('practice-completed-note'); }
+                        
+                        makerPlayIdx++; 
+                        
+                        if(makerPlayIdx < makerSheet.length) { 
+                            const nel = document.getElementById(`maker-n-${makerPlayIdx}`); 
+                            if(nel) nel.classList.add('practice-active-note'); 
+                            window.updateLocalHint();
+                        } 
+                        else {
+                            document.querySelectorAll('.bell').forEach(b => { b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`; });
+                            makerPlayMode = false;
+                            document.getElementById('maker-status').innerText = "🎉 내가 만든 악보를 멋지게 연주했어요! 🎉";
+                        }
+                    } else { 
+                        document.getElementById(`bell-${note}`).classList.add('error-shake'); 
+                        setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); 
+                    }
+                } else {
+                    // 악보 만드는 중 (추가)
+                    makerSheet.push(note); 
+                    const sp=document.createElement('span'); 
+                    sp.className=`note-badge ${note.toLowerCase()} pop-animation`; 
+                    sp.id = `maker-n-${makerSheet.length - 1}`;
+                    sp.innerText=noteNames[note]; 
+                    document.getElementById('maker-sheet').appendChild(sp); 
+                }
             }
             else if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
                 if(note === pracCurrentNotes[pracIdx]) { 
@@ -917,14 +1029,13 @@
         
         window.enterAsFreeUser = function() { 
             window.myRole = -1; 
-            window.currentStudents = window.localStudents; // ★ 자유 이용자 모드 진입 시 로컬 데이터 맵핑
+            window.currentStudents = window.localStudents;
             document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); 
             document.getElementById('tab-dashboard').style.display='none'; document.getElementById('tab-multi').style.display='none'; 
             document.getElementById('tab-free-reg').classList.remove('hidden');
             window.setMode('free'); 
         };
         
-        // ★ 빈자리만 보여주는 로직 (이미 선점된 자리는 아예 감춤)
         window.showStudentForm = function() { document.getElementById('entry-selection').style.display='none'; document.getElementById('entry-student-form').classList.remove('hidden'); window.updateEntrySlotUI(); };
         window.backToEntrySelection = function() { document.getElementById('entry-selection').style.display='block'; document.getElementById('entry-student-form').classList.add('hidden'); };
         
@@ -955,7 +1066,6 @@
             const name=document.getElementById('entry-name').value.trim(); 
             if(!slot) return; 
 
-            // ★ 완벽한 중복 방지 (이미 선점된 자리인지 확인)
             if(window.currentStudents[slot] && window.currentStudents[slot].name && window.currentStudents[slot].name.trim() !== '') {
                 alert("이런! 방금 다른 친구가 먼저 자리를 선택했어요. 다른 빈자리를 골라주세요!");
                 window.updateEntrySlotUI();
@@ -1021,8 +1131,6 @@
             window.dbOnValue(studentsRef, (snap) => {
                 const s = snap.val() || {}; if (window.myRole !== null && window.myRole > 0 && !s[window.myRole]) { alert("강퇴되었습니다."); location.reload(); return; }
                 
-                // ★ 자유 이용자 모드가 아닐 때만 파이어베이스 데이터를 currentStudents에 맵핑
-                // 로비 화면(myRole === null)일 때도 데이터 동기화해야 빈자리가 업데이트 됨!
                 if (window.myRole !== -1) {
                     window.currentStudents = s; 
                 }
