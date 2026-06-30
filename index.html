@@ -44,7 +44,7 @@
         .practice-completed-note { opacity: 0.3; transform: scale(0.9); }
         .measure-divider { width: 4px; height: 50px; background-color: #999; border-radius: 2px; margin: 5px 8px; }
 
-        /* ★ 하단 건반 영역 */
+        /* 하단 건반 영역 */
         .bell-area-container { flex: 0 0 38vh; width: 100%; padding-bottom: 2vh; }
         .bell-container { display: flex; justify-content: center; gap: 1.2vw; height: 100%; align-items: flex-end; } 
         .bell { height: 100%; width: 11vw; max-width: 160px; border-radius: 70px 70px 15px 15px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; font-weight: bold; font-size: 2.8rem; padding-bottom: 20px; cursor: pointer; box-shadow: 0 12px 18px rgba(0,0,0,0.25); border: 5px solid transparent; transition: transform 0.1s, filter 0.1s; }
@@ -98,7 +98,11 @@
 
         <div class="entry-box hidden" id="entry-student-form">
             <h2 style="color: #3498db; margin-top: 0; font-size:2.5rem;">🧑‍🎓 학생 입장</h2>
-            <select id="entry-slot-select" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #3498db; font-weight:bold;"></select>
+            
+            <!-- 선점된 자리는 아예 보이지 않게 처리 -->
+            <select id="entry-slot-select" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 10px; border-radius:10px; border: 2px solid #3498db; font-weight:bold;"></select>
+            <div id="empty-slot-indicator" style="margin-bottom: 15px; font-size: 1.1rem; color: #e74c3c; font-weight: bold;"></div>
+            
             <input type="text" id="entry-name" placeholder="이름 입력 (또는 앨범 선택 시 자동입력)" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #ccc;">
             
             <div style="margin-bottom: 20px; text-align:center;">
@@ -142,6 +146,7 @@
 
         <div class="tabs no-print" id="main-tabs">
             <button class="tab-btn active" onclick="window.setMode('dashboard')" id="tab-dashboard" style="border-color:#9b59b6;">👨‍👩‍👧‍👦 접속 관리</button>
+            <!-- 자유 이용자용 연주자 등록 버튼 -->
             <button class="tab-btn hidden" onclick="window.openFreeUserRegistration()" id="tab-free-reg" style="background-color:#27ae60; color:white; border-color:#27ae60;">👤 연주자 등록</button>
             <button class="tab-btn" onclick="window.setMode('free')">자유 연주</button>
             <button class="tab-btn" onclick="window.setMode('game')">소리 맞추기</button>
@@ -232,7 +237,6 @@
             </div>
         </div>
 
-        <!-- 하단 건반 영역 -->
         <div class="bell-area-container no-print">
             <div class="bell-container" id="bells"></div>
         </div>
@@ -468,7 +472,7 @@
         };
 
         // ==========================================
-        // 자유 이용자 로컬 데이터 처리 (사진 업로드 복구됨)
+        // ★ 자유 이용자 로컬 데이터 및 사진 업로드 (완전 복원)
         // ==========================================
         window.openFreeUserRegistration = function() { 
             document.getElementById('free-user-reg-modal').classList.remove('hidden'); 
@@ -525,7 +529,7 @@
         };
 
         // ==========================================
-        // 공통 연주자 선택 창 생성
+        // ★ 공통 연주자 선택 (설정 모달들)
         // ==========================================
         window.populatePlayerSelect = function(selectId) {
             const sel = document.getElementById(selectId);
@@ -547,6 +551,7 @@
             if(mode==='game') title = '🎮 게임 설정';
             if(mode==='maker') title = '🎵 악보 만들기 설정';
             document.getElementById('single-settings-title').innerText = title;
+            
             window.populatePlayerSelect('single-player-select');
             
             if(mode==='maker') document.getElementById('maker-extra-controls').classList.remove('hidden');
@@ -615,7 +620,6 @@
             pracOriginalMeasures = songData[k] || songData['airplane'];
             pracFlatSong = getFlatSong(k);
             pracCurrentBlock = 0; pracMode = false; window.hideArrow();
-            document.getElementById('practice-status').innerText = "설정 완료! [▶ 자동 연주]나 [🎯 따라 치기]를 누르세요.";
         };
 
         window.renderPracticeSheet = function(isPreview = false) {
@@ -672,7 +676,8 @@
             p1Sel.innerHTML = ''; p2Sel.innerHTML = '';
             for(let i=1; i<=6; i++) {
                 const st = window.currentStudents[i];
-                let nm = (st && st.name && !st.name.includes('번 연주자')) ? `${i}번: ${st.name}` : `${i}번 자리 (연주자 ${i})`;
+                let nm = `${i}번 연주자`;
+                if(st && st.name && !st.name.includes('번 연주자')) nm = `${i}번: ${st.name}`;
                 p1Sel.add(new Option(nm, i)); p2Sel.add(new Option(nm, i));
             }
             p1Sel.selectedIndex = 0; p2Sel.selectedIndex = 1;
@@ -916,9 +921,28 @@
             window.setMode('free'); 
         };
         
+        // ★ 빈자리만 보여주는 로직
         window.showStudentForm = function() { document.getElementById('entry-selection').style.display='none'; document.getElementById('entry-student-form').classList.remove('hidden'); window.updateEntrySlotUI(); };
         window.backToEntrySelection = function() { document.getElementById('entry-selection').style.display='block'; document.getElementById('entry-student-form').classList.add('hidden'); };
-        window.updateEntrySlotUI = function() { const sel=document.getElementById('entry-slot-select'); if(!sel)return; sel.innerHTML=''; let c=0; for(let i=1;i<=6;i++){ const st=window.currentStudents[i]; const op=document.createElement('option'); op.value=i; if(st && st.status !== 'waiting'){op.text=`[사용중] ${i}번`;op.disabled=true;}else{op.text=`[빈자리] ${i}번`;c++;} sel.appendChild(op); } document.getElementById('empty-slot-indicator').innerText=`빈자리: ${c}개`; };
+        
+        window.updateEntrySlotUI = function() { 
+            const sel=document.getElementById('entry-slot-select'); if(!sel)return; 
+            sel.innerHTML=''; let c=0; 
+            for(let i=1;i<=6;i++){ 
+                const st=window.currentStudents[i]; 
+                if(!st || !st.name){
+                    const op=document.createElement('option'); op.value=i; op.text=`[빈자리] ${i}번`; sel.appendChild(op); c++;
+                } 
+            } 
+            const ind = document.getElementById('empty-slot-indicator');
+            if (c === 0) {
+                const op=document.createElement('option'); op.value=""; op.text="선택 가능한 빈자리가 없습니다."; sel.appendChild(op);
+                sel.disabled = true; if(ind) ind.innerText = `현재 빈 자리가 없습니다.`;
+            } else {
+                sel.disabled = false; if(ind) ind.innerText = `빈자리: ${c}개`;
+            }
+        };
+
         window.joinAsStudent = function() { const slot=document.getElementById('entry-slot-select').value; const name=document.getElementById('entry-name').value.trim(); if(!slot) return; window.myRole = parseInt(slot); window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { name: name||`학생 ${slot}`, photo: window.studentPhotoBase64, status: 'waiting', hintMode: 'none' }).then(() => { document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); window.checkMyStatus(); }); };
 
         let mediaStream = null;
