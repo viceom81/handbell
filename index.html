@@ -44,7 +44,7 @@
         .practice-completed-note { opacity: 0.3; transform: scale(0.9); }
         .measure-divider { width: 4px; height: 50px; background-color: #999; border-radius: 2px; margin: 5px 8px; }
 
-        /* 하단 건반 영역 */
+        /* ★ 하단 건반 영역 */
         .bell-area-container { flex: 0 0 38vh; width: 100%; padding-bottom: 2vh; }
         .bell-container { display: flex; justify-content: center; gap: 1.2vw; height: 100%; align-items: flex-end; } 
         .bell { height: 100%; width: 11vw; max-width: 160px; border-radius: 70px 70px 15px 15px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; font-weight: bold; font-size: 2.8rem; padding-bottom: 20px; cursor: pointer; box-shadow: 0 12px 18px rgba(0,0,0,0.25); border: 5px solid transparent; transition: transform 0.1s, filter 0.1s; }
@@ -71,7 +71,7 @@
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
         .pop-animation { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-        #camera-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        #camera-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 6000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         #camera-video { width: 100%; max-width: 600px; border-radius: 20px; border: 4px solid #fff; background: black; transform: scaleX(-1); }
 
         #hint-svg-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: none; }
@@ -136,7 +136,7 @@
             <button class="tab-btn active" onclick="window.setMode('dashboard')" id="tab-dashboard" style="border-color:#9b59b6;">👨‍👩‍👧‍👦 접속 관리</button>
             
             <!-- ★ 자유 이용자용 연주자 등록 버튼 -->
-            <button class="tab-btn hidden" onclick="window.openFreeUserRegistration()" id="tab-free-reg" style="background-color:#2ecc71; color:white; border-color:#27ae60;">👤 연주자 등록</button>
+            <button class="tab-btn hidden" onclick="window.openFreeUserRegistration()" id="tab-free-reg" style="background-color:#27ae60; color:white; border-color:#27ae60;">👤 연주자 등록</button>
             
             <button class="tab-btn" onclick="window.setMode('free')">자유 연주</button>
             <button class="tab-btn" onclick="window.setMode('game')">소리 맞추기</button>
@@ -160,14 +160,19 @@
 
         <!-- 2. 자유 연주 -->
         <div id="panel-free" class="control-panel hidden">
-            <h3 style="margin:10px 0; font-size:2rem;">자유 연주 모드</h3>
-            <p style="font-size: 1.4rem; color: #555;">아래 건반을 마음껏 연주해 보세요!</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom: 10px;">
+                <h3 style="margin:0; font-size:2rem;">자유 연주</h3>
+                <button class="action-btn" onclick="window.openSingleSettings('free')" style="background:#34495e; font-size:1.3rem;">⚙️ 설정</button>
+            </div>
             <div id="free-play-display" class="sheet-display" style="flex:1; display:flex; align-items:center; justify-content:center; gap: 20px; background: transparent;"></div>
         </div>
         
         <!-- 3. 소리 맞추기 게임 -->
         <div id="panel-game" class="control-panel hidden">
-            <h3 style="margin:10px 0; font-size:2rem;">소리 맞추기 게임</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom: 10px; margin-bottom:15px;">
+                <h3 style="margin:0; font-size:2rem;">소리 맞추기 게임</h3>
+                <button class="action-btn" onclick="window.openSingleSettings('game')" style="background:#34495e; font-size:1.3rem;">⚙️ 설정</button>
+            </div>
             <div style="margin-bottom: 15px;">
                 <button class="action-btn" onclick="window.startGameMode()" style="background:#3498DB; padding:15px 30px; font-size:1.4rem;">▶ 게임 시작</button>
                 <button class="action-btn" onclick="window.replayGameNote()" id="btn-replay-game" style="background:#95A5A6; display:none; padding:15px 30px; font-size:1.4rem;">🔊 다시 듣기</button>
@@ -177,42 +182,34 @@
 
         <!-- 4. 악보 만들기 -->
         <div id="panel-maker" class="control-panel hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom: 15px; margin-bottom: 10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom: 10px;">
                 <h3 style="margin:0; color:#9b59b6; font-size:2rem;">악보 만들기</h3>
-                <button class="action-btn" onclick="window.openMakerSettings()" style="background:#9b59b6; margin:0; font-size:1.3rem;">⚙️ 옵션</button>
+                <button class="action-btn" onclick="window.openSingleSettings('maker')" style="background:#9b59b6; font-size:1.3rem;">⚙️ 옵션 설정</button>
             </div>
-            <div id="maker-sheet" class="sheet-display" style="flex:1; margin:0; align-items:flex-start; align-content:flex-start;"></div>
+            <div id="maker-sheet" class="sheet-display" style="flex:1; margin:0; margin-top:10px; align-items:flex-start; align-content:flex-start;"></div>
         </div>
 
         <!-- 5. 지정곡 연습 -->
         <div id="panel-practice" class="control-panel hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 15px; border-bottom: 2px solid #eee; padding-bottom:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom:10px;">
                 <h3 style="margin:0; color:#3498DB; font-size:2rem;">지정곡 연습</h3>
-                <div style="display:flex; gap:10px;">
-                    <select id="practice-song-select" onchange="window.loadPracticeSong()" style="padding:10px; font-size:1.2rem; border-radius:8px;">
-                        <option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option><option value="star">작은 별</option>
-                    </select>
-                    <select id="practice-stage-select" onchange="window.loadPracticeSong()" style="padding:10px; font-size:1.2rem; border-radius:8px; border:2px solid #3498DB;">
-                        <option value="note">1단계: 1음씩 연습</option><option value="1">2단계: 1마디씩 연습</option><option value="2">3단계: 2마디씩 연습</option><option value="4">4단계: 4마디씩</option><option value="all" selected>5단계: 전체 곡</option>
-                    </select>
-                </div>
+                <button class="action-btn" onclick="window.openPracticeSettings()" style="background:#3498DB; font-size:1.3rem;">⚙️ 설정</button>
             </div>
             <div style="margin-top:15px; display:flex; justify-content:center; gap:15px; align-items:center;">
                 <button class="action-btn" onclick="window.startPracticeAuto()" style="padding:12px 25px; font-size:1.3rem;">▶ 자동 연주(듣기)</button>
                 <button class="action-btn" onclick="window.startPracticeInteractive()" style="background:#3498DB; padding:12px 25px; font-size:1.3rem;">🎯 따라 치기</button>
-                <div id="practice-status" class="score-text" style="color:#3498DB; margin:0 0 0 15px;">옵션을 선택하세요.</div>
+                <div id="practice-status" class="score-text" style="color:#3498DB; margin:0 0 0 15px;">설정에서 곡을 선택하세요.</div>
             </div>
             <div id="practice-sheet" class="sheet-display" style="flex:1; align-items:flex-start; align-content:flex-start; overflow-y:auto; margin-top:15px;"></div>
         </div>
 
         <!-- 6. 2인 연주 -->
         <div id="panel-together" class="control-panel hidden">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
                 <h3 style="margin:0; color:#e67e22; font-size:2rem;">🤝 2인 함께 연주</h3>
                 <div>
-                    <select id="together-song-select" style="padding:10px; font-size:1.2rem; border-radius:8px; margin-right:10px;"><option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option></select>
-                    <button class="action-btn" onclick="window.openTogetherSettings()" style="background:#e67e22;">⚙️ 설정</button>
-                    <button class="action-btn" onclick="window.applyTogetherSettings()" style="background:#3498DB;">▶ 연주 시작</button>
+                    <button class="action-btn" onclick="window.openTogetherSettings()" style="background:#e67e22; font-size:1.3rem;">⚙️ 설정</button>
+                    <button class="action-btn" onclick="window.startTogetherMode()" style="background:#3498DB; font-size:1.3rem;">▶ 연주 시작</button>
                 </div>
             </div>
             <div id="together-status" class="score-text" style="color:#e67e22; margin-bottom:10px;">설정 후 연주 시작을 누르세요.</div>
@@ -245,14 +242,21 @@
     <!-- ★ 자유 이용자 연주자 등록 모달 -->
     <div id="free-user-reg-modal" class="modal-overlay hidden">
         <div class="modal-box" style="border: 4px solid #2ecc71; max-width: 550px;">
-            <h3 style="color: #2ecc71; margin-top: 0; margin-bottom: 20px; font-size: 2rem;">👤 연주자 등록 (선택)</h3>
-            <p style="font-size:1.2rem; color:#555; margin-bottom:15px;">등록하지 않고 바로 이용해도 됩니다.</p>
+            <h3 style="color: #2ecc71; margin-top: 0; margin-bottom: 10px; font-size: 2rem;">👤 연주자 등록 (선택)</h3>
+            <p style="font-size:1.2rem; color:#555; margin-bottom:20px;">등록하지 않고 바로 이용해도 됩니다.</p>
             
-            <input type="text" id="free-user-name" placeholder="이름 입력 (또는 사진 이름 자동 적용)" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #2ecc71;">
+            <div class="setting-row" style="margin-bottom: 15px;">
+                <span class="setting-label" style="min-width:80px;">저장 슬롯:</span>
+                <select id="free-reg-slot" onchange="window.loadFreeUserSlot()" style="width: 100%; padding: 12px; font-size: 1.3rem; border-radius:10px; border: 2px solid #2ecc71; font-weight:bold;">
+                    <option value="1">1번 연주자</option><option value="2">2번 연주자</option><option value="3">3번 연주자</option><option value="4">4번 연주자</option><option value="5">5번 연주자</option><option value="6">6번 연주자</option>
+                </select>
+            </div>
+            
+            <input type="text" id="free-user-name" placeholder="이름 입력 (또는 사진 이름 자동 적용)" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #ccc;">
             
             <div style="margin-bottom: 20px; text-align:center;">
                 <img id="free-user-photo-preview" class="preview-img hidden" src="" style="width:100px; height:100px; border-color:#2ecc71;">
-                <div id="free-user-photo-placeholder" class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:3rem; border-color:#2ecc71;">👤</div>
+                <div id="free-user-photo-placeholder" class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:3rem; border-color:#2ecc71; width:100px; height:100px;">👤</div>
                 <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
                     <button class="action-btn" onclick="window.openCamera('free')" style="background: #2ecc71; padding:12px 20px;">📷 카메라</button>
                     <label for="free-user-file" class="action-btn" style="background: #16a085; cursor: pointer; padding:12px 20px; display:inline-block; margin:5px;">📁 앨범 선택</label>
@@ -261,7 +265,7 @@
             </div>
 
             <div class="setting-row" style="background:#e9f7ef; padding:15px; border-radius:10px;">
-                <span class="setting-label" style="min-width:100px; color:#27ae60;">힌트 모드:</span>
+                <span class="setting-label" style="min-width:90px; color:#27ae60;">힌트 모드:</span>
                 <select id="free-user-hint-select" class="setting-select" style="border-color:#2ecc71; font-weight:bold;">
                     <option value="none" selected>💡 없음 (스스로 찾기)</option>
                     <option value="arrow">💡 실시간 화살표 표시</option>
@@ -276,16 +280,55 @@
         </div>
     </div>
 
-    <!-- 악보 만들기 설정 모달 -->
-    <div id="maker-settings-modal" class="modal-overlay hidden">
-        <div class="modal-box" style="border: 4px solid #9b59b6; max-width: 500px;">
-            <h3 style="color: #9b59b6; margin-top: 0; margin-bottom: 25px; font-size: 2rem;">🎵 악보 옵션</h3>
-            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
-                <button class="action-btn" onclick="window.playMakerSheet()" style="background:#9b59b6; padding: 15px 30px; font-size: 1.5rem;">▶ 들어보기</button>
-                <button class="action-btn" onclick="window.clearMakerSheet()" style="background:#E74C3C; padding: 15px 30px; font-size: 1.5rem;">🗑️ 비우기</button>
+    <!-- ★ 공통 싱글 플레이어 설정 모달 (자유연주, 게임, 악보만들기) -->
+    <div id="single-settings-modal" class="modal-overlay hidden">
+        <div class="modal-box" style="border: 4px solid #34495e; max-width: 500px;">
+            <h3 id="single-settings-title" style="color: #34495e; margin-top: 0; margin-bottom: 25px; font-size: 2rem;">⚙️ 설정</h3>
+            
+            <div class="setting-row" style="background: #f4f6f7; padding: 15px; border-radius: 10px;">
+                <span class="setting-label">현재 연주자:</span>
+                <select id="single-player-select" class="setting-select" style="font-weight:bold; border-color:#34495e;"></select>
             </div>
-            <div style="margin-top: 30px;">
-                <button class="action-btn" onclick="window.closeMakerSettings()" style="background-color: #95a5a6; padding: 10px 40px; font-size: 1.3rem;">닫기</button>
+
+            <!-- 악보만들기 전용 컨트롤러 -->
+            <div id="maker-extra-controls" class="hidden" style="margin-top:20px; border-top:2px solid #eee; padding-top:20px;">
+                <button class="action-btn" onclick="window.playMakerSheet()" style="background:#9b59b6; padding: 12px 25px; font-size: 1.3rem;">▶ 악보 들어보기</button>
+                <button class="action-btn" onclick="window.clearMakerSheet()" style="background:#E74C3C; padding: 12px 25px; font-size: 1.3rem;">🗑️ 악보 비우기</button>
+            </div>
+
+            <div style="display: flex; justify-content: center; margin-top: 30px;">
+                <button class="action-btn" onclick="window.applySingleSettings()" style="background-color: #34495e; padding: 12px 40px; font-size: 1.4rem;">✅ 확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 지정곡 연습 설정 모달 -->
+    <div id="practice-settings-modal" class="modal-overlay hidden">
+        <div class="modal-box" style="border: 4px solid #3498DB; max-width: 600px;">
+            <h3 style="color: #3498DB; margin-top: 0; margin-bottom: 25px; font-size: 2rem;">🎵 지정곡 연습 설정</h3>
+            
+            <div class="setting-row" style="background: #eaf2f8; padding: 15px; border-radius: 10px;">
+                <span class="setting-label">현재 연주자:</span>
+                <select id="practice-player-select" class="setting-select" style="font-weight:bold; border-color:#3498DB;"></select>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label">곡 선택:</span>
+                <select id="modal-practice-song" class="setting-select">
+                    <option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option><option value="star">작은 별</option>
+                </select>
+            </div>
+            
+            <div class="setting-row">
+                <span class="setting-label">연습 단계:</span>
+                <select id="modal-practice-stage" class="setting-select">
+                    <option value="note">1단계: 1음씩 연습</option><option value="1">2단계: 1마디씩 연습</option><option value="2">3단계: 2마디씩 연습</option><option value="4">4단계: 4마디씩</option><option value="all" selected>5단계: 전체 곡</option>
+                </select>
+            </div>
+
+            <div style="display: flex; justify-content: center; margin-top: 30px;">
+                <button class="action-btn" onclick="window.applyPracticeSettings()" style="background-color: #3498DB; padding: 12px 40px; font-size: 1.4rem;">✅ 설정 적용</button>
+                <button class="action-btn" onclick="window.closePracticeSettings()" style="background-color: #95a5a6; padding: 12px 25px; font-size: 1.2rem;">취소</button>
             </div>
         </div>
     </div>
@@ -300,9 +343,17 @@
                 <span style="font-weight: bold; font-size: 1.5rem; color: #555;">&</span>
                 <select id="together-p2-select" class="setting-select" style="border-color: #3498db; width: auto; font-weight:bold;"></select>
             </div>
+            
+            <div class="setting-row">
+                <span class="setting-label">곡 선택:</span>
+                <select id="modal-together-song" class="setting-select">
+                    <option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option>
+                </select>
+            </div>
+
             <div class="setting-row">
                 <span class="setting-label">표시 단위:</span>
-                <select id="together-chunk-select" class="setting-select">
+                <select id="modal-together-chunk" class="setting-select">
                     <option value="1">1개씩만 보이고 교대</option>
                     <option value="2">2개씩 보이고 교대</option>
                     <option value="3">3개씩 보이고 교대</option>
@@ -310,8 +361,9 @@
                     <option value="all" selected>전체 악보 보며 교대</option>
                 </select>
             </div>
-            <div style="display: flex; justify-content: center; margin-top: 35px;">
-                <button class="action-btn" onclick="window.applyTogetherSettings()" style="background-color: #e67e22; padding: 15px 40px; font-size: 1.5rem;">✅ 설정 확인</button>
+            <div style="display: flex; justify-content: center; gap:15px; margin-top: 35px;">
+                <button class="action-btn" onclick="window.applyTogetherSettings()" style="background-color: #e67e22; padding: 15px 40px; font-size: 1.5rem;">✅ 설정 적용</button>
+                <button class="action-btn" onclick="window.closeTogetherSettings()" style="background-color: #95a5a6; padding: 15px 30px; font-size: 1.3rem;">취소</button>
             </div>
         </div>
     </div>
@@ -339,12 +391,22 @@
         function getFlatSong(key) { var arr = songData[key] || songData['airplane']; return arr.reduce(function(acc, val) { return acc.concat(val); }, []); }
 
         window.currentMode = 'free'; window.myRole = -1; window.studentPhotoBase64 = ''; window.currentStudents = {}; window.currentApprovedCount = 1;
+        
+        // ★ 전역 상태: 현재 혼자서 치는 모드들의 활성 연주자 슬롯
+        window.singleActiveSlot = 1; 
+        
+        // ★ 자유 이용자 로컬 데이터 6개 뼈대 세팅
+        window.localStudents = {
+            1: { name: '1번 연주자', photo: '', hintMode: 'none', color: '#e74c3c' },
+            2: { name: '2번 연주자', photo: '', hintMode: 'none', color: '#3498db' },
+            3: { name: '3번 연주자', photo: '', hintMode: 'none', color: '#f1c40f' },
+            4: { name: '4번 연주자', photo: '', hintMode: 'none', color: '#2ecc71' },
+            5: { name: '5번 연주자', photo: '', hintMode: 'none', color: '#34495e' },
+            6: { name: '6번 연주자', photo: '', hintMode: 'none', color: '#9b59b6' }
+        };
+
         let isAudioUnlocked = false; let sessionRef = null; let studentsRef = null;
         let currentMultiState = { isPlaying: false, song: 'airplane', currentIndex: 0, playerCount: 6, roleSequence: [], bellVisibility: '8' };
-
-        // ★ 자유 이용자 기본 프로필 (연습/2인 연주 등에 사용됨)
-        window.currentStudents['local1'] = { name: '자유 이용자', photo: '', hintMode: 'none' };
-        window.cameraTarget = 'entry'; // 'entry' 또는 'free'
 
         function resumeAudio() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); if (!isAudioUnlocked) { const b = audioCtx.createBuffer(1,1,22050); const s = audioCtx.createBufferSource(); s.buffer=b; s.connect(audioCtx.destination); s.start(0); isAudioUnlocked=true; } } catch(e){} }
         ['pointerdown','touchstart','mousedown','keydown'].forEach(evt => document.addEventListener(evt, resumeAudio, {passive:true}));
@@ -387,6 +449,7 @@
             document.getElementById(`panel-${mode}`).classList.remove('hidden');
             document.querySelectorAll('.bell').forEach(b => { b.classList.remove('multi-bell-hidden', 'practice-active-note'); b.innerHTML = `<span>${noteNames[b.id.split('-')[1]]}</span>`; });
             
+            // 탭 이동 시 자유 연주 피드백 화면 초기화
             if (mode !== 'free') document.getElementById('free-play-display').innerHTML = '';
 
             if (window.myRole > 0 && mode !== 'multi') { document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); return; }
@@ -395,63 +458,118 @@
                 const tc = document.getElementById('multi-teacher-controls');
                 if(tc) { if(window.myRole===0) tc.classList.remove('hidden'); else tc.classList.add('hidden'); }
                 window.updateMultiplayerUI();
-            } else if (mode === 'practice') { window.loadPracticeSong(); }
-        };
-
-        // ==========================================
-        // ★ 자유 이용자 등록 기능
-        // ==========================================
-        window.openFreeUserRegistration = function() { document.getElementById('free-user-reg-modal').classList.remove('hidden'); };
-        window.closeFreeUserReg = function() { document.getElementById('free-user-reg-modal').classList.add('hidden'); };
-        
-        window.handleFreeUserFile = function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                let fname = file.name;
-                let nameWithoutExt = fname.substring(0, fname.lastIndexOf('.')) || fname;
-                let nameInput = document.getElementById('free-user-name');
-                if(!nameInput.value) nameInput.value = nameWithoutExt; 
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    window.localFreeUserPhoto = e.target.result;
-                    document.getElementById('free-user-photo-preview').src = window.localFreeUserPhoto;
-                    document.getElementById('free-user-photo-preview').classList.remove('hidden');
-                    document.getElementById('free-user-photo-placeholder').style.display = 'none';
-                };
-                reader.readAsDataURL(file);
             }
         };
 
+        // ==========================================
+        // ★ 자유 이용자 로컬 데이터 처리 로직
+        // ==========================================
+        window.openFreeUserRegistration = function() { 
+            document.getElementById('free-user-reg-modal').classList.remove('hidden'); 
+            window.loadFreeUserSlot();
+        };
+        window.closeFreeUserReg = function() { document.getElementById('free-user-reg-modal').classList.add('hidden'); };
+        
+        window.loadFreeUserSlot = function() {
+            const slot = document.getElementById('free-reg-slot').value;
+            const data = window.localStudents[slot];
+            document.getElementById('free-user-name').value = data.name.includes('연주자') ? '' : data.name;
+            document.getElementById('free-user-hint-select').value = data.hintMode;
+            if(data.photo) {
+                document.getElementById('free-user-photo-preview').src = data.photo;
+                document.getElementById('free-user-photo-preview').classList.remove('hidden');
+                document.getElementById('free-user-photo-placeholder').style.display = 'none';
+            } else {
+                document.getElementById('free-user-photo-preview').classList.add('hidden');
+                document.getElementById('free-user-photo-placeholder').style.display = 'flex';
+            }
+            window.localFreeUserPhoto = data.photo;
+        };
+
         window.saveFreeUser = function() {
-            window.currentStudents['local1'] = {
-                name: document.getElementById('free-user-name').value || '자유 이용자',
-                photo: window.localFreeUserPhoto || '',
-                hintMode: document.getElementById('free-user-hint-select').value
-            };
-            alert("연주자 정보가 성공적으로 적용되었습니다!");
+            const slot = document.getElementById('free-reg-slot').value;
+            const nameVal = document.getElementById('free-user-name').value;
+            window.localStudents[slot].name = nameVal || `${slot}번 연주자`;
+            window.localStudents[slot].photo = window.localFreeUserPhoto || '';
+            window.localStudents[slot].hintMode = document.getElementById('free-user-hint-select').value;
+            
+            alert(`${slot}번 연주자 정보가 저장되었습니다.`);
             window.closeFreeUserReg();
-            // 연습/2인 연주 진행 중일 경우 바로 반영
-            if(window.currentMode === 'practice' || window.currentMode === 'together') window.updateLocalHint();
+            
+            // 실시간 힌트 즉각 갱신
+            window.updateLocalHint();
         };
 
         // ==========================================
-        // 소리 맞추기 게임 & 악보 만들기
+        // ★ 공통 연주자 선택 (설정 모달들)
+        // ==========================================
+        window.populatePlayerSelect = function(selectId) {
+            const sel = document.getElementById(selectId);
+            sel.innerHTML = '';
+            for(let i=1; i<=6; i++) {
+                const st = window.currentStudents[i];
+                if(st && st.name && !st.name.includes('번 연주자')) {
+                    sel.add(new Option(`${i}번: ${st.name}`, i));
+                } else {
+                    sel.add(new Option(`${i}번: 빈 자리 (연주자 ${i})`, i));
+                }
+            }
+            sel.value = window.singleActiveSlot;
+        }
+
+        let currentSingleModeConfig = ''; // 'free', 'game', 'maker'
+        window.openSingleSettings = function(mode) {
+            currentSingleModeConfig = mode;
+            let title = '⚙️ 설정';
+            if(mode==='free') title = '🎹 자유 연주 설정';
+            if(mode==='game') title = '🎮 게임 설정';
+            if(mode==='maker') title = '🎵 악보 만들기 설정';
+            document.getElementById('single-settings-title').innerText = title;
+            
+            window.populatePlayerSelect('single-player-select');
+            
+            if(mode==='maker') document.getElementById('maker-extra-controls').classList.remove('hidden');
+            else document.getElementById('maker-extra-controls').classList.add('hidden');
+
+            document.getElementById('single-settings-modal').classList.remove('hidden');
+        };
+
+        window.applySingleSettings = function() {
+            window.singleActiveSlot = document.getElementById('single-player-select').value;
+            document.getElementById('single-settings-modal').classList.add('hidden');
+            window.updateLocalHint(); // 힌트 갱신
+        };
+
+        // ==========================================
+        // 1 & 2: 소리 맞추기 게임 & 악보 만들기
         // ==========================================
         let gameTarget = '';
-        window.startGameMode = function() { gameTarget = notes[Math.floor(Math.random()*notes.length)]; window.playSound(gameTarget, false); document.getElementById('game-status').innerText="방금 들은 소리의 건반을 누르세요!"; document.getElementById('btn-replay-game').style.display='inline-block'; };
+        window.startGameMode = function() { gameTarget = notes[Math.floor(Math.random()*notes.length)]; window.playSound(gameTarget, false); document.getElementById('game-status').innerText="방금 들은 소리의 건반을 누르세요!"; document.getElementById('btn-replay-game').style.display='inline-block'; window.updateLocalHint();};
         window.replayGameNote = function() { if(gameTarget) window.playSound(gameTarget, false); };
         
         let makerSheet = [];
-        window.openMakerSettings = function() { document.getElementById('maker-settings-modal').classList.remove('hidden'); };
-        window.closeMakerSettings = function() { document.getElementById('maker-settings-modal').classList.add('hidden'); };
-        window.clearMakerSheet = function() { makerSheet=[]; document.getElementById('maker-sheet').innerHTML=''; window.closeMakerSettings(); };
-        window.playMakerSheet = function() { window.closeMakerSettings(); let i=0; function p(){ if(i>=makerSheet.length)return; window.playSound(makerSheet[i]); i++; setTimeout(p, 500); } p(); };
+        window.openMakerSettings = function() { window.openSingleSettings('maker'); };
+        window.clearMakerSheet = function() { makerSheet=[]; document.getElementById('maker-sheet').innerHTML=''; document.getElementById('single-settings-modal').classList.add('hidden'); };
+        window.playMakerSheet = function() { document.getElementById('single-settings-modal').classList.add('hidden'); let i=0; function p(){ if(i>=makerSheet.length)return; window.playSound(makerSheet[i]); i++; setTimeout(p, 500); } p(); };
         
         // ==========================================
-        // 지정곡 연습 & 로컬 힌트 표시 통합 함수
+        // 3: 지정곡 연습 (설정 모달 통합)
         // ==========================================
         let pracOriginalMeasures = []; let pracFlatSong = []; let pracStage = 'all'; let pracCurrentBlock = 0; let pracCurrentNotes = []; let pracIdx = 0; let pracMode = false;
+
+        window.openPracticeSettings = function() {
+            window.populatePlayerSelect('practice-player-select');
+            document.getElementById('practice-settings-modal').classList.remove('hidden');
+        };
+        window.closePracticeSettings = function() { document.getElementById('practice-settings-modal').classList.add('hidden'); };
+        
+        window.applyPracticeSettings = function() {
+            window.singleActiveSlot = document.getElementById('practice-player-select').value;
+            document.getElementById('practice-song-select').value = document.getElementById('modal-practice-song').value;
+            document.getElementById('practice-stage-select').value = document.getElementById('modal-practice-stage').value;
+            window.closePracticeSettings();
+            window.loadPracticeSong();
+        };
 
         window.loadPracticeSong = function() { 
             const k = document.getElementById('practice-song-select').value; 
@@ -459,7 +577,7 @@
             pracOriginalMeasures = songData[k] || songData['airplane'];
             pracFlatSong = getFlatSong(k);
             pracCurrentBlock = 0; pracMode = false; window.hideArrow();
-            document.getElementById('practice-status').innerText = "옵션을 선택하고 시작 버튼을 누르세요.";
+            document.getElementById('practice-status').innerText = "옵션 설정 완료. [따라 치기]를 누르세요!";
             window.renderPracticeSheet(true); 
         };
 
@@ -507,86 +625,40 @@
             document.getElementById('practice-status').innerText = "🎯 지정된 건반을 누르세요!"; 
         };
 
-        // ★ 로컬 연습/2인 연주 시 지정된 힌트(화살표/아바타)를 건반에 뿌려주는 핵심 함수
-        window.updateLocalHint = function() {
-            if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
-                const cNote = pracCurrentNotes[pracIdx];
-                const myInfo = (window.myRole === -1) ? window.currentStudents['local1'] : (window.currentStudents[window.myRole] || {hintMode:'none'});
-                const hm = myInfo.hintMode || 'none';
-                
-                document.querySelectorAll('.bell').forEach(b => {
-                    b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
-                    if(bn === cNote) {
-                        if(hm === 'arrow') {
-                            b.classList.add('practice-active-note');
-                            setTimeout(()=> { const stEl = document.getElementById(`prac-n-${pracIdx}`); if(stEl) window.drawArrow(stEl, b); }, 50);
-                        } else if(hm === 'avatar') {
-                            const ava = myInfo.photo ? `<img src="${myInfo.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`;
-                            b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`;
-                        }
-                    }
-                });
-            } else if(window.currentMode === 'together' && togMode && togIdx < togSong.length) {
-                const cNote = togSong[togIdx];
-                const profile = togAssign[togIdx] || {hintMode:'none'};
-                const hm = profile.hintMode || 'none';
-                
-                document.querySelectorAll('.bell').forEach(b => {
-                    b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
-                    if(bn === cNote) {
-                        if(hm === 'arrow') {
-                            b.classList.add('practice-active-note');
-                            setTimeout(()=> { const stEl = document.getElementById(`tog-n-${togIdx}`); if(stEl) window.drawArrow(stEl, b); }, 50);
-                        } else if(hm === 'avatar') {
-                            const ava = profile.photo ? `<img src="${profile.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`;
-                            b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`;
-                        }
-                    }
-                });
-            } else {
-                window.hideArrow();
-            }
-        };
-        
         // ==========================================
-        // 2인 함께 연주
+        // 4: 🤝 2인 함께 연주
         // ==========================================
         let togSong = []; let togIdx = 0; let togMode = false; let togAssign = []; let togChunk = 'all';
 
         window.openTogetherSettings = function() {
             const p1Sel = document.getElementById('together-p1-select'); const p2Sel = document.getElementById('together-p2-select');
-            p1Sel.innerHTML = ''; p2Sel.innerHTML = ''; let hasSt = false;
-            
-            if(window.myRole === -1) {
-                // 자유 이용자 모드면 등록된 로컬 정보 우선 표시
-                const local = window.currentStudents['local1'];
-                p1Sel.add(new Option(local.name, "local1"));
-                p2Sel.add(new Option("기본 친구 (빨강)", "default2"));
-            } else {
-                for(let i=1; i<=6; i++) {
-                    if(window.currentStudents[i] && window.currentStudents[i].name) {
-                        p1Sel.add(new Option(`${i}번: ${window.currentStudents[i].name}`, i)); p2Sel.add(new Option(`${i}번: ${window.currentStudents[i].name}`, i)); hasSt = true;
-                    }
-                }
-                if(!hasSt) { p1Sel.add(new Option("학생 1 (파랑)", "default1")); p2Sel.add(new Option("학생 2 (빨강)", "default2")); } else { if(p2Sel.options.length > 1) p2Sel.selectedIndex = 1; }
+            p1Sel.innerHTML = ''; p2Sel.innerHTML = '';
+            for(let i=1; i<=6; i++) {
+                const st = window.currentStudents[i];
+                const nm = (st && st.name) ? `${i}번: ${st.name}` : `${i}번 자리`;
+                p1Sel.add(new Option(nm, i)); p2Sel.add(new Option(nm, i));
             }
+            p1Sel.selectedIndex = 0; p2Sel.selectedIndex = 1;
             document.getElementById('together-settings-modal').classList.remove('hidden');
         };
         window.closeTogetherSettings = function() { document.getElementById('together-settings-modal').classList.add('hidden'); };
         
         window.applyTogetherSettings = function() {
-            window.closeTogetherSettings(); document.getElementById('together-status').innerText = "설정이 완료되었습니다. [▶ 연주 시작]을 누르세요!";
+            window.closeTogetherSettings(); 
+            document.getElementById('together-song-select').value = document.getElementById('modal-together-song').value;
+            document.getElementById('together-status').innerText = "설정이 완료되었습니다. [▶ 연주 시작]을 누르세요!";
         }
 
         window.startTogetherMode = function() { 
             const song = document.getElementById('together-song-select').value;
-            togChunk = document.getElementById('together-chunk-select').value;
-            const p1Id = document.getElementById('together-p1-select').value || 'default1';
-            const p2Id = document.getElementById('together-p2-select').value || 'default2';
+            togChunk = document.getElementById('modal-together-chunk').value;
+            const p1Id = document.getElementById('together-p1-select').value || 1;
+            const p2Id = document.getElementById('together-p2-select').value || 2;
 
-            let p1Profile = window.currentStudents[p1Id] || { name: '학생 1', photo: '', color: '#3498db', hintMode: 'none' };
-            let p2Profile = window.currentStudents[p2Id] || { name: '학생 2', photo: '', color: '#e74c3c', hintMode: 'none' };
-            if(p1Id === 'default1') p1Profile = { name: '학생 1', photo: '', color: '#3498db', hintMode: 'none' }; if(p2Id === 'default2') p2Profile = { name: '학생 2', photo: '', color: '#e74c3c', hintMode: 'none' };
+            let p1Profile = window.currentStudents[p1Id] || { name: '학생 1', photo: '', hintMode: 'none' };
+            let p2Profile = window.currentStudents[p2Id] || { name: '학생 2', photo: '', hintMode: 'none' };
+            // 색상 고정 배정
+            p1Profile.color = '#3498db'; p2Profile.color = '#e74c3c';
 
             togSong = getFlatSong(song); togIdx = 0; togMode = true; togAssign = []; window.hideArrow();
             let chunkNum = togChunk === 'all' ? 1 : parseInt(togChunk); let currentPlayer = 1; let count = 0;
@@ -613,8 +685,62 @@
             }
         };
 
+        // ★ 로컬 연습/게임/2인 연주 시 지정된 힌트(화살표/아바타)를 건반에 뿌려주는 핵심 함수
+        window.updateLocalHint = function() {
+            // 게임 모드 힌트 적용
+            if (window.currentMode === 'game' && gameTarget) {
+                const myInfo = window.currentStudents[window.singleActiveSlot] || {hintMode:'none'};
+                const hm = myInfo.hintMode || 'none';
+                document.querySelectorAll('.bell').forEach(b => {
+                    b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
+                    if(bn === gameTarget) {
+                        if(hm === 'arrow') { b.classList.add('practice-active-note'); /* 게임은 타겟 엘리먼트가 고정되지 않아 화살표 생략하고 빛나게만 유지 */ } 
+                        else if(hm === 'avatar') { const ava = myInfo.photo ? `<img src="${myInfo.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`; b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`; }
+                    }
+                });
+            }
+            else if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
+                const cNote = pracCurrentNotes[pracIdx];
+                const myInfo = window.currentStudents[window.singleActiveSlot] || {hintMode:'none'};
+                const hm = myInfo.hintMode || 'none';
+                
+                document.querySelectorAll('.bell').forEach(b => {
+                    b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
+                    if(bn === cNote) {
+                        if(hm === 'arrow') {
+                            b.classList.add('practice-active-note');
+                            setTimeout(()=> { const stEl = document.getElementById(`prac-n-${pracIdx}`); if(stEl) window.drawArrow(stEl, b); }, 50);
+                        } else if(hm === 'avatar') {
+                            const ava = myInfo.photo ? `<img src="${myInfo.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`;
+                            b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`;
+                        }
+                    }
+                });
+            } 
+            else if(window.currentMode === 'together' && togMode && togIdx < togSong.length) {
+                const cNote = togSong[togIdx];
+                const profile = togAssign[togIdx] || {hintMode:'none'};
+                const hm = profile.hintMode || 'none';
+                
+                document.querySelectorAll('.bell').forEach(b => {
+                    b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
+                    if(bn === cNote) {
+                        if(hm === 'arrow') {
+                            b.classList.add('practice-active-note');
+                            setTimeout(()=> { const stEl = document.getElementById(`tog-n-${togIdx}`); if(stEl) window.drawArrow(stEl, b); }, 50);
+                        } else if(hm === 'avatar') {
+                            const ava = profile.photo ? `<img src="${profile.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`;
+                            b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`;
+                        }
+                    }
+                });
+            } else {
+                window.hideArrow();
+            }
+        };
+
         // ==========================================
-        // 전체 공통 터치(클릭) 이벤트 핸들러
+        // ★ 전체 공통 터치(클릭) 이벤트 핸들러
         // ==========================================
         window.handleBellClick = function(note) {
             window.playSound(note);
@@ -630,7 +756,7 @@
                 }
             }
             else if(window.currentMode === 'game' && gameTarget) {
-                if(note === gameTarget) { document.getElementById('game-status').innerText="정답입니다! 🎉"; document.getElementById(`bell-${note}`).classList.add('success-pop'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('success-pop'),1000); gameTarget=''; document.getElementById('btn-replay-game').style.display='none'; } 
+                if(note === gameTarget) { document.getElementById('game-status').innerText="정답입니다! 🎉"; document.getElementById(`bell-${note}`).classList.add('success-pop'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('success-pop'),1000); gameTarget=''; document.getElementById('btn-replay-game').style.display='none'; document.querySelectorAll('.bell').forEach(b => { b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`; });} 
                 else { document.getElementById('game-status').innerText="틀렸어요. 다시 들어보세요."; document.getElementById(`bell-${note}`).classList.add('error-shake'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); }
             }
             else if(window.currentMode === 'maker') { 
@@ -687,7 +813,7 @@
         };
 
         // ==========================================
-        // 로비 및 카메라 관련 공통 기능
+        // 파이어베이스 및 로비, 카메라 기능
         // ==========================================
         window.enterAsTeacher = function() { 
             const tRef = window.dbRef(window.db, 'classSession/teacherActive');
@@ -701,16 +827,17 @@
         window.teacherLogout = function() { if(confirm("종료하시겠습니까?")){ window.dbSet(window.dbRef(window.db,'classSession/teacherActive'), false).then(()=>location.reload()); } };
         
         window.enterAsFreeUser = function() { 
-            window.myRole = -1; document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); 
+            window.myRole = -1; 
+            window.currentStudents = window.localStudents; // ★ 자유 이용자 모드 진입 시 로컬 데이터 맵핑
+            document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); 
             document.getElementById('tab-dashboard').style.display='none'; document.getElementById('tab-multi').style.display='none'; 
-            document.getElementById('tab-free-reg').classList.remove('hidden'); // 등록 버튼 보이기
+            document.getElementById('tab-free-reg').classList.remove('hidden');
             window.setMode('free'); 
         };
         
         window.showStudentForm = function() { document.getElementById('entry-selection').style.display='none'; document.getElementById('entry-student-form').classList.remove('hidden'); window.updateEntrySlotUI(); };
         window.backToEntrySelection = function() { document.getElementById('entry-selection').style.display='block'; document.getElementById('entry-student-form').classList.add('hidden'); };
-        window.updateEntrySlotUI = function() { const sel=document.getElementById('entry-slot-select'); if(!sel)return; sel.innerHTML=''; let c=0; for(let i=1;i<=6;i++){ const st=window.currentStudents[i]; const op=document.createElement('option'); op.value=i; if(st){op.text=`[사용중] ${i}번`;op.disabled=true;}else{op.text=`[빈자리] ${i}번`;c++;} sel.appendChild(op); } document.getElementById('empty-slot-indicator').innerText=`빈자리: ${c}개`; };
-        
+        window.updateEntrySlotUI = function() { const sel=document.getElementById('entry-slot-select'); if(!sel)return; sel.innerHTML=''; let c=0; for(let i=1;i<=6;i++){ const st=window.currentStudents[i]; const op=document.createElement('option'); op.value=i; if(st && st.status !== 'waiting'){op.text=`[사용중] ${i}번`;op.disabled=true;}else{op.text=`[빈자리] ${i}번`;c++;} sel.appendChild(op); } document.getElementById('empty-slot-indicator').innerText=`빈자리: ${c}개`; };
         window.joinAsStudent = function() { const slot=document.getElementById('entry-slot-select').value; const name=document.getElementById('entry-name').value.trim(); if(!slot) return; window.myRole = parseInt(slot); window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { name: name||`학생 ${slot}`, photo: window.studentPhotoBase64, status: 'waiting', hintMode: 'none' }).then(() => { document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); window.checkMyStatus(); }); };
 
         let mediaStream = null;
@@ -762,10 +889,10 @@
             window.dbOnValue(studentsRef, (snap) => {
                 const s = snap.val() || {}; if (window.myRole > 0 && !s[window.myRole]) { alert("강퇴되었습니다."); location.reload(); return; }
                 
-                // 로컬 정보 보호
-                const backupLocal = window.currentStudents['local1'];
-                window.currentStudents = s; 
-                if(backupLocal) window.currentStudents['local1'] = backupLocal;
+                // ★ 자유 이용자 모드가 아닐 때만 파이어베이스 데이터를 currentStudents에 맵핑
+                if (window.myRole !== -1) {
+                    window.currentStudents = s; 
+                }
 
                 if(document.getElementById('entry-screen').style.display !== 'none') window.updateEntrySlotUI();
                 if (window.myRole === 0) window.renderTeacherDashboard(); if (window.myRole > 0) window.checkMyStatus();
