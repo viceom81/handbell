@@ -99,7 +99,7 @@
         <div class="entry-box hidden" id="entry-student-form">
             <h2 style="color: #3498db; margin-top: 0; font-size:2.5rem;">🧑‍🎓 학생 입장</h2>
             
-            <!-- 선점된 자리는 아예 보이지 않게 처리 -->
+            <!-- 선점된 자리는 보이지 않게 처리 -->
             <select id="entry-slot-select" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 10px; border-radius:10px; border: 2px solid #3498db; font-weight:bold;"></select>
             <div id="empty-slot-indicator" style="margin-bottom: 15px; font-size: 1.1rem; color: #e74c3c; font-weight: bold;"></div>
             
@@ -237,6 +237,7 @@
             </div>
         </div>
 
+        <!-- 하단 건반 영역 -->
         <div class="bell-area-container no-print">
             <div class="bell-container" id="bells"></div>
         </div>
@@ -404,7 +405,7 @@
 
         function getFlatSong(key) { var arr = songData[key] || songData['airplane']; return arr.reduce(function(acc, val) { return acc.concat(val); }, []); }
 
-        window.currentMode = 'free'; window.myRole = -1; window.studentPhotoBase64 = ''; window.currentStudents = {}; window.currentApprovedCount = 1;
+        window.currentMode = 'free'; window.myRole = null; window.studentPhotoBase64 = ''; window.currentStudents = {}; window.currentApprovedCount = 1;
         window.singleActiveSlot = 1; 
         
         window.localStudents = {
@@ -462,7 +463,7 @@
             
             if (mode !== 'free') document.getElementById('free-play-display').innerHTML = '';
 
-            if (window.myRole > 0 && mode !== 'multi') { document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); return; }
+            if (window.myRole !== null && window.myRole > 0 && mode !== 'multi') { document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); return; }
             if (window.myRole === -1 && mode === 'multi') { alert("자유 이용자는 실시간 합주에 참여할 수 없습니다."); window.setMode('free'); return; }
             if (mode === 'multi') {
                 const tc = document.getElementById('multi-teacher-controls');
@@ -472,7 +473,7 @@
         };
 
         // ==========================================
-        // ★ 자유 이용자 로컬 데이터 및 사진 업로드 (완전 복원)
+        // ★ 자유 이용자 로컬 데이터 처리 및 사진 업로드
         // ==========================================
         window.openFreeUserRegistration = function() { 
             document.getElementById('free-user-reg-modal').classList.remove('hidden'); 
@@ -529,7 +530,7 @@
         };
 
         // ==========================================
-        // ★ 공통 연주자 선택 (설정 모달들)
+        // ★ 공통 연주자 선택 창 생성
         // ==========================================
         window.populatePlayerSelect = function(selectId) {
             const sel = document.getElementById(selectId);
@@ -620,6 +621,8 @@
             pracOriginalMeasures = songData[k] || songData['airplane'];
             pracFlatSong = getFlatSong(k);
             pracCurrentBlock = 0; pracMode = false; window.hideArrow();
+            document.getElementById('practice-status').innerText = "설정 완료! [▶ 자동 연주]나 [🎯 따라 치기]를 누르세요.";
+            window.renderPracticeSheet(true); 
         };
 
         window.renderPracticeSheet = function(isPreview = false) {
@@ -676,8 +679,7 @@
             p1Sel.innerHTML = ''; p2Sel.innerHTML = '';
             for(let i=1; i<=6; i++) {
                 const st = window.currentStudents[i];
-                let nm = `${i}번 연주자`;
-                if(st && st.name && !st.name.includes('번 연주자')) nm = `${i}번: ${st.name}`;
+                let nm = (st && st.name && !st.name.includes('번 연주자')) ? `${i}번: ${st.name}` : `${i}번 자리 (연주자 ${i})`;
                 p1Sel.add(new Option(nm, i)); p2Sel.add(new Option(nm, i));
             }
             p1Sel.selectedIndex = 0; p2Sel.selectedIndex = 1;
@@ -729,7 +731,8 @@
 
         window.renderTogetherSheet = function() {
             const cont = document.getElementById('together-sheet'); cont.innerHTML = '';
-            
+            let chunkNum = togChunk === 'all' ? togSong.length : parseInt(togChunk);
+
             togSong.forEach((n, i) => {
                 const profile = togAssign[i]; const wrap = document.createElement('div'); wrap.className = 'note-with-avatar'; wrap.id = `tog-wrap-${i}`;
                 
@@ -820,7 +823,7 @@
             else if(window.currentMode === 'together' && togMode && togIdx < togSong.length) {
                 if(note !== togSong[togIdx]) shouldPlaySound = false;
             }
-            else if (window.currentMode === 'multi' && currentMultiState && currentMultiState.isPlaying && window.myRole > 0) {
+            else if (window.currentMode === 'multi' && currentMultiState && currentMultiState.isPlaying && window.myRole !== null && window.myRole > 0) {
                 const fs = getFlatSong(currentMultiState.song); const cNote = fs[currentMultiState.currentIndex];
                 const sSeq = currentMultiState.roleSequence || []; const tRole = sSeq[currentMultiState.currentIndex];
                 if (window.myRole === tRole && note !== cNote) { shouldPlaySound = false; }
@@ -888,7 +891,7 @@
             }
             else if (window.currentMode === 'multi') {
                 if (!currentMultiState || !currentMultiState.isPlaying) return;
-                if (window.myRole === 0) return; 
+                if (window.myRole === null || window.myRole === 0) return; 
                 const fs = getFlatSong(currentMultiState.song); const cNote = fs[currentMultiState.currentIndex];
                 const sSeq = currentMultiState.roleSequence || []; const tRole = sSeq[currentMultiState.currentIndex];
                 if (window.myRole === tRole) {
@@ -914,36 +917,60 @@
         
         window.enterAsFreeUser = function() { 
             window.myRole = -1; 
-            window.currentStudents = window.localStudents;
+            window.currentStudents = window.localStudents; // ★ 자유 이용자 모드 진입 시 로컬 데이터 맵핑
             document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); 
             document.getElementById('tab-dashboard').style.display='none'; document.getElementById('tab-multi').style.display='none'; 
             document.getElementById('tab-free-reg').classList.remove('hidden');
             window.setMode('free'); 
         };
         
-        // ★ 빈자리만 보여주는 로직
+        // ★ 빈자리만 보여주는 로직 (이미 선점된 자리는 아예 감춤)
         window.showStudentForm = function() { document.getElementById('entry-selection').style.display='none'; document.getElementById('entry-student-form').classList.remove('hidden'); window.updateEntrySlotUI(); };
         window.backToEntrySelection = function() { document.getElementById('entry-selection').style.display='block'; document.getElementById('entry-student-form').classList.add('hidden'); };
         
         window.updateEntrySlotUI = function() { 
             const sel=document.getElementById('entry-slot-select'); if(!sel)return; 
+            const currentVal = sel.value;
             sel.innerHTML=''; let c=0; 
             for(let i=1;i<=6;i++){ 
                 const st=window.currentStudents[i]; 
-                if(!st || !st.name){
+                if(!st || !st.name || st.name.trim() === ''){
                     const op=document.createElement('option'); op.value=i; op.text=`[빈자리] ${i}번`; sel.appendChild(op); c++;
                 } 
             } 
             const ind = document.getElementById('empty-slot-indicator');
             if (c === 0) {
                 const op=document.createElement('option'); op.value=""; op.text="선택 가능한 빈자리가 없습니다."; sel.appendChild(op);
-                sel.disabled = true; if(ind) ind.innerText = `현재 빈 자리가 없습니다.`;
+                sel.disabled = true; if(ind) ind.innerText = `현재 모든 자리가 꽉 찼습니다.`;
             } else {
                 sel.disabled = false; if(ind) ind.innerText = `빈자리: ${c}개`;
+                if (currentVal && Array.from(sel.options).some(opt => opt.value === currentVal)) {
+                    sel.value = currentVal;
+                }
             }
         };
 
-        window.joinAsStudent = function() { const slot=document.getElementById('entry-slot-select').value; const name=document.getElementById('entry-name').value.trim(); if(!slot) return; window.myRole = parseInt(slot); window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { name: name||`학생 ${slot}`, photo: window.studentPhotoBase64, status: 'waiting', hintMode: 'none' }).then(() => { document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); window.checkMyStatus(); }); };
+        window.joinAsStudent = function() { 
+            const slot=document.getElementById('entry-slot-select').value; 
+            const name=document.getElementById('entry-name').value.trim(); 
+            if(!slot) return; 
+
+            // ★ 완벽한 중복 방지 (이미 선점된 자리인지 확인)
+            if(window.currentStudents[slot] && window.currentStudents[slot].name && window.currentStudents[slot].name.trim() !== '') {
+                alert("이런! 방금 다른 친구가 먼저 자리를 선택했어요. 다른 빈자리를 골라주세요!");
+                window.updateEntrySlotUI();
+                return;
+            }
+
+            window.myRole = parseInt(slot); 
+            window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { name: name||`학생 ${slot}`, photo: window.studentPhotoBase64, status: 'waiting', hintMode: 'none' }).then(() => { 
+                document.getElementById('entry-screen').style.display='none'; 
+                document.getElementById('main-app').classList.remove('hidden'); 
+                document.getElementById('main-tabs').style.display='none'; 
+                window.setMode('multi'); 
+                window.checkMyStatus(); 
+            }); 
+        };
 
         let mediaStream = null;
         window.openCamera = function(targetMode) { window.cameraTarget = targetMode; document.getElementById('camera-modal').classList.remove('hidden'); navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }).then(stream => { mediaStream = stream; const video = document.getElementById('camera-video'); video.srcObject = stream; video.play(); }).catch(err => { alert("카메라 권한이 필요합니다."); window.closeCamera(); }); }
@@ -987,24 +1014,28 @@
         window.kickStudent = function(s) { if(confirm("삭제?")) window.dbSet(window.dbRef(window.db, `classSession/students/${s}`), null); };
         window.updateHintMode = function(s, v) { window.dbUpdate(window.dbRef(window.db, `classSession/students/${s}`), { hintMode: v }); };
         window.resetAllStudents = function() { if(confirm("초기화?")) { window.dbSet(studentsRef, null); window.dbSet(sessionRef, { isPlaying:false, song:'airplane', currentIndex:0, playerCount:6 }); } };
-        window.checkMyStatus = function() { if(window.myRole<=0)return; const my = window.currentStudents[window.myRole]; const blk = document.getElementById('student-blocker'); if(!my || my.status==='waiting'){ blk.classList.remove('hidden'); document.getElementById('blocker-name').innerText=my?`${window.myRole}번 대기 중`:"등록 필요"; }else{ blk.classList.add('hidden'); } };
+        window.checkMyStatus = function() { if(window.myRole === null || window.myRole<=0)return; const my = window.currentStudents[window.myRole]; const blk = document.getElementById('student-blocker'); if(!my || my.status==='waiting'){ blk.classList.remove('hidden'); document.getElementById('blocker-name').innerText=my?`${window.myRole}번 대기 중`:"등록 필요"; }else{ blk.classList.add('hidden'); } };
 
         window.initMultiplayer = function() {
             sessionRef = window.dbRef(window.db, 'classSession/state'); studentsRef = window.dbRef(window.db, 'classSession/students');
             window.dbOnValue(studentsRef, (snap) => {
-                const s = snap.val() || {}; if (window.myRole > 0 && !s[window.myRole]) { alert("강퇴되었습니다."); location.reload(); return; }
+                const s = snap.val() || {}; if (window.myRole !== null && window.myRole > 0 && !s[window.myRole]) { alert("강퇴되었습니다."); location.reload(); return; }
                 
+                // ★ 자유 이용자 모드가 아닐 때만 파이어베이스 데이터를 currentStudents에 맵핑
+                // 로비 화면(myRole === null)일 때도 데이터 동기화해야 빈자리가 업데이트 됨!
                 if (window.myRole !== -1) {
                     window.currentStudents = s; 
                 }
 
                 if(document.getElementById('entry-screen').style.display !== 'none') window.updateEntrySlotUI();
-                if (window.myRole === 0) window.renderTeacherDashboard(); if (window.myRole > 0) window.checkMyStatus();
+                if (window.myRole === 0) window.renderTeacherDashboard(); 
+                if (window.myRole !== null && window.myRole > 0) window.checkMyStatus();
+                
                 let c = 0; for(let i=1;i<=6;i++){ if(s[i]&&s[i].status==='allowed')c++; } window.currentApprovedCount=c||1;
                 const cel = document.getElementById('auto-player-count'); if(cel) cel.innerText=c;
                 if(window.currentMode==='multi') window.updateMultiplayerUI();
             });
-            window.dbOnValue(sessionRef, (snap) => { const d = snap.val(); if(d) { currentMultiState=d; if(window.currentMode==='multi'&&window.myRole>=0) window.updateMultiplayerUI(); } });
+            window.dbOnValue(sessionRef, (snap) => { const d = snap.val(); if(d) { currentMultiState=d; if(window.currentMode==='multi'&&window.myRole !== null && window.myRole>=0) window.updateMultiplayerUI(); } });
         };
         setInterval(() => { if (window.myRole===0 && window.currentMode==='dashboard') window.renderTeacherDashboard(); }, 2000);
         if (typeof window.initMultiplayer === 'function') window.initMultiplayer();
@@ -1027,7 +1058,7 @@
         window.updateMultiplayerUI = function() {
             try {
                 window.hideArrow();
-                if(window.myRole<0) return; const stx = document.getElementById('multi-status-text'); const tel = document.getElementById('multi-target-note');
+                if(window.myRole === null || window.myRole<0) return; const stx = document.getElementById('multi-status-text'); const tel = document.getElementById('multi-target-note');
                 if(!stx || !tel) return;
                 
                 if (currentMultiState && currentMultiState.isPlaying) {
