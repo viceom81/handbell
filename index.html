@@ -18,9 +18,18 @@
         .btn-large:active { transform: scale(0.95); }
         
         /* 메인 앱 레이아웃 (100인치 꽉 차게) */
-        #main-app { display: flex; flex-direction: column; height: 100vh; width: 100%; max-width: 1800px; margin: 0 auto; padding: 1vh 1vw; }
-        h1 { margin: 1vh 0; font-size: 2.2rem; text-align: center; color: var(--primary-color); flex-shrink: 0; }
+        #main-app { display: flex; flex-direction: column; height: 100vh; width: 100%; max-width: 1800px; margin: 0 auto; padding: 1vh 1vw; position: relative; }
         
+        /* 상단 헤더: 제목 + 볼륨 컨트롤러 */
+        .header-area { display: flex; justify-content: space-between; align-items: center; padding: 0 20px; flex-shrink: 0; }
+        h1 { margin: 1vh 0; font-size: 2.2rem; color: var(--primary-color); }
+        
+        /* 볼륨 컨트롤러 디자인 */
+        .volume-container { display: flex; align-items: center; gap: 15px; background: white; padding: 10px 25px; border-radius: 50px; border: 3px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .volume-label { font-weight: bold; font-size: 1.2rem; color: #555; white-space: nowrap; }
+        #volume-slider { width: 250px; height: 15px; cursor: pointer; accent-color: #e67e22; }
+        #volume-value { font-weight: bold; font-size: 1.4rem; color: #e67e22; min-width: 60px; text-align: center; }
+
         /* 탭 메뉴 */
         .tabs { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 1vh; flex-shrink: 0; }
         .tab-btn { padding: 12px 25px; font-size: 1.3rem; font-weight: bold; border: 3px solid var(--primary-color); background: white; color: var(--primary-color); border-radius: 30px; cursor: pointer; transition: 0.2s; }
@@ -36,13 +45,16 @@
         .profile-card { background: #f9f9f9; padding: 15px; border-radius: 15px; border: 3px solid #eee; display: flex; flex-direction: column; align-items: center; }
         .preview-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 4px solid #ddd; margin: 5px auto; display: block; }
         
-        /* 음표/악보 영역 */
         .sheet-display { flex: 1; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-content: flex-start; margin-top: 10px; padding: 20px; background: #f0f0f0; border-radius: 15px; width: 100%; }
         .note-badge { display: inline-block; width: 60px; height: 60px; line-height: 60px; text-align: center; border-radius: 50%; font-weight: bold; font-size: 22px; box-shadow: 0 4px 8px rgba(0,0,0,0.15); transition: all 0.2s ease-out; }
         .together-large-note { width: 90px !important; height: 90px !important; line-height: 90px !important; font-size: 34px !important; margin: 8px !important; border-width: 5px !important; }
         .practice-active-note { border: 5px solid #333; transform: scale(1.15); z-index: 10; position: relative; }
         .practice-completed-note { opacity: 0.3; transform: scale(0.9); }
         .measure-divider { width: 4px; height: 50px; background-color: #999; border-radius: 2px; margin: 5px 8px; }
+
+        .note-col { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 0 4px; }
+        .note-empty { display: inline-block; width: 60px; height: 60px; border-radius: 50%; border: 4px dashed #bbb; background: transparent; }
+        .together-large-note.note-empty { width: 90px; height: 90px; border-width: 5px; }
 
         /* 하단 건반 영역 */
         .bell-area-container { flex: 0 0 38vh; width: 100%; padding-bottom: 2vh; }
@@ -66,8 +78,6 @@
         .setting-select { padding: 12px; font-size: 1.3rem; border-radius: 10px; border: 2px solid #ccc; flex: 1; max-width: 400px; }
         #student-blocker { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(44, 62, 80, 0.95); z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
         
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
         .pop-animation { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
@@ -86,7 +96,6 @@
         <path id="hint-arrow-path" fill="none" stroke="#E74C3C" stroke-width="6" class="dash-anim" marker-end="url(#arrowhead)" stroke-linecap="round" />
     </svg>
 
-    <!-- 입장 로비 화면 -->
     <div id="entry-screen" style="display:flex;">
         <div class="entry-box" id="entry-selection">
             <h1 style="font-size: 3.2rem; margin-bottom: 25px;">🎵 스마트 핸드벨</h1>
@@ -100,7 +109,7 @@
             <h2 style="color: #3498db; margin-top: 0; font-size:2.5rem;">🧑‍🎓 학생 입장</h2>
             <select id="entry-slot-select" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 10px; border-radius:10px; border: 2px solid #3498db; font-weight:bold;"></select>
             <div id="empty-slot-indicator" style="margin-bottom: 15px; font-size: 1.1rem; color: #e74c3c; font-weight: bold;"></div>
-            <input type="text" id="entry-name" placeholder="이름 입력 (또는 앨범 선택 시 자동입력)" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #ccc;">
+            <input type="text" id="entry-name" placeholder="이름 입력 (또는 앨범 사진 선택 시 자동입력)" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #ccc;">
             <div style="margin-bottom: 20px; text-align:center;">
                 <img id="entry-photo-preview" class="preview-img hidden" src="" style="width:100px; height:100px; border-color:#3498db; margin: 0 auto 10px auto;">
                 <div id="entry-photo-placeholder" class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:3rem; border-color:#3498db; width:100px; height:100px; margin: 0 auto 10px auto;">👤</div>
@@ -117,14 +126,12 @@
         </div>
     </div>
 
-    <!-- 대기 화면 -->
     <div id="student-blocker" class="hidden">
         <h2 style="color: #f1c40f; font-size: 5rem; margin-bottom: 20px;">⏳ 대기 중</h2>
         <p style="font-size: 2rem;">선생님의 활동 승인을 기다리고 있습니다.</p>
         <div id="blocker-name" style="font-size: 2.5rem; font-weight: bold; color: #3498db; margin-top: 30px;"></div>
     </div>
 
-    <!-- 카메라 모달 -->
     <div id="camera-modal" class="modal-overlay hidden">
         <div class="modal-box" style="background: rgba(0,0,0,0.8); padding:40px;">
             <video id="camera-video" autoplay playsinline style="width:100%; border-radius:20px; transform: scaleX(-1);"></video>
@@ -135,13 +142,20 @@
         </div>
     </div>
 
-    <!-- 메인 앱 영역 -->
     <div id="main-app" class="hidden">
-        <h1 class="no-print">🎵 스마트 핸드벨 교실</h1>
+        
+        <div class="header-area">
+            <h1>🎵 스마트 핸드벨 교실</h1>
+            
+            <div class="volume-container">
+                <span class="volume-label">🔊 출력 증폭:</span>
+                <input type="range" id="volume-slider" min="0" max="500" value="100" oninput="window.updateVolumeDisplay(this.value)">
+                <span id="volume-value">100%</span>
+            </div>
+        </div>
 
         <div class="tabs no-print" id="main-tabs">
             <button class="tab-btn active" onclick="window.setMode('dashboard')" id="tab-dashboard" style="border-color:#9b59b6;">👨‍👩‍👧‍👦 접속 관리</button>
-            <!-- 자유 이용자용 연주자 등록 버튼 -->
             <button class="tab-btn hidden" onclick="window.openFreeUserRegistration()" id="tab-free-reg" style="background-color:#27ae60; color:white; border-color:#27ae60;">👤 연주자 등록</button>
             <button class="tab-btn" onclick="window.setMode('free')">자유 연주</button>
             <button class="tab-btn" onclick="window.setMode('game')">소리 맞추기</button>
@@ -151,7 +165,6 @@
             <button class="tab-btn" onclick="window.setMode('multi')" id="tab-multi" style="background:#e74c3c; color:white; border-color:#e74c3c;">📡 실시간 합주</button>
         </div>
 
-        <!-- 1. 접속 관리 -->
         <div id="panel-dashboard" class="control-panel">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom: 15px; margin-bottom: 15px;">
                 <h3 style="color:#9b59b6; margin:0; font-size: 2rem;">👨‍👩‍👧‍👦 학생 접속 관리</h3>
@@ -163,7 +176,6 @@
             <div class="profile-container" id="teacher-dashboard-grid"></div>
         </div>
 
-        <!-- 2. 자유 연주 -->
         <div id="panel-free" class="control-panel hidden">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom: 10px;">
                 <h3 style="margin:0; font-size:2rem;">자유 연주</h3>
@@ -172,7 +184,6 @@
             <div id="free-play-display" class="sheet-display" style="flex:1; display:flex; align-items:center; justify-content:center; gap: 20px; background: transparent;"></div>
         </div>
         
-        <!-- 3. 소리 맞추기 게임 -->
         <div id="panel-game" class="control-panel hidden">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom: 10px; margin-bottom:15px;">
                 <h3 style="margin:0; font-size:2rem;">소리 맞추기 게임</h3>
@@ -185,18 +196,15 @@
             <div id="game-status" class="score-text" style="color:#8E44AD; font-size:1.8rem; margin-top:20px;">시작 버튼을 눌러주세요.</div>
         </div>
 
-        <!-- 4. 악보 만들기 -->
         <div id="panel-maker" class="control-panel hidden">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom: 10px;">
                 <h3 style="margin:0; color:#9b59b6; font-size:2rem;">악보 만들기</h3>
                 <button class="action-btn" onclick="window.openMakerSettings()" style="background:#9b59b6; margin:0; font-size:1.3rem;">⚙️ 옵션 설정</button>
             </div>
-            <!-- 따라 치기 상태 안내 -->
             <div id="maker-status" class="score-text hidden" style="color:#9b59b6; font-size:1.6rem; margin:10px 0 0 0; text-align:center;">🎯 지정된 건반을 누르세요!</div>
             <div id="maker-sheet" class="sheet-display" style="flex:1; margin:0; margin-top:10px; align-items:flex-start; align-content:flex-start;"></div>
         </div>
 
-        <!-- 5. 지정곡 연습 -->
         <div id="panel-practice" class="control-panel hidden">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 3px solid #eee; padding-bottom:10px;">
                 <h3 style="margin:0; color:#3498DB; font-size:2rem;">지정곡 연습</h3>
@@ -206,7 +214,6 @@
             <div id="practice-sheet" class="sheet-display" style="flex:1; align-items:flex-start; align-content:flex-start; overflow-y:auto; margin-top:15px;"></div>
         </div>
 
-        <!-- 6. 2인 연주 -->
         <div id="panel-together" class="control-panel hidden">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
                 <h3 style="margin:0; color:#e67e22; font-size:2rem;">🤝 2인 함께 연주</h3>
@@ -216,7 +223,6 @@
             <div id="together-sheet" class="sheet-display" style="flex:1; align-items:flex-start; align-content:flex-start;"></div>
         </div>
 
-        <!-- 7. 실시간 합주 -->
         <div id="panel-multi" class="control-panel hidden">
             <h3 style="color: #e74c3c; font-size: 2rem; margin: 0 0 15px 0;">📡 실시간 합주</h3>
             <div id="multi-teacher-controls" class="hidden" style="background:#fdf2e9; padding:15px; border-radius:15px; border:3px solid #e74c3c; margin-bottom:15px;">
@@ -239,150 +245,48 @@
         </div>
     </div>
 
-    <!-- ==============================================
-         모달 (설정 및 팝업) 영역 
-         ============================================== -->
-         
-    <!-- 자유 이용자 연주자 등록 모달 -->
     <div id="free-user-reg-modal" class="modal-overlay hidden">
         <div class="modal-box" style="border: 4px solid #2ecc71; max-width: 550px;">
-            <h3 style="color: #2ecc71; margin-top: 0; margin-bottom: 10px; font-size: 2rem;">👤 연주자 등록 (선택)</h3>
-            <p style="font-size:1.2rem; color:#555; margin-bottom:20px;">등록하지 않고 바로 이용해도 됩니다.</p>
-            
-            <div class="setting-row" style="margin-bottom: 15px;">
-                <span class="setting-label" style="min-width:80px;">저장 슬롯:</span>
-                <select id="free-reg-slot" onchange="window.loadFreeUserSlot()" style="width: 100%; padding: 12px; font-size: 1.3rem; border-radius:10px; border: 2px solid #2ecc71; font-weight:bold;">
-                    <option value="1">1번 연주자</option><option value="2">2번 연주자</option><option value="3">3번 연주자</option><option value="4">4번 연주자</option><option value="5">5번 연주자</option><option value="6">6번 연주자</option>
-                </select>
-            </div>
-            
-            <input type="text" id="free-user-name" placeholder="이름 입력 (또는 사진 이름 자동 적용)" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #ccc;">
-            
-            <div style="margin-bottom: 20px; text-align:center;">
-                <img id="free-user-photo-preview" class="preview-img hidden" src="" style="width:100px; height:100px; border-color:#2ecc71;">
-                <div id="free-user-photo-placeholder" class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:3rem; border-color:#2ecc71; width:100px; height:100px;">👤</div>
-                <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
-                    <button class="action-btn" onclick="window.openCamera('free')" style="background: #2ecc71; padding:12px 20px;">📷 카메라</button>
-                    <label for="free-user-file" class="action-btn" style="background: #16a085; cursor: pointer; padding:12px 20px; display:inline-block; margin:5px;">📁 앨범 선택</label>
-                    <input type="file" id="free-user-file" accept="image/*" style="display:none;" onchange="window.handleFreeUserFile(event)">
-                </div>
-            </div>
-
-            <div class="setting-row" style="background:#e9f7ef; padding:15px; border-radius:10px;">
-                <span class="setting-label" style="min-width:90px; color:#27ae60;">힌트 모드:</span>
-                <select id="free-user-hint-select" class="setting-select" style="border-color:#2ecc71; font-weight:bold;">
-                    <option value="none" selected>💡 없음 (스스로 찾기)</option>
-                    <option value="arrow">💡 실시간 화살표 표시</option>
-                    <option value="avatar">💡 정답 위 내 사진 표시</option>
-                </select>
-            </div>
-
-            <div style="display: flex; gap: 15px; margin-top: 25px;">
-                <button class="btn-large" style="background: #2ecc71; flex: 2; margin:0;" onclick="window.saveFreeUser()">✅ 저장 및 적용</button>
-                <button class="btn-large" style="background: #95a5a6; flex: 1; margin:0;" onclick="window.closeFreeUserReg()">닫기</button>
-            </div>
+            <h3 style="color: #2ecc71; margin-top: 0; margin-bottom: 10px; font-size: 2rem;">👤 연주자 등록</h3>
+            <select id="free-reg-slot" onchange="window.loadFreeUserSlot()" style="width: 100%; padding: 12px; font-size: 1.3rem; border-radius:10px; border: 2px solid #2ecc71; margin-bottom:15px; font-weight:bold;"><option value="1">1번 연주자</option><option value="2">2번 연주자</option><option value="3">3번 연주자</option><option value="4">4번 연주자</option><option value="5">5번 연주자</option><option value="6">6번 연주자</option></select>
+            <input type="text" id="free-user-name" placeholder="이름 입력" style="width: 100%; padding: 15px; font-size: 1.3rem; margin-bottom: 15px; border-radius:10px; border: 2px solid #ccc;">
+            <div style="margin-bottom: 20px; text-align:center;"><img id="free-user-photo-preview" class="preview-img hidden" src="" style="width:100px; height:100px; border-color:#2ecc71; margin: 0 auto 10px auto;"><div id="free-user-photo-placeholder" class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:3rem; border-color:#2ecc71; width:100px; height:100px; margin: 0 auto 10px auto;">👤</div><div style="display:flex; gap:10px; justify-content:center;"><button class="action-btn" onclick="window.openCamera('free')" style="background: #2ecc71; padding:12px 20px;">📷 카메라</button><label for="free-user-file" class="action-btn" style="background: #16a085; cursor: pointer; padding:12px 20px; display:inline-block; margin:5px;">📁 앨범 선택</label><input type="file" id="free-user-file" accept="image/*" style="display:none;" onchange="window.handleFreeUserFile(event)"></div></div>
+            <div class="setting-row" style="background:#e9f7ef; padding:15px; border-radius:10px;"><span class="setting-label" style="min-width:90px; color:#27ae60;">힌트 모드:</span><select id="free-user-hint-select" class="setting-select" style="border-color:#2ecc71; font-weight:bold;"><option value="none" selected>💡 없음</option><option value="arrow">💡 실시간 화살표</option><option value="avatar">💡 정답 위 사진</option></select></div>
+            <div style="display: flex; gap: 15px; margin-top: 25px;"><button class="btn-large" style="background: #2ecc71; flex: 2; margin:0;" onclick="window.saveFreeUser()">✅ 저장 및 적용</button><button class="btn-large" style="background: #95a5a6; flex: 1; margin:0;" onclick="window.closeFreeUserReg()">닫기</button></div>
         </div>
     </div>
 
-    <!-- 공통 1인 플레이어 설정 모달 (자유연주, 게임, 악보만들기) -->
     <div id="single-settings-modal" class="modal-overlay hidden">
         <div class="modal-box" style="border: 4px solid #34495e; max-width: 500px;">
             <h3 id="single-settings-title" style="color: #34495e; margin-top: 0; margin-bottom: 25px; font-size: 2rem;">⚙️ 설정</h3>
-            <div class="setting-row" style="background: #f4f6f7; padding: 15px; border-radius: 10px;">
-                <span class="setting-label">현재 연주자:</span>
-                <select id="single-player-select" class="setting-select" style="font-weight:bold; border-color:#34495e;"></select>
-            </div>
-            
-            <!-- ★ 악보 만들기 전용 따라 치기 버튼 추가 -->
-            <div id="maker-extra-controls" class="hidden" style="margin-top:20px; border-top:2px solid #eee; padding-top:20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
-                <button class="action-btn" onclick="window.playMakerSheet()" style="background:#9b59b6; padding: 12px 25px; font-size: 1.3rem;">▶ 들어보기</button>
-                <button class="action-btn" onclick="window.startMakerInteractive()" style="background:#3498DB; padding: 12px 25px; font-size: 1.3rem;">🎯 따라 치기</button>
-                <button class="action-btn" onclick="window.clearMakerSheet()" style="background:#E74C3C; padding: 12px 25px; font-size: 1.3rem;">🗑️ 비우기</button>
-            </div>
-
-            <div style="display: flex; justify-content: center; margin-top: 30px;">
-                <button class="action-btn" onclick="window.applySingleSettings()" style="background-color: #34495e; padding: 12px 40px; font-size: 1.4rem;">✅ 확인</button>
-            </div>
+            <div class="setting-row" style="background: #f4f6f7; padding: 15px; border-radius: 10px;"><span class="setting-label">현재 연주자:</span><select id="single-player-select" class="setting-select" style="font-weight:bold; border-color:#34495e;" onchange="window.updateSingleModalHint()"></select></div>
+            <div id="single-hint-control" class="setting-row hidden" style="background: #e9f7ef; padding: 10px; border-radius: 10px;"><span class="setting-label">힌트 모드:</span><select id="modal-single-hint" class="setting-select" style="border-color:#2ecc71;"><option value="none">💡 없음</option><option value="arrow">💡 실시간 화살표</option><option value="avatar">💡 정답 위 사진</option></select></div>
+            <div id="maker-extra-controls" class="hidden" style="margin-top:20px; border-top:2px solid #eee; padding-top:20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;"><button class="action-btn" onclick="window.playMakerSheet()" style="background:#9b59b6; padding: 12px 25px; font-size: 1.3rem;">▶ 들어보기</button><button class="action-btn" onclick="window.startMakerInteractive()" style="background:#3498DB; padding: 12px 25px; font-size: 1.3rem;">🎯 따라 치기</button><button class="action-btn" onclick="window.clearMakerSheet()" style="background:#E74C3C; padding: 12px 25px; font-size: 1.3rem;">🗑️ 비우기</button></div>
+            <div style="display: flex; justify-content: center; margin-top: 30px;"><button class="action-btn" onclick="window.applySingleSettings()" style="background-color: #34495e; padding: 12px 40px; font-size: 1.4rem;">✅ 확인</button></div>
         </div>
     </div>
 
-    <!-- 지정곡 연습 설정 모달 -->
     <div id="practice-settings-modal" class="modal-overlay hidden">
         <div class="modal-box" style="border: 4px solid #3498DB; max-width: 600px;">
             <h3 style="color: #3498DB; margin-top: 0; margin-bottom: 25px; font-size: 2rem;">🎵 지정곡 연습 설정</h3>
-            
-            <div class="setting-row" style="background: #eaf2f8; padding: 15px; border-radius: 10px;">
-                <span class="setting-label">현재 연주자:</span>
-                <select id="practice-player-select" class="setting-select" style="font-weight:bold; border-color:#3498DB;" onchange="window.updatePracticeModalHint()"></select>
-            </div>
-
-            <div class="setting-row" style="background: #e9f7ef; padding: 10px; border-radius: 10px;">
-                <span class="setting-label">힌트 모드:</span>
-                <select id="modal-practice-hint" class="setting-select" style="border-color:#2ecc71;">
-                    <option value="none">💡 없음 (스스로 찾기)</option>
-                    <option value="arrow">💡 실시간 화살표 표시</option>
-                    <option value="avatar">💡 정답 위 내 사진 표시</option>
-                </select>
-            </div>
-
-            <div class="setting-row">
-                <span class="setting-label">곡 선택:</span>
-                <select id="modal-practice-song" class="setting-select">
-                    <option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option><option value="star">작은 별</option>
-                </select>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">연습 단계:</span>
-                <select id="modal-practice-stage" class="setting-select">
-                    <option value="note">1단계: 1음씩 연습</option><option value="1">2단계: 1마디씩 연습</option><option value="2">3단계: 2마디씩 연습</option><option value="4">4단계: 4마디씩</option><option value="all" selected>5단계: 전체 곡</option>
-                </select>
-            </div>
-
-            <div style="display: flex; justify-content: center; gap:15px; margin-top: 30px;">
-                <button class="action-btn" onclick="window.applyAndStartPractice('auto')" style="background-color: #2ecc71; padding: 12px 25px; font-size: 1.3rem;">▶ 자동 연주(듣기)</button>
-                <button class="action-btn" onclick="window.applyAndStartPractice('interactive')" style="background-color: #3498DB; padding: 12px 25px; font-size: 1.3rem;">🎯 따라 치기</button>
-                <button class="action-btn" onclick="window.closePracticeSettings()" style="background-color: #95a5a6; padding: 12px 20px; font-size: 1.2rem;">닫기</button>
-            </div>
+            <div class="setting-row" style="background: #eaf2f8; padding: 15px; border-radius: 10px;"><span class="setting-label">현재 연주자:</span><select id="practice-player-select" class="setting-select" style="font-weight:bold; border-color:#3498DB;" onchange="window.updatePracticeModalHint()"></select></div>
+            <div class="setting-row" style="background: #e9f7ef; padding: 10px; border-radius: 10px;"><span class="setting-label">힌트 모드:</span><select id="modal-practice-hint" class="setting-select" style="border-color:#2ecc71;"><option value="none">💡 없음</option><option value="arrow">💡 실시간 화살표</option><option value="avatar">💡 정답 위 사진</option></select></div>
+            <div class="setting-row"><span class="setting-label">곡 선택:</span><select id="modal-practice-song" class="setting-select"><option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option><option value="star">작은 별</option></select></div>
+            <div class="setting-row"><span class="setting-label">연습 단계:</span><select id="modal-practice-stage" class="setting-select"><option value="note">1단계: 1음씩 연습</option><option value="1">2단계: 1마디씩 연습</option><option value="2">3단계: 2마디씩 연습</option><option value="4">4단계: 4마디씩</option><option value="all" selected>5단계: 전체 곡</option></select></div>
+            <div style="display: flex; justify-content: center; gap:15px; margin-top: 30px;"><button class="action-btn" onclick="window.applyAndStartPractice('auto')" style="background-color: #2ecc71; padding: 12px 25px; font-size: 1.3rem;">▶ 자동 연주(듣기)</button><button class="action-btn" onclick="window.applyAndStartPractice('interactive')" style="background-color: #3498DB; padding: 12px 25px; font-size: 1.3rem;">🎯 따라 치기</button><button class="action-btn" onclick="window.closePracticeSettings()" style="background-color: #95a5a6; padding: 12px 20px; font-size: 1.2rem;">닫기</button></div>
         </div>
     </div>
 
-    <!-- 2인 연주 설정 모달 -->
     <div id="together-settings-modal" class="modal-overlay hidden">
         <div class="modal-box" style="border: 4px solid #e67e22; max-width: 700px;">
             <h3 style="color: #e67e22; margin-top: 0; margin-bottom: 25px; font-size: 2rem;">🤝 2인 함께 연주 설정</h3>
-            <div class="setting-row" style="background: #fff3e0; padding: 20px; border-radius: 15px; border: 3px dashed #f39c12;">
-                <span class="setting-label" style="color: #d35400;">연주자 할당:</span>
-                <select id="together-p1-select" class="setting-select" style="border-color: #e74c3c; width: auto; font-weight:bold;"></select>
-                <span style="font-weight: bold; font-size: 1.5rem; color: #555;">&</span>
-                <select id="together-p2-select" class="setting-select" style="border-color: #3498db; width: auto; font-weight:bold;"></select>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">곡 선택:</span>
-                <select id="modal-together-song" class="setting-select">
-                    <option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option>
-                </select>
-            </div>
-            <div class="setting-row">
-                <span class="setting-label">표시 단위:</span>
-                <select id="modal-together-chunk" class="setting-select">
-                    <option value="1">1개씩만 보이고 교대</option>
-                    <option value="2">2개씩 보이고 교대</option>
-                    <option value="3">3개씩 보이고 교대</option>
-                    <option value="4">4개씩 보이고 교대</option>
-                    <option value="line">한 줄씩(마디) 보이고 교대</option>
-                    <option value="all" selected>전체 악보 보며 교대</option>
-                </select>
-            </div>
-            <div style="display: flex; justify-content: center; gap:15px; margin-top: 35px;">
-                <button class="action-btn" onclick="window.applyTogetherSettings()" style="background-color: #e67e22; padding: 15px 40px; font-size: 1.5rem;">▶ 적용 및 연주 시작</button>
-                <button class="action-btn" onclick="window.closeTogetherSettings()" style="background-color: #95a5a6; padding: 15px 30px; font-size: 1.3rem;">취소</button>
-            </div>
+            <div class="setting-row" style="background: #fff3e0; padding: 20px; border-radius: 15px; border: 3px dashed #f39c12;"><span class="setting-label" style="color: #d35400;">연주자 할당:</span><select id="together-p1-select" class="setting-select" style="border-color: #e74c3c; width: auto; font-weight:bold;"></select><span style="font-weight: bold; font-size: 1.5rem; color: #555;">&</span><select id="together-p2-select" class="setting-select" style="border-color: #3498db; width: auto; font-weight:bold;"></select></div>
+            <div class="setting-row"><span class="setting-label">곡 선택:</span><select id="modal-together-song" class="setting-select"><option value="airplane">비행기</option><option value="butterfly">나비야</option><option value="school">학교종</option></select></div>
+            <div class="setting-row"><span class="setting-label">표시 단위:</span><select id="modal-together-chunk" class="setting-select"><option value="1">1개씩만 보이고 교대</option><option value="2">2개씩 보이고 교대</option><option value="3">3개씩 보이고 교대</option><option value="4">4개씩 보이고 교대</option><option value="line">한 줄씩(마디) 보이고 교대</option><option value="all" selected>전체 악보 보며 교대</option></select></div>
+            <div style="display: flex; justify-content: center; gap:15px; margin-top: 35px;"><button class="action-btn" onclick="window.applyTogetherSettings()" style="background-color: #e67e22; padding: 15px 40px; font-size: 1.5rem;">▶ 적용 및 연주 시작</button><button class="action-btn" onclick="window.closeTogetherSettings()" style="background-color: #95a5a6; padding: 15px 30px; font-size: 1.3rem;">취소</button></div>
         </div>
     </div>
 
-    <!-- ==============================================
-         기능 동작 스크립트 시작
-         ============================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, set, onValue, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -405,9 +309,12 @@
 
         function getFlatSong(key) { var arr = songData[key] || songData['airplane']; return arr.reduce(function(acc, val) { return acc.concat(val); }, []); }
 
-        window.currentMode = 'free'; window.myRole = null; window.studentPhotoBase64 = ''; window.currentStudents = {}; window.currentApprovedCount = 1;
+        window.currentMode = 'free'; window.myRole = null; window.studentPhotoBase64 = ''; window.currentStudents = {}; 
         window.singleActiveSlot = 1; 
         
+        // ★ 전역 볼륨 배율 (기본 1.0, 최대 5.0)
+        window.globalVolumeMultiplier = 1.0;
+
         window.localStudents = {
             1: { name: '1번 연주자', photo: '', hintMode: 'none', color: '#e74c3c' },
             2: { name: '2번 연주자', photo: '', hintMode: 'none', color: '#3498db' },
@@ -423,13 +330,32 @@
         function resumeAudio() { try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); if (!isAudioUnlocked) { const b = audioCtx.createBuffer(1,1,22050); const s = audioCtx.createBufferSource(); s.buffer=b; s.connect(audioCtx.destination); s.start(0); isAudioUnlocked=true; } } catch(e){} }
         ['pointerdown','touchstart','mousedown','keydown'].forEach(evt => document.addEventListener(evt, resumeAudio, {passive:true}));
 
+        // ★ [강화된 소리 재생 함수] 볼륨 배율을 5배까지 증폭
         window.playSound = function(note, highlight=true) {
             resumeAudio(); if(!audioCtx) return;
-            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            const osc = audioCtx.createOscillator(); 
+            const gainNode = audioCtx.createGain();
+            
             osc.type = 'sine'; osc.frequency.value = frequencies[note];
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); gain.gain.setValueAtTime(1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+1.5); osc.stop(audioCtx.currentTime+1.5);
+            
+            // 볼륨 설정: 슬라이더 배율(0.0 ~ 5.0)을 적용
+            const currentVol = window.globalVolumeMultiplier;
+            
+            osc.connect(gainNode); 
+            gainNode.connect(audioCtx.destination);
+            
+            osc.start(); 
+            gainNode.gain.setValueAtTime(currentVol, audioCtx.currentTime); 
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5); 
+            osc.stop(audioCtx.currentTime + 1.5);
+            
             if(highlight){ const bell = document.getElementById(`bell-${note}`); if(bell){ bell.classList.add('playing'); setTimeout(()=>bell.classList.remove('playing'),300); } }
+        };
+
+        // ★ 볼륨 슬라이더 값 업데이트 함수
+        window.updateVolumeDisplay = function(val) {
+            window.globalVolumeMultiplier = val / 100; // 500% -> 5.0
+            document.getElementById('volume-value').innerText = val + '%';
         };
 
         function createBells() {
@@ -454,21 +380,15 @@
         };
         window.hideArrow = function() { document.getElementById('hint-svg-overlay').style.display = 'none'; };
 
-        // ★ 탭 이동 시 팝업 및 상태 초기화 보장
         window.setMode = function(mode) {
             window.currentMode = mode; window.hideArrow();
             document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('active'); if(btn.getAttribute('onclick').indexOf(`'${mode}'`) !== -1) btn.classList.add('active'); });
             document.querySelectorAll('.control-panel').forEach(p => p.classList.add('hidden'));
             document.getElementById(`panel-${mode}`).classList.remove('hidden');
             document.querySelectorAll('.bell').forEach(b => { b.classList.remove('multi-bell-hidden', 'practice-active-note'); b.innerHTML = `<span>${noteNames[b.id.split('-')[1]]}</span>`; });
-            
             if (mode !== 'free') document.getElementById('free-play-display').innerHTML = '';
-            
-            // 악보 만들기 모드 초기화
             makerPlayMode = false;
-            const ms = document.getElementById('maker-status');
-            if(ms) ms.classList.add('hidden');
-
+            if(document.getElementById('maker-status')) document.getElementById('maker-status').classList.add('hidden');
             if (window.myRole !== null && window.myRole > 0 && mode !== 'multi') { document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); return; }
             if (window.myRole === -1 && mode === 'multi') { alert("자유 이용자는 실시간 합주에 참여할 수 없습니다."); window.setMode('free'); return; }
             if (mode === 'multi') {
@@ -478,738 +398,250 @@
             }
         };
 
-        // ==========================================
-        // 자유 이용자 로컬 데이터 및 사진 업로드 
-        // ==========================================
-        window.openFreeUserRegistration = function() { 
-            document.getElementById('free-user-reg-modal').classList.remove('hidden'); 
-            window.loadFreeUserSlot();
-        };
+        // 로컬 데이터 및 사진 업로드 (완전 복원)
+        window.openFreeUserRegistration = function() { document.getElementById('free-user-reg-modal').classList.remove('hidden'); window.loadFreeUserSlot(); };
         window.closeFreeUserReg = function() { document.getElementById('free-user-reg-modal').classList.add('hidden'); };
-        
         window.handleFreeUserFile = function(event) {
             const file = event.target.files[0];
             if (file) {
-                let fileName = file.name;
-                let nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.')) || fileName;
-                let nameInput = document.getElementById('free-user-name');
-                if(!nameInput.value) { nameInput.value = nameWithoutExt; }
-                
+                let fname = file.name; let ni = document.getElementById('free-user-name'); if(!ni.value) ni.value = fname.substring(0, fname.lastIndexOf('.')) || fname;
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    window.localFreeUserPhoto = e.target.result;
-                    document.getElementById('free-user-photo-preview').src = window.localFreeUserPhoto;
-                    document.getElementById('free-user-photo-preview').classList.remove('hidden');
-                    document.getElementById('free-user-photo-placeholder').style.display = 'none';
-                };
+                reader.onload = function(e) { window.localFreeUserPhoto = e.target.result; document.getElementById('free-user-photo-preview').src = window.localFreeUserPhoto; document.getElementById('free-user-photo-preview').classList.remove('hidden'); document.getElementById('free-user-photo-placeholder').style.display = 'none'; };
                 reader.readAsDataURL(file);
             }
         };
-        
         window.loadFreeUserSlot = function() {
-            const slot = document.getElementById('free-reg-slot').value;
-            const data = window.localStudents[slot];
+            const slot = document.getElementById('free-reg-slot').value; const data = window.localStudents[slot];
             document.getElementById('free-user-name').value = data.name.includes('연주자') ? '' : data.name;
             document.getElementById('free-user-hint-select').value = data.hintMode;
-            if(data.photo) {
-                document.getElementById('free-user-photo-preview').src = data.photo;
-                document.getElementById('free-user-photo-preview').classList.remove('hidden');
-                document.getElementById('free-user-photo-placeholder').style.display = 'none';
-            } else {
-                document.getElementById('free-user-photo-preview').classList.add('hidden');
-                document.getElementById('free-user-photo-placeholder').style.display = 'flex';
-            }
+            if(data.photo) { document.getElementById('free-user-photo-preview').src = data.photo; document.getElementById('free-user-photo-preview').classList.remove('hidden'); document.getElementById('free-user-photo-placeholder').style.display = 'none'; } 
+            else { document.getElementById('free-user-photo-preview').classList.add('hidden'); document.getElementById('free-user-photo-placeholder').style.display = 'flex'; }
             window.localFreeUserPhoto = data.photo;
         };
-
         window.saveFreeUser = function() {
             const slot = document.getElementById('free-reg-slot').value;
-            const nameVal = document.getElementById('free-user-name').value;
-            window.localStudents[slot].name = nameVal || `${slot}번 연주자`;
+            window.localStudents[slot].name = document.getElementById('free-user-name').value || `${slot}번 연주자`;
             window.localStudents[slot].photo = window.localFreeUserPhoto || '';
             window.localStudents[slot].hintMode = document.getElementById('free-user-hint-select').value;
-            
-            alert(`${slot}번 연주자 정보가 저장되었습니다.`);
-            window.closeFreeUserReg();
-            window.updateLocalHint();
-            if (window.currentMode === 'together' && togMode) window.renderTogetherSheet();
+            alert(`${slot}번 정보 저장 완료`); window.closeFreeUserReg(); window.updateLocalHint();
         };
 
-        // ==========================================
-        // 공통 연주자 선택 (설정 모달들)
-        // ==========================================
+        // 공통 연주자 선택 창
         window.populatePlayerSelect = function(selectId) {
-            const sel = document.getElementById(selectId);
-            sel.innerHTML = '';
+            const sel = document.getElementById(selectId); sel.innerHTML = '';
             for(let i=1; i<=6; i++) {
                 const st = window.currentStudents[i];
-                let nm = `${i}번 연주자`;
-                if(st && st.name && !st.name.includes('번 연주자')) nm = `${i}번: ${st.name}`;
+                let nm = `${i}번 연주자`; if(st && st.name) nm = `${i}번: ${st.name}`;
                 sel.add(new Option(nm, i));
             }
             sel.value = window.singleActiveSlot || 1;
         }
 
-        let currentSingleModeConfig = ''; 
         window.openSingleSettings = function(mode) {
             currentSingleModeConfig = mode;
-            let title = '⚙️ 설정';
-            if(mode==='free') title = '🎹 자유 연주 설정';
-            if(mode==='game') title = '🎮 게임 설정';
-            if(mode==='maker') title = '🎵 악보 만들기 설정';
+            let title = '⚙️ 설정'; if(mode==='free') title = '🎹 자유 연주 설정'; if(mode==='game') title = '🎮 게임 설정'; if(mode==='maker') title = '🎵 악보 만들기 설정';
             document.getElementById('single-settings-title').innerText = title;
-            
-            window.populatePlayerSelect('single-player-select');
-            
-            if(mode==='maker') {
-                document.getElementById('maker-extra-controls').classList.remove('hidden');
-                document.getElementById('maker-extra-controls').style.display = 'flex';
-            } else {
-                document.getElementById('maker-extra-controls').classList.add('hidden');
-                document.getElementById('maker-extra-controls').style.display = 'none';
-            }
-
+            window.populatePlayerSelect('single-player-select'); window.updateSingleModalHint();
+            if(mode === 'game' || mode === 'maker') { document.getElementById('single-hint-control').classList.remove('hidden'); document.getElementById('single-hint-control').style.display = 'flex'; } 
+            else { document.getElementById('single-hint-control').classList.add('hidden'); document.getElementById('single-hint-control').style.display = 'none'; }
+            if(mode==='maker') { document.getElementById('maker-extra-controls').classList.remove('hidden'); document.getElementById('maker-extra-controls').style.display = 'flex'; } 
+            else { document.getElementById('maker-extra-controls').classList.add('hidden'); document.getElementById('maker-extra-controls').style.display = 'none'; }
             document.getElementById('single-settings-modal').classList.remove('hidden');
+        };
+
+        window.updateSingleModalHint = function() {
+            const slot = document.getElementById('single-player-select').value; const myInfo = window.currentStudents[slot] || {hintMode:'none'};
+            document.getElementById('modal-single-hint').value = myInfo.hintMode || 'none';
         };
 
         window.applySingleSettings = function() {
             window.singleActiveSlot = document.getElementById('single-player-select').value;
-            document.getElementById('single-settings-modal').classList.add('hidden');
-            window.updateLocalHint(); 
+            const hintVal = document.getElementById('modal-single-hint').value;
+            if(currentSingleModeConfig === 'game' || currentSingleModeConfig === 'maker') {
+                if(window.myRole === -1) window.localStudents[window.singleActiveSlot].hintMode = hintVal;
+                else window.dbUpdate(window.dbRef(window.db, `classSession/students/${window.singleActiveSlot}`), { hintMode: hintVal });
+            }
+            document.getElementById('single-settings-modal').classList.add('hidden'); window.updateLocalHint(); 
         };
 
-        // ==========================================
-        // 1. 소리 맞추기 게임
-        // ==========================================
+        // 1 & 2: 소리 맞추기 & 악보 만들기
         let gameTarget = '';
-        window.startGameMode = function() { gameTarget = notes[Math.floor(Math.random()*notes.length)]; window.playSound(gameTarget, false); document.getElementById('game-status').innerText="방금 들은 소리의 건반을 누르세요!"; document.getElementById('btn-replay-game').style.display='inline-block'; window.updateLocalHint();};
+        window.startGameMode = function() { gameTarget = notes[Math.floor(Math.random()*notes.length)]; window.playSound(gameTarget, false); document.getElementById('game-status').innerText="들리는 소리의 건반을 누르세요!"; document.getElementById('btn-replay-game').style.display='inline-block'; window.updateLocalHint();};
         window.replayGameNote = function() { if(gameTarget) window.playSound(gameTarget, false); };
         
-        // ==========================================
-        // ★ 2. 악보 만들기 (따라 치기 기능 추가)
-        // ==========================================
-        let makerSheet = [];
-        let makerPlayMode = false;
-        let makerPlayIdx = 0;
-
+        let makerSheet = []; let makerPlayMode = false; let makerPlayIdx = 0;
         window.openMakerSettings = function() { window.openSingleSettings('maker'); };
-        
-        window.clearMakerSheet = function() { 
-            makerSheet=[]; makerPlayMode = false; makerPlayIdx = 0;
-            document.getElementById('maker-sheet').innerHTML=''; 
-            window.hideArrow();
-            document.getElementById('maker-status').classList.add('hidden');
-            document.querySelectorAll('.bell').forEach(b => { b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`; });
-            document.getElementById('single-settings-modal').classList.add('hidden'); 
-        };
-        
-        window.playMakerSheet = function() { 
-            document.getElementById('single-settings-modal').classList.add('hidden'); 
-            let i=0; 
-            function p(){ 
-                if(i>=makerSheet.length)return; 
-                window.playSound(makerSheet[i]); 
-                i++; setTimeout(p, 500); 
-            } 
-            p(); 
-        };
-
-        window.startMakerInteractive = function() {
-            if(makerSheet.length === 0) { alert("먼저 건반을 눌러 악보를 만들어주세요!"); return; }
-            
-            // 현재 연주자 정보 저장 (설정창에서 고른 값)
-            window.singleActiveSlot = document.getElementById('single-player-select').value;
-            
-            document.getElementById('single-settings-modal').classList.add('hidden');
-            document.getElementById('maker-status').classList.remove('hidden');
-            document.getElementById('maker-status').innerText = "🎯 내가 만든 악보를 따라 쳐보세요!";
-            
-            makerPlayMode = true;
-            makerPlayIdx = 0;
-            
-            // 모든 음표 초기화
-            document.querySelectorAll('#maker-sheet .note-badge').forEach(n => {
-                n.classList.remove('practice-active-note', 'practice-completed-note');
+        window.clearMakerSheet = function() { makerSheet=[]; makerPlayMode = false; makerPlayIdx = 0; window.hideArrow(); document.getElementById('maker-sheet').innerHTML=''; document.getElementById('maker-status').classList.add('hidden'); document.getElementById('single-settings-modal').classList.add('hidden'); };
+        window.playMakerSheet = function() { document.getElementById('single-settings-modal').classList.add('hidden'); let i=0; function p(){ if(i>=makerSheet.length)return; window.playSound(makerSheet[i]); i++; setTimeout(p, 500); } p(); };
+        window.startMakerInteractive = function() { if(makerSheet.length === 0) { alert("건반을 눌러 악보를 먼저 만드세요!"); return; } window.applySingleSettings(); document.getElementById('maker-status').classList.remove('hidden'); makerPlayMode = true; makerPlayIdx = 0; window.renderMakerInteractiveSheet(); };
+        window.renderMakerInteractiveSheet = function() {
+            const cont = document.getElementById('maker-sheet'); cont.innerHTML = '';
+            makerSheet.forEach((n, i) => {
+                const col = document.createElement('div'); col.className = 'note-col';
+                col.innerHTML = `<span class="note-badge ${n.toLowerCase()}" id="maker-target-n-${i}">${noteNames[n]}</span><span class="note-empty" id="maker-played-n-${i}"></span>`;
+                cont.appendChild(col);
             });
-            
-            // 첫 번째 음표 빛나게
-            const firstNoteEl = document.getElementById(`maker-n-0`);
-            if(firstNoteEl) firstNoteEl.classList.add('practice-active-note');
-            
-            window.updateLocalHint();
+            document.getElementById(`maker-target-n-0`).classList.add('practice-active-note'); window.updateLocalHint();
         };
         
-        // ==========================================
         // 3: 지정곡 연습
-        // ==========================================
         let pracOriginalMeasures = []; let pracFlatSong = []; let pracStage = 'all'; let pracCurrentBlock = 0; let pracCurrentNotes = []; let pracIdx = 0; let pracMode = false;
-
-        window.openPracticeSettings = function() {
-            window.populatePlayerSelect('practice-player-select');
-            window.updatePracticeModalHint();
-            document.getElementById('practice-settings-modal').classList.remove('hidden');
-        };
-        
-        window.updatePracticeModalHint = function() {
-            const slot = document.getElementById('practice-player-select').value;
-            const myInfo = window.currentStudents[slot] || {hintMode:'none'};
-            document.getElementById('modal-practice-hint').value = myInfo.hintMode || 'none';
-        };
-
+        window.openPracticeSettings = function() { window.populatePlayerSelect('practice-player-select'); window.updatePracticeModalHint(); document.getElementById('practice-settings-modal').classList.remove('hidden'); };
+        window.updatePracticeModalHint = function() { const slot = document.getElementById('practice-player-select').value; const myInfo = window.currentStudents[slot] || {hintMode:'none'}; document.getElementById('modal-practice-hint').value = myInfo.hintMode || 'none'; };
         window.closePracticeSettings = function() { document.getElementById('practice-settings-modal').classList.add('hidden'); };
-        
         window.applyAndStartPractice = function(mode) {
             window.singleActiveSlot = document.getElementById('practice-player-select').value;
             const hintVal = document.getElementById('modal-practice-hint').value;
-            
-            if(window.myRole === -1) {
-                 window.localStudents[window.singleActiveSlot].hintMode = hintVal;
-            } else {
-                 window.dbUpdate(window.dbRef(window.db, `classSession/students/${window.singleActiveSlot}`), { hintMode: hintVal });
-            }
-
-            window.closePracticeSettings();
-            window.loadPracticeSong();
-
-            if(mode === 'auto') window.startPracticeAuto();
-            else window.startPracticeInteractive();
+            if(window.myRole === -1) window.localStudents[window.singleActiveSlot].hintMode = hintVal;
+            else window.dbUpdate(window.dbRef(window.db, `classSession/students/${window.singleActiveSlot}`), { hintMode: hintVal });
+            window.closePracticeSettings(); window.loadPracticeSong();
+            if(mode === 'auto') window.startPracticeAuto(); else window.startPracticeInteractive();
         };
-
         window.loadPracticeSong = function() { 
-            const k = document.getElementById('modal-practice-song').value || 'airplane'; 
-            pracStage = document.getElementById('modal-practice-stage').value || 'all';
-            pracOriginalMeasures = songData[k] || songData['airplane'];
-            pracFlatSong = getFlatSong(k);
-            pracCurrentBlock = 0; pracMode = false; window.hideArrow();
+            const k = document.getElementById('modal-practice-song').value || 'airplane'; pracStage = document.getElementById('modal-practice-stage').value || 'all';
+            pracOriginalMeasures = songData[k]; pracFlatSong = getFlatSong(k); pracCurrentBlock = 0; pracMode = false; window.hideArrow();
         };
-
-        window.renderPracticeSheet = function(isPreview = false) {
-            const cont = document.getElementById('practice-sheet'); cont.innerHTML = '';
-            pracCurrentNotes = []; 
-
+        window.renderPracticeSheet = function(isPreview = false, isInteractive = false) {
+            const cont = document.getElementById('practice-sheet'); cont.innerHTML = ''; pracCurrentNotes = []; 
             if (pracStage === 'note') {
                 const n = isPreview ? pracFlatSong[0] : pracFlatSong[pracCurrentBlock];
-                if (n) {
-                    pracCurrentNotes.push(n);
-                    const sp = document.createElement('span');
-                    sp.className = `note-badge ${n.toLowerCase()} together-large-note`; 
-                    sp.id = `prac-n-0`; sp.innerText = noteNames[n]; cont.appendChild(sp);
-                }
+                if (n) { pracCurrentNotes.push(n); if (isInteractive) cont.innerHTML = `<div class="note-col"><span class="note-badge ${n.toLowerCase()} together-large-note" id="prac-target-n-0">${noteNames[n]}</span><span class="note-empty together-large-note" id="prac-played-n-0"></span></div>`; else cont.innerHTML = `<span class="note-badge ${n.toLowerCase()} together-large-note" id="prac-n-0">${noteNames[n]}</span>`; }
             } else {
-                let startM = 0; let endM = pracOriginalMeasures.length;
+                let startM = 0, endM = pracOriginalMeasures.length, globalNoteIdx = 0;
                 if (!isPreview && pracStage !== 'all') { const chunk = parseInt(pracStage); startM = pracCurrentBlock; endM = Math.min(pracCurrentBlock + chunk, pracOriginalMeasures.length); }
-                let globalNoteIdx = 0;
                 for (let m = startM; m < endM; m++) {
-                    const measureNotes = pracOriginalMeasures[m];
-                    measureNotes.forEach(n => {
+                    pracOriginalMeasures[m].forEach(n => {
                         pracCurrentNotes.push(n);
-                        const sp = document.createElement('span'); sp.className = `note-badge ${n.toLowerCase()}`; sp.id = `prac-n-${globalNoteIdx}`; sp.innerText = noteNames[n]; cont.appendChild(sp);
+                        if (isInteractive) cont.innerHTML += `<div class="note-col"><span class="note-badge ${n.toLowerCase()}" id="prac-target-n-${globalNoteIdx}">${noteNames[n]}</span><span class="note-empty" id="prac-played-n-${globalNoteIdx}"></span></div>`;
+                        else cont.innerHTML += `<span class="note-badge ${n.toLowerCase()}" id="prac-n-${globalNoteIdx}">${noteNames[n]}</span>`;
                         globalNoteIdx++;
                     });
-                    if (m < endM - 1) { const divider = document.createElement('div'); divider.className = 'measure-divider'; cont.appendChild(divider); }
+                    if (m < endM - 1) cont.innerHTML += `<div class="measure-divider"></div>`;
                 }
             }
-            if (pracMode && pracCurrentNotes.length > 0) {
-                document.getElementById(`prac-n-0`).classList.add('practice-active-note');
-                window.updateLocalHint();
-            }
+            if (pracMode && pracCurrentNotes.length > 0) { document.getElementById(`prac-target-n-0`).classList.add('practice-active-note'); window.updateLocalHint(); }
         };
+        window.startPracticeAuto = function() { pracMode = false; window.hideArrow(); window.renderPracticeSheet(false, false); document.getElementById('practice-status').innerText = "🎧 자동 연주 듣는 중..."; let i=0; function p(){ if(i>=pracCurrentNotes.length)return; window.playSound(pracCurrentNotes[i]); const el = document.getElementById(`prac-n-${i}`); if(el){ el.classList.add('practice-active-note'); setTimeout(()=>{el.classList.remove('practice-active-note'); i++; p();}, 500); } } p(); };
+        window.startPracticeInteractive = function() { if(!pracMode && pracStage === 'all') pracCurrentBlock = 0; pracMode = true; pracIdx = 0; window.renderPracticeSheet(false, true); document.getElementById('practice-status').innerText = "🎯 빛나는 목표 건반을 누르세요!"; };
 
-        window.startPracticeAuto = function() { 
-            pracMode = false; window.hideArrow(); window.renderPracticeSheet();
-            document.getElementById('practice-status').innerText = "자동 연주를 듣고 있습니다 🎧";
-            let i=0; function p(){ if(i>=pracCurrentNotes.length){ document.getElementById('practice-status').innerText = "이제 [🎯 따라 치기]를 시작해볼까요?"; return; } window.playSound(pracCurrentNotes[i]); const el = document.getElementById(`prac-n-${i}`); if(el){ el.classList.add('practice-active-note'); setTimeout(()=>{el.classList.remove('practice-active-note'); i++; p();}, 500); } } p(); 
-        };
-
-        window.startPracticeInteractive = function() { 
-            if(!pracMode && pracStage === 'all') pracCurrentBlock = 0; 
-            pracMode = true; pracIdx = 0; window.renderPracticeSheet(false); 
-            document.getElementById('practice-status').innerText = "🎯 지정된 건반을 누르세요!"; 
-        };
-
-        // ==========================================
-        // 4: 🤝 2인 함께 연주
-        // ==========================================
-        let togSong = []; let togIdx = 0; let togMode = false; let togAssign = []; let togChunk = 'all';
-
+        // 4: 2인 연주
+        let togSong = [], togIdx = 0, togMode = false, togAssign = [], togChunk = 'all';
         window.openTogetherSettings = function() {
-            const p1Sel = document.getElementById('together-p1-select'); const p2Sel = document.getElementById('together-p2-select');
-            p1Sel.innerHTML = ''; p2Sel.innerHTML = '';
-            for(let i=1; i<=6; i++) {
-                const st = window.currentStudents[i];
-                let nm = (st && st.name && !st.name.includes('번 연주자')) ? `${i}번: ${st.name}` : `${i}번 자리 (연주자 ${i})`;
-                p1Sel.add(new Option(nm, i)); p2Sel.add(new Option(nm, i));
-            }
-            p1Sel.selectedIndex = 0; p2Sel.selectedIndex = 1;
-            document.getElementById('together-settings-modal').classList.remove('hidden');
+            const p1Sel = document.getElementById('together-p1-select'), p2Sel = document.getElementById('together-p2-select');
+            p1Sel.innerHTML = '', p2Sel.innerHTML = '';
+            for(let i=1; i<=6; i++) { const st = window.currentStudents[i]; let nm = (st && st.name) ? `${i}번: ${st.name}` : `${i}번 연주자`; p1Sel.add(new Option(nm, i)); p2Sel.add(new Option(nm, i)); }
+            p1Sel.selectedIndex = 0; p2Sel.selectedIndex = 1; document.getElementById('together-settings-modal').classList.remove('hidden');
         };
+        window.applyTogetherSettings = function() { window.closeTogetherSettings(); document.getElementById('together-status').innerText = "연주 시작!"; window.startTogetherMode(); };
         window.closeTogetherSettings = function() { document.getElementById('together-settings-modal').classList.add('hidden'); };
-        
-        window.applyTogetherSettings = function() {
-            window.closeTogetherSettings(); 
-            document.getElementById('together-status').innerText = "설정이 완료되었습니다. [▶ 연주 시작]을 누르세요!";
-            document.getElementById('together-sheet').innerHTML = ''; 
-            togMode = false; window.hideArrow();
-            window.startTogetherMode(); 
-        }
-
         window.startTogetherMode = function() { 
-            const song = document.getElementById('modal-together-song').value || 'airplane';
-            togChunk = document.getElementById('modal-together-chunk').value || 'all';
-            const p1Id = document.getElementById('together-p1-select').value || 1;
-            const p2Id = document.getElementById('together-p2-select').value || 2;
-
-            let p1Profile = window.currentStudents[p1Id] || { name: '학생 1', photo: '', hintMode: 'none' };
-            let p2Profile = window.currentStudents[p2Id] || { name: '학생 2', photo: '', hintMode: 'none' };
-            p1Profile.color = '#3498db'; p2Profile.color = '#e74c3c';
-
-            togSong = getFlatSong(song); togIdx = 0; togMode = true; togAssign = []; window.hideArrow(); window.togLineMap = [];
-            
-            if (togChunk === 'line') {
-                const originalMeasures = songData[song] || songData['airplane'];
-                let currentPlayer = 1; let globalIdx = 0;
-                originalMeasures.forEach((measure, mIdx) => {
-                    measure.forEach(n => {
-                        togAssign.push(currentPlayer === 1 ? p1Profile : p2Profile);
-                        window.togLineMap[globalIdx++] = mIdx;
-                    });
-                    currentPlayer = currentPlayer === 1 ? 2 : 1; 
-                });
+            const song = document.getElementById('modal-together-song').value, p1Id = document.getElementById('together-p1-select').value, p2Id = document.getElementById('together-p2-select').value;
+            togChunk = document.getElementById('modal-together-chunk').value;
+            let p1 = window.currentStudents[p1Id] || { name: '학생1' }, p2 = window.currentStudents[p2Id] || { name: '학생2' }; p1.color = '#3498db'; p2.color = '#e74c3c';
+            togSong = getFlatSong(song); togIdx = 0; togMode = true; togAssign = []; window.togLineMap = [];
+            if (togChunk === 'line') { 
+                let cur = 1, gIdx = 0; songData[song].forEach((m, mI) => { m.forEach(n => { togAssign.push(cur === 1 ? p1 : p2); window.togLineMap[gIdx++] = mI; }); cur = cur === 1 ? 2 : 1; });
             } else {
-                let chunkNum = togChunk === 'all' ? 1 : parseInt(togChunk); let currentPlayer = 1; let count = 0;
-                for(let i=0; i<togSong.length; i++) { 
-                    togAssign.push(currentPlayer === 1 ? p1Profile : p2Profile); 
-                    count++; 
-                    if(count >= chunkNum) { currentPlayer = currentPlayer === 1 ? 2 : 1; count = 0; } 
-                }
+                let cN = parseInt(togChunk) || 1, cur = 1, cnt = 0;
+                togSong.forEach(n => { togAssign.push(cur === 1 ? p1 : p2); cnt++; if(cnt >= cN) { cur = cur === 1 ? 2 : 1; cnt = 0; } });
             }
-            document.getElementById('together-status').innerText = "연주 시작! 내 사진이 있는 음표를 치세요!";
             window.renderTogetherSheet(); 
         };
-
         window.renderTogetherSheet = function() {
             const cont = document.getElementById('together-sheet'); cont.innerHTML = '';
-            let chunkNum = togChunk === 'all' ? togSong.length : parseInt(togChunk);
-
             togSong.forEach((n, i) => {
-                const profile = togAssign[i]; const wrap = document.createElement('div'); wrap.className = 'note-with-avatar'; wrap.id = `tog-wrap-${i}`;
-                
-                if (togChunk === 'line') {
-                    const currentLine = (togIdx < togSong.length) ? window.togLineMap[togIdx] : window.togLineMap[togSong.length - 1];
-                    if (window.togLineMap[i] !== currentLine) wrap.style.display = 'none';
-                } else if (togChunk !== 'all') { 
-                    let chunkNum = parseInt(togChunk);
-                    const blockIndex = Math.floor(i / chunkNum); const currentBlockIndex = Math.floor(togIdx / chunkNum); 
-                    if (blockIndex !== currentBlockIndex) wrap.style.display = 'none'; 
-                }
-                
-                const imgHtml = profile.photo ? `<img src="${profile.photo}" class="tiny-avatar" id="tog-ava-${i}" style="border-color:${profile.color||'#ccc'};">` : `<div class="tiny-avatar" id="tog-ava-${i}" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:2rem;line-height:1;border-color:${profile.color||'#ccc'};">👤</div>`;
-                wrap.innerHTML = `${imgHtml}<span class="note-badge ${n.toLowerCase()} together-large-note" id="tog-n-${i}">${noteNames[n]}</span>`;
-                cont.appendChild(wrap);
+                const pr = togAssign[i], wr = document.createElement('div'); wr.className = 'note-with-avatar'; wr.id = `tog-wrap-${i}`;
+                if (togChunk === 'line') { if (window.togLineMap[i] !== window.togLineMap[togIdx]) wr.style.display = 'none'; } 
+                else if (togChunk !== 'all') { if (Math.floor(i / parseInt(togChunk)) !== Math.floor(togIdx / parseInt(togChunk))) wr.style.display = 'none'; }
+                const ph = pr.photo ? `<img src="${pr.photo}" class="tiny-avatar" id="tog-ava-${i}" style="border-color:${pr.color}">` : `<div class="tiny-avatar" id="tog-ava-${i}" style="background:#eee;border-color:${pr.color}">👤</div>`;
+                wr.innerHTML = `${ph}<span class="note-badge ${n.toLowerCase()} together-large-note" id="tog-n-${i}">${noteNames[n]}</span>`;
+                cont.appendChild(wr);
             });
-            if (togIdx < togSong.length) { 
-                document.getElementById(`tog-n-${togIdx}`).classList.add('practice-active-note'); 
-                document.getElementById(`tog-ava-${togIdx}`).classList.add('active-tiny-avatar'); 
-                window.updateLocalHint();
-            }
+            if (togIdx < togSong.length) { document.getElementById(`tog-n-${togIdx}`).classList.add('practice-active-note'); document.getElementById(`tog-ava-${togIdx}`).classList.add('active-tiny-avatar'); window.updateLocalHint(); }
         };
 
-        // ==========================================
-        // ★ 로컬 힌트 표시 통합 함수
-        // ==========================================
         window.updateLocalHint = function() {
-            if (window.currentMode === 'game' && gameTarget) {
-                const myInfo = window.currentStudents[window.singleActiveSlot] || {hintMode:'none'};
-                const hm = myInfo.hintMode || 'none';
+            let cNote = '', info = null, targetId = '';
+            if (window.currentMode === 'game' && gameTarget) { cNote = gameTarget; info = window.currentStudents[window.singleActiveSlot]; }
+            else if(window.currentMode === 'maker' && makerPlayMode) { cNote = makerSheet[makerPlayIdx]; info = window.currentStudents[window.singleActiveSlot]; targetId = `maker-target-n-${makerPlayIdx}`; }
+            else if(window.currentMode === 'practice' && pracMode) { cNote = pracCurrentNotes[pracIdx]; info = window.currentStudents[window.singleActiveSlot]; targetId = `prac-target-n-${pracIdx}`; }
+            else if(window.currentMode === 'together' && togMode) { cNote = togSong[togIdx]; info = togAssign[togIdx]; targetId = `tog-n-${togIdx}`; }
+            if (cNote) {
+                const hm = info ? info.hintMode : 'none';
                 document.querySelectorAll('.bell').forEach(b => {
-                    b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
-                    if(bn === gameTarget) {
-                        if(hm === 'arrow') { b.classList.add('practice-active-note'); } 
-                        else if(hm === 'avatar') { const ava = myInfo.photo ? `<img src="${myInfo.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`; b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`; }
-                    }
-                });
-            }
-            // ★ 악보 만들기 따라 치기 힌트
-            else if(window.currentMode === 'maker' && makerPlayMode && makerPlayIdx < makerSheet.length) {
-                const cNote = makerSheet[makerPlayIdx];
-                const myInfo = window.currentStudents[window.singleActiveSlot] || {hintMode:'none'};
-                const hm = myInfo.hintMode || 'none';
-                
-                document.querySelectorAll('.bell').forEach(b => {
-                    b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
+                    const bn = b.id.split('-')[1]; b.classList.remove('practice-active-note'); if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
                     if(bn === cNote) {
-                        if(hm === 'arrow') {
-                            b.classList.add('practice-active-note');
-                            setTimeout(()=> { const stEl = document.getElementById(`maker-n-${makerPlayIdx}`); if(stEl) window.drawArrow(stEl, b); }, 50);
-                        } else if(hm === 'avatar') {
-                            const ava = myInfo.photo ? `<img src="${myInfo.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`;
-                            b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`;
-                        }
+                        if(hm === 'arrow') { b.classList.add('practice-active-note'); if(targetId) setTimeout(()=>window.drawArrow(document.getElementById(targetId), b), 50); } 
+                        else if(hm === 'avatar') { const ava = info.photo ? `<img src="${info.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`; b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`; }
                     }
                 });
-            }
-            else if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
-                const cNote = pracCurrentNotes[pracIdx];
-                const myInfo = window.currentStudents[window.singleActiveSlot] || {hintMode:'none'};
-                const hm = myInfo.hintMode || 'none';
-                
-                document.querySelectorAll('.bell').forEach(b => {
-                    b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
-                    if(bn === cNote) {
-                        if(hm === 'arrow') {
-                            b.classList.add('practice-active-note');
-                            setTimeout(()=> { const stEl = document.getElementById(`prac-n-${pracIdx}`); if(stEl) window.drawArrow(stEl, b); }, 50);
-                        } else if(hm === 'avatar') {
-                            const ava = myInfo.photo ? `<img src="${myInfo.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`;
-                            b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`;
-                        }
-                    }
-                });
-            } 
-            else if(window.currentMode === 'together' && togMode && togIdx < togSong.length) {
-                const cNote = togSong[togIdx];
-                const profile = togAssign[togIdx] || {hintMode:'none'};
-                const hm = profile.hintMode || 'none';
-                
-                document.querySelectorAll('.bell').forEach(b => {
-                    b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
-                    if(bn === cNote) {
-                        if(hm === 'arrow') {
-                            b.classList.add('practice-active-note');
-                            setTimeout(()=> { const stEl = document.getElementById(`tog-n-${togIdx}`); if(stEl) window.drawArrow(stEl, b); }, 50);
-                        } else if(hm === 'avatar') {
-                            const ava = profile.photo ? `<img src="${profile.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`;
-                            b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`;
-                        }
-                    }
-                });
-            } else {
-                window.hideArrow();
-            }
+            } else window.hideArrow();
         };
 
-        // ==========================================
-        // ★ 전체 공통 터치(클릭) 및 오답 음소거 처리
-        // ==========================================
         window.handleBellClick = function(note) {
-            let shouldPlaySound = true;
+            let ok = true;
+            if(window.currentMode === 'maker' && makerPlayMode) { if(note !== makerSheet[makerPlayIdx]) ok = false; }
+            else if(window.currentMode === 'practice' && pracMode) { if(note !== pracCurrentNotes[pracIdx]) ok = false; }
+            else if(window.currentMode === 'together' && togMode) { if(note !== togSong[togIdx]) ok = false; }
+            else if(window.currentMode === 'multi' && currentMultiState.isPlaying && window.myRole > 0) { const fs = getFlatSong(currentMultiState.song); if (window.myRole === (currentMultiState.roleSequence || [])[currentMultiState.currentIndex] && note !== fs[currentMultiState.currentIndex]) ok = false; }
+            
+            if (ok) window.playSound(note);
+            else { document.getElementById(`bell-${note}`).classList.add('error-shake'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); return; }
 
-            // ★ 틀렸을 때 음소거 처리
-            if(window.currentMode === 'maker' && makerPlayMode && makerPlayIdx < makerSheet.length) {
-                if(note !== makerSheet[makerPlayIdx]) shouldPlaySound = false;
-            }
-            else if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
-                if(note !== pracCurrentNotes[pracIdx]) shouldPlaySound = false;
-            }
-            else if(window.currentMode === 'together' && togMode && togIdx < togSong.length) {
-                if(note !== togSong[togIdx]) shouldPlaySound = false;
-            }
-            else if (window.currentMode === 'multi' && currentMultiState && currentMultiState.isPlaying && window.myRole !== null && window.myRole > 0) {
-                const fs = getFlatSong(currentMultiState.song); const cNote = fs[currentMultiState.currentIndex];
-                const sSeq = currentMultiState.roleSequence || []; const tRole = sSeq[currentMultiState.currentIndex];
-                if (window.myRole === tRole && note !== cNote) { shouldPlaySound = false; }
-            }
-
-            if (shouldPlaySound) window.playSound(note);
-
-            // ★ 기능별 시각적 피드백 및 로직 진행
             if(window.currentMode === 'free') {
-                const display = document.getElementById('free-play-display');
-                if (display) {
-                    const sp = document.createElement('span');
-                    sp.className = `note-badge ${note.toLowerCase()} together-large-note pop-animation`;
-                    sp.innerText = noteNames[note];
-                    display.appendChild(sp);
-                    while (display.children.length > 8) { display.removeChild(display.firstElementChild); }
-                }
+                const d = document.getElementById('free-play-display'); const sp = document.createElement('span'); sp.className=`note-badge ${note.toLowerCase()} together-large-note pop-animation`; sp.innerText=noteNames[note]; d.appendChild(sp);
+                while(d.children.length > 8) d.removeChild(d.firstElementChild);
             }
-            else if(window.currentMode === 'game' && gameTarget) {
-                if(note === gameTarget) { document.getElementById('game-status').innerText="정답입니다! 🎉"; document.getElementById(`bell-${note}`).classList.add('success-pop'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('success-pop'),1000); gameTarget=''; document.getElementById('btn-replay-game').style.display='none'; document.querySelectorAll('.bell').forEach(b => { b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`; });} 
-                else { document.getElementById('game-status').innerText="틀렸어요. 다시 들어보세요."; document.getElementById(`bell-${note}`).classList.add('error-shake'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); }
-            }
-            else if(window.currentMode === 'maker') { 
+            else if(window.currentMode === 'game' && gameTarget) { if(note === gameTarget) { document.getElementById('game-status').innerText="정답입니다! 🎉"; gameTarget=''; document.getElementById('btn-replay-game').style.display='none'; window.updateLocalHint(); } }
+            else if(window.currentMode === 'maker') {
                 if (makerPlayMode) {
-                    // ★ 내가 만든 악보 따라 치기 진행 중
-                    if(note === makerSheet[makerPlayIdx]) { 
-                        window.hideArrow();
-                        const el = document.getElementById(`maker-n-${makerPlayIdx}`); 
-                        if(el) { el.classList.remove('practice-active-note'); el.classList.add('practice-completed-note'); }
-                        
-                        makerPlayIdx++; 
-                        
-                        if(makerPlayIdx < makerSheet.length) { 
-                            const nel = document.getElementById(`maker-n-${makerPlayIdx}`); 
-                            if(nel) nel.classList.add('practice-active-note'); 
-                            window.updateLocalHint();
-                        } 
-                        else {
-                            document.querySelectorAll('.bell').forEach(b => { b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`; });
-                            makerPlayMode = false;
-                            document.getElementById('maker-status').innerText = "🎉 내가 만든 악보를 멋지게 연주했어요! 🎉";
-                        }
-                    } else { 
-                        document.getElementById(`bell-${note}`).classList.add('error-shake'); 
-                        setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); 
-                    }
-                } else {
-                    // 악보 만드는 중 (추가)
-                    makerSheet.push(note); 
-                    const sp=document.createElement('span'); 
-                    sp.className=`note-badge ${note.toLowerCase()} pop-animation`; 
-                    sp.id = `maker-n-${makerSheet.length - 1}`;
-                    sp.innerText=noteNames[note]; 
-                    document.getElementById('maker-sheet').appendChild(sp); 
+                    window.hideArrow(); document.getElementById(`maker-target-n-${makerPlayIdx}`).classList.remove('practice-active-note');
+                    const b = document.getElementById(`maker-played-n-${makerPlayIdx}`); b.className=`note-badge ${note.toLowerCase()} pop-animation`; b.innerText=noteNames[note];
+                    makerPlayIdx++; if(makerPlayIdx < makerSheet.length) { document.getElementById(`maker-target-n-${makerPlayIdx}`).classList.add('practice-active-note'); window.updateLocalHint(); } else { makerPlayMode = false; document.getElementById('maker-status').innerText="🎉 완성!"; }
+                } else { makerSheet.push(note); const sp=document.createElement('span'); sp.className=`note-badge ${note.toLowerCase()} pop-animation`; sp.innerText=noteNames[note]; document.getElementById('maker-sheet').appendChild(sp); }
+            }
+            else if(window.currentMode === 'practice' && pracMode) {
+                window.hideArrow(); document.getElementById(`prac-target-n-${pracIdx}`).classList.remove('practice-active-note');
+                const b = document.getElementById(`prac-played-n-${pracIdx}`); b.className=`note-badge ${note.toLowerCase()} pop-animation`; b.innerText=noteNames[note];
+                pracIdx++; if(pracIdx < pracCurrentNotes.length) { document.getElementById(`prac-target-n-${pracIdx}`).classList.add('practice-active-note'); window.updateLocalHint(); } 
+                else {
+                    if (pracStage === 'note') { pracCurrentBlock++; if (pracCurrentBlock < pracFlatSong.length) { setTimeout(()=>window.startPracticeInteractive(), 400); } else { pracMode = false; pracCurrentBlock = 0; } } 
+                    else if (pracStage !== 'all') { pracCurrentBlock += parseInt(pracStage); if (pracCurrentBlock < pracOriginalMeasures.length) { setTimeout(()=>window.startPracticeInteractive(), 1000); } else { pracMode = false; pracCurrentBlock = 0; } } 
+                    else pracMode = false;
                 }
             }
-            else if(window.currentMode === 'practice' && pracMode && pracIdx < pracCurrentNotes.length) {
-                if(note === pracCurrentNotes[pracIdx]) { 
-                    window.hideArrow();
-                    const el = document.getElementById(`prac-n-${pracIdx}`); if(el) { el.classList.remove('practice-active-note'); el.classList.add('practice-completed-note'); }
-                    pracIdx++; 
-                    if(pracIdx < pracCurrentNotes.length) { 
-                        const nel = document.getElementById(`prac-n-${pracIdx}`); if(nel) nel.classList.add('practice-active-note'); 
-                        window.updateLocalHint();
-                    } 
-                    else {
-                        document.querySelectorAll('.bell').forEach(b => { b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`; });
-                        if (pracStage === 'note') {
-                            pracCurrentBlock++;
-                            if (pracCurrentBlock < pracFlatSong.length) { document.getElementById('practice-status').innerText = "참 잘했어요! 다음 음 🎵"; pracMode = false; setTimeout(() => { window.startPracticeInteractive(); }, 400); } 
-                            else { document.getElementById('practice-status').innerText = "🎉 곡 전체를 마스터했어요! 대단해요! 🎉"; pracMode = false; pracCurrentBlock = 0; }
-                        } else if (pracStage !== 'all') {
-                            pracCurrentBlock += parseInt(pracStage);
-                            if (pracCurrentBlock < pracOriginalMeasures.length) { document.getElementById('practice-status').innerText = "참 잘했어요! 잠시 후 다음 단계로 넘어갑니다 🚀"; pracMode = false; setTimeout(() => { window.startPracticeInteractive(); }, 1500); } 
-                            else { document.getElementById('practice-status').innerText = "🎉 곡 전체를 마스터했어요! 대단해요! 🎉"; pracMode = false; pracCurrentBlock = 0;}
-                        } else { document.getElementById('practice-status').innerText = "🎉 곡 전체를 마스터했어요! 대단해요! 🎉"; pracMode = false; }
-                    }
-                }
-                else { document.getElementById(`bell-${note}`).classList.add('error-shake'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); }
+            else if(window.currentMode === 'together' && togMode) {
+                window.hideArrow(); document.getElementById(`tog-n-${togIdx}`).classList.remove('practice-active-note'); document.getElementById(`tog-ava-${togIdx}`).classList.remove('active-tiny-avatar');
+                togIdx++; if(togIdx < togSong.length) window.renderTogetherSheet(); else togMode = false;
             }
-            else if(window.currentMode === 'together' && togMode && togIdx < togSong.length) {
-                if(note === togSong[togIdx]) {
-                    window.hideArrow();
-                    document.getElementById(`tog-n-${togIdx}`).classList.remove('practice-active-note'); document.getElementById(`tog-ava-${togIdx}`).classList.remove('active-tiny-avatar'); document.getElementById(`tog-wrap-${togIdx}`).classList.add('practice-completed-note');
-                    togIdx++;
-                    if(togIdx < togSong.length) { 
-                        let needRender = false;
-                        if (togChunk === 'line') { if (window.togLineMap[togIdx] !== window.togLineMap[togIdx - 1]) needRender = true; } 
-                        else if (togChunk !== 'all') { let chunkNum = parseInt(togChunk); if (togIdx % chunkNum === 0) needRender = true; }
-
-                        if (needRender) { window.renderTogetherSheet(); } 
-                        else { document.getElementById(`tog-n-${togIdx}`).classList.add('practice-active-note'); document.getElementById(`tog-ava-${togIdx}`).classList.add('active-tiny-avatar'); window.updateLocalHint(); } 
-                    } 
-                    else { document.querySelectorAll('.bell').forEach(b => { b.classList.remove('practice-active-note'); const bn = b.id.split('-')[1]; if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`; }); togMode = false; document.getElementById('together-status').innerText = "🎉 멋진 협동 연주였어요! 🎉"; }
-                } else { document.getElementById(`bell-${note}`).classList.add('error-shake'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); }
-            }
-            else if (window.currentMode === 'multi') {
-                if (!currentMultiState || !currentMultiState.isPlaying) return;
-                if (window.myRole === null || window.myRole === 0) return; 
-                const fs = getFlatSong(currentMultiState.song); const cNote = fs[currentMultiState.currentIndex];
-                const sSeq = currentMultiState.roleSequence || []; const tRole = sSeq[currentMultiState.currentIndex];
-                if (window.myRole === tRole) {
-                    if (note === cNote) { window.hideArrow(); window.dbUpdate(sessionRef, { currentIndex: currentMultiState.currentIndex + 1 }); } 
-                    else { document.getElementById(`bell-${note}`).classList.add('error-shake'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); }
-                }
-            }
+            else if (window.currentMode === 'multi' && currentMultiState.isPlaying) { window.dbUpdate(sessionRef, { currentIndex: currentMultiState.currentIndex + 1 }); }
         };
 
-        // ==========================================
-        // 파이어베이스 및 로비, 카메라 기능
-        // ==========================================
+        // 로비 및 카메라
         window.enterAsTeacher = function() { 
             const tRef = window.dbRef(window.db, 'classSession/teacherActive');
-            window.dbGet(tRef).then((s) => {
-                if (s.exists() && s.val() === true) { alert("🚨 이미 다른 기기에서 접속 중입니다."); return; } 
-                window.dbSet(tRef, true); window.dbOnDisconnect(tRef).set(false); 
-                window.myRole = 0; document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); document.getElementById('tab-free-reg').classList.add('hidden');
-                window.setMode('dashboard'); window.renderTeacherDashboard(); 
-            }).catch(e => { window.myRole=0; document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); document.getElementById('tab-free-reg').classList.add('hidden'); window.setMode('dashboard'); });
+            window.dbGet(tRef).then(s => { if (s.exists() && s.val() === true) { alert("이미 접속 중"); return; } window.dbSet(tRef, true); window.dbOnDisconnect(tRef).set(false); window.myRole = 0; document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); window.setMode('dashboard'); window.renderTeacherDashboard(); });
         };
-        window.teacherLogout = function() { if(confirm("종료하시겠습니까?")){ window.dbSet(window.dbRef(window.db,'classSession/teacherActive'), false).then(()=>location.reload()); } };
-        
-        window.enterAsFreeUser = function() { 
-            window.myRole = -1; 
-            window.currentStudents = window.localStudents;
-            document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); 
-            document.getElementById('tab-dashboard').style.display='none'; document.getElementById('tab-multi').style.display='none'; 
-            document.getElementById('tab-free-reg').classList.remove('hidden');
-            window.setMode('free'); 
-        };
-        
+        window.enterAsFreeUser = function() { window.myRole = -1; window.currentStudents = window.localStudents; document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); document.getElementById('tab-dashboard').style.display='none'; document.getElementById('tab-multi').style.display='none'; document.getElementById('tab-free-reg').classList.remove('hidden'); window.setMode('free'); };
         window.showStudentForm = function() { document.getElementById('entry-selection').style.display='none'; document.getElementById('entry-student-form').classList.remove('hidden'); window.updateEntrySlotUI(); };
-        window.backToEntrySelection = function() { document.getElementById('entry-selection').style.display='block'; document.getElementById('entry-student-form').classList.add('hidden'); };
-        
-        window.updateEntrySlotUI = function() { 
-            const sel=document.getElementById('entry-slot-select'); if(!sel)return; 
-            const currentVal = sel.value;
-            sel.innerHTML=''; let c=0; 
-            for(let i=1;i<=6;i++){ 
-                const st=window.currentStudents[i]; 
-                if(!st || !st.name || st.name.trim() === ''){
-                    const op=document.createElement('option'); op.value=i; op.text=`[빈자리] ${i}번`; sel.appendChild(op); c++;
-                } 
-            } 
-            const ind = document.getElementById('empty-slot-indicator');
-            if (c === 0) {
-                const op=document.createElement('option'); op.value=""; op.text="선택 가능한 빈자리가 없습니다."; sel.appendChild(op);
-                sel.disabled = true; if(ind) ind.innerText = `현재 모든 자리가 꽉 찼습니다.`;
-            } else {
-                sel.disabled = false; if(ind) ind.innerText = `빈자리: ${c}개`;
-                if (currentVal && Array.from(sel.options).some(opt => opt.value === currentVal)) {
-                    sel.value = currentVal;
-                }
-            }
-        };
-
-        window.joinAsStudent = function() { 
-            const slot=document.getElementById('entry-slot-select').value; 
-            const name=document.getElementById('entry-name').value.trim(); 
-            if(!slot) return; 
-
-            if(window.currentStudents[slot] && window.currentStudents[slot].name && window.currentStudents[slot].name.trim() !== '') {
-                alert("이런! 방금 다른 친구가 먼저 자리를 선택했어요. 다른 빈자리를 골라주세요!");
-                window.updateEntrySlotUI();
-                return;
-            }
-
-            window.myRole = parseInt(slot); 
-            window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { name: name||`학생 ${slot}`, photo: window.studentPhotoBase64, status: 'waiting', hintMode: 'none' }).then(() => { 
-                document.getElementById('entry-screen').style.display='none'; 
-                document.getElementById('main-app').classList.remove('hidden'); 
-                document.getElementById('main-tabs').style.display='none'; 
-                window.setMode('multi'); 
-                window.checkMyStatus(); 
-            }); 
-        };
-
-        let mediaStream = null;
-        window.openCamera = function(targetMode) { window.cameraTarget = targetMode; document.getElementById('camera-modal').classList.remove('hidden'); navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }).then(stream => { mediaStream = stream; const video = document.getElementById('camera-video'); video.srcObject = stream; video.play(); }).catch(err => { alert("카메라 권한이 필요합니다."); window.closeCamera(); }); }
-        window.closeCamera = function() { document.getElementById('camera-modal').classList.add('hidden'); if(mediaStream) { mediaStream.getTracks().forEach(track => track.stop()); mediaStream = null; } }
-        
+        window.updateEntrySlotUI = function() { const sel=document.getElementById('entry-slot-select'); sel.innerHTML=''; let c=0; for(let i=1;i<=6;i++){ const st=window.currentStudents[i]; if(!st || !st.name){ sel.add(new Option(`[빈자리] ${i}번`, i)); c++; } } if (c === 0) { sel.add(new Option("자리 없음", "")); sel.disabled = true; } else sel.disabled = false; };
+        window.joinAsStudent = function() { const slot=document.getElementById('entry-slot-select').value, name=document.getElementById('entry-name').value.trim(); if(!slot || (window.currentStudents[slot] && window.currentStudents[slot].name)) return; window.myRole = parseInt(slot); window.dbUpdate(window.dbRef(window.db, `classSession/students/${slot}`), { name: name||`학생${slot}`, photo: window.studentPhotoBase64, status: 'waiting', hintMode: 'none' }).then(() => { document.getElementById('entry-screen').style.display='none'; document.getElementById('main-app').classList.remove('hidden'); document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); window.checkMyStatus(); }); };
+        window.openCamera = function(m) { window.cameraTarget = m; document.getElementById('camera-modal').classList.remove('hidden'); navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }).then(s => { const v = document.getElementById('camera-video'); v.srcObject = s; v.play(); }); };
         window.capturePhoto = function() { 
-            const video = document.getElementById('camera-video'); const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 300; const ctx = canvas.getContext('2d'); const size = Math.min(video.videoWidth, video.videoHeight); const x = (video.videoWidth - size) / 2; const y = (video.videoHeight - size) / 2; ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.drawImage(video, x, y, size, size, 0, 0, 300, 300); 
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-            
-            if (window.cameraTarget === 'free') {
-                window.localFreeUserPhoto = dataUrl;
-                document.getElementById('free-user-photo-preview').src = dataUrl;
-                document.getElementById('free-user-photo-preview').classList.remove('hidden');
-                document.getElementById('free-user-photo-placeholder').style.display = 'none';
-            } else {
-                window.studentPhotoBase64 = dataUrl;
-                document.getElementById('entry-photo-preview').src = dataUrl;
-                document.getElementById('entry-photo-preview').classList.remove('hidden');
-                document.getElementById('entry-photo-placeholder').style.display = 'none'; 
-            }
+            const v = document.getElementById('camera-video'), c = document.createElement('canvas'); c.width = 300; c.height = 300; const ctx = c.getContext('2d'); ctx.translate(300, 0); ctx.scale(-1, 1); ctx.drawImage(v, (v.videoWidth-v.videoHeight)/2, 0, v.videoHeight, v.videoHeight, 0, 0, 300, 300);
+            const d = c.toDataURL('image/jpeg', 0.8);
+            if(window.cameraTarget === 'free') { window.localFreeUserPhoto = d; document.getElementById('free-user-photo-preview').src = d; document.getElementById('free-user-photo-preview').classList.remove('hidden'); document.getElementById('free-user-photo-placeholder').style.display = 'none'; }
+            else { window.studentPhotoBase64 = d; document.getElementById('entry-photo-preview').src = d; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; }
             window.closeCamera(); 
-        }
-        
-        window.handleEntryFileUpload = function(event) { const file = event.target.files[0]; if (file) { let fileName = file.name; let nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.')) || fileName; if(!document.getElementById('entry-name').value) { document.getElementById('entry-name').value = nameWithoutExt; } const reader = new FileReader(); reader.onload = function(e) { window.studentPhotoBase64 = e.target.result; document.getElementById('entry-photo-preview').src = window.studentPhotoBase64; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; }; reader.readAsDataURL(file); } }
-
-        window.renderTeacherDashboard = function() {
-            if(window.myRole !== 0) return; const grid = document.getElementById('teacher-dashboard-grid'); if(!grid) return; let html='';
-            for(let i=1;i<=6;i++){
-                const st = window.currentStudents[i];
-                if(st && typeof st==='object') {
-                    const sc = st.status==='allowed'?'#2ECC71':'#E74C3C'; const tx = st.status==='allowed'?'✅ 허용':'⏳ 대기';
-                    const img = st.photo?`<img src="${st.photo}" class="preview-img" style="border-color:${sc}">`:`<div class="preview-img" style="display:flex;align-items:center;justify-content:center;border-color:${sc};font-size:2rem;">👤</div>`;
-                    const hm = st.hintMode||'none';
-                    const hintSel = `<select onchange="window.updateHintMode(${i}, this.value)" style="margin-top:10px;width:100%;padding:5px;"><option value="none" ${hm==='none'?'selected':''}>💡 힌트 없음</option><option value="arrow" ${hm==='arrow'?'selected':''}>💡 실시간 화살표</option><option value="avatar" ${hm==='avatar'?'selected':''}>💡 정답위 내 사진</option></select>`;
-                    html+=`<div class="profile-card" style="border-color:${sc}"><h4 style="margin:0 0 5px 0; font-size:1.4rem;">${i}번: ${st.name}</h4>${img}<div class="status-badge" style="color:${sc};">${tx}</div><div style="display:flex;gap:5px;width:100%;">${st.status==='waiting'?`<button onclick="window.setStudentStatus(${i}, 'allowed')" class="action-btn" style="flex:2;margin:0;">승인</button>`:`<button onclick="window.setStudentStatus(${i}, 'waiting')" class="action-btn" style="flex:2;background:#f39c12;margin:0;">대기</button>`}<button onclick="window.kickStudent(${i})" class="action-btn" style="flex:1;background:#e74c3c;margin:0;">삭제</button></div>${hintSel}</div>`;
-                } else { html+=`<div class="profile-card" style="opacity:0.5;border-style:dashed;"><h4>${i}번 자리</h4><div class="preview-img" style="display:flex;align-items:center;justify-content:center;background:#eee;font-size:2rem;">🈳</div><p>비어있음</p></div>`; }
-            } grid.innerHTML=html;
         };
-
-        window.setStudentStatus = function(s, st) { window.dbUpdate(window.dbRef(window.db, `classSession/students/${s}`), { status: st }); };
-        window.kickStudent = function(s) { if(confirm("삭제?")) window.dbSet(window.dbRef(window.db, `classSession/students/${s}`), null); };
-        window.updateHintMode = function(s, v) { window.dbUpdate(window.dbRef(window.db, `classSession/students/${s}`), { hintMode: v }); };
-        window.resetAllStudents = function() { if(confirm("초기화?")) { window.dbSet(studentsRef, null); window.dbSet(sessionRef, { isPlaying:false, song:'airplane', currentIndex:0, playerCount:6 }); } };
-        window.checkMyStatus = function() { if(window.myRole === null || window.myRole<=0)return; const my = window.currentStudents[window.myRole]; const blk = document.getElementById('student-blocker'); if(!my || my.status==='waiting'){ blk.classList.remove('hidden'); document.getElementById('blocker-name').innerText=my?`${window.myRole}번 대기 중`:"등록 필요"; }else{ blk.classList.add('hidden'); } };
-
+        window.handleEntryFileUpload = function(e) { const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onload = ev => { window.studentPhotoBase64 = ev.target.result; document.getElementById('entry-photo-preview').src = ev.target.result; document.getElementById('entry-photo-preview').classList.remove('hidden'); document.getElementById('entry-photo-placeholder').style.display = 'none'; document.getElementById('entry-name').value = f.name.split('.')[0]; }; r.readAsDataURL(f); } };
         window.initMultiplayer = function() {
             sessionRef = window.dbRef(window.db, 'classSession/state'); studentsRef = window.dbRef(window.db, 'classSession/students');
-            window.dbOnValue(studentsRef, (snap) => {
-                const s = snap.val() || {}; if (window.myRole !== null && window.myRole > 0 && !s[window.myRole]) { alert("강퇴되었습니다."); location.reload(); return; }
-                
-                if (window.myRole !== -1) {
-                    window.currentStudents = s; 
-                }
-
-                if(document.getElementById('entry-screen').style.display !== 'none') window.updateEntrySlotUI();
-                if (window.myRole === 0) window.renderTeacherDashboard(); 
-                if (window.myRole !== null && window.myRole > 0) window.checkMyStatus();
-                
-                let c = 0; for(let i=1;i<=6;i++){ if(s[i]&&s[i].status==='allowed')c++; } window.currentApprovedCount=c||1;
-                const cel = document.getElementById('auto-player-count'); if(cel) cel.innerText=c;
-                if(window.currentMode==='multi') window.updateMultiplayerUI();
-            });
-            window.dbOnValue(sessionRef, (snap) => { const d = snap.val(); if(d) { currentMultiState=d; if(window.currentMode==='multi'&&window.myRole !== null && window.myRole>=0) window.updateMultiplayerUI(); } });
+            window.dbOnValue(studentsRef, snap => { const s = snap.val() || {}; if(window.myRole > 0 && !s[window.myRole]) location.reload(); if(window.myRole !== -1) window.currentStudents = s; window.updateEntrySlotUI(); if(window.myRole === 0) window.renderTeacherDashboard(); if(window.myRole > 0) window.checkMyStatus(); if(window.currentMode === 'multi') window.updateMultiplayerUI(); });
+            window.dbOnValue(sessionRef, snap => { const d = snap.val(); if(d) { currentMultiState = d; if(window.currentMode === 'multi' && window.myRole !== null) window.updateMultiplayerUI(); } });
         };
-        setInterval(() => { if (window.myRole===0 && window.currentMode==='dashboard') window.renderTeacherDashboard(); }, 2000);
-        if (typeof window.initMultiplayer === 'function') window.initMultiplayer();
-
-        window.updateBellVisibility = function() { if(window.myRole!==0)return; const v=document.getElementById('multi-bell-visibility').value; if(currentMultiState.isPlaying) window.dbUpdate(sessionRef, {bellVisibility:v}); };
-        
-        window.startMultiplayer = function() {
-            try {
-                if(window.myRole!==0)return;
-                const act = []; for(let i=1;i<=6;i++){ if(window.currentStudents[i]&&window.currentStudents[i].status==='allowed') act.push(i); }
-                if(act.length===0){ alert("승인된 학생 없음!"); return; }
-                const sg = document.getElementById('multi-song-select').value; const bv = document.getElementById('multi-bell-visibility').value;
-                const fs = getFlatSong(sg); const seq = []; for(let i=0;i<fs.length;i++){ seq.push(act[Math.floor(Math.random()*act.length)]); }
-                const ns = { isPlaying:true, song:sg, currentIndex:0, playerCount:act.length, bellVisibility:bv, roleSequence:seq };
-                currentMultiState = ns; window.updateMultiplayerUI(); window.dbSet(sessionRef, ns).catch(e=>console.error(e));
-            } catch(e) { alert("시작 오류!"); }
-        };
-        window.stopMultiplayer = function() { if(window.myRole!==0)return; const ns={isPlaying:false, song:'airplane', currentIndex:0, playerCount:window.currentApprovedCount}; currentMultiState=ns; window.updateMultiplayerUI(); window.dbSet(sessionRef, ns); };
-
-        window.updateMultiplayerUI = function() {
-            try {
-                window.hideArrow();
-                if(window.myRole === null || window.myRole<0) return; const stx = document.getElementById('multi-status-text'); const tel = document.getElementById('multi-target-note');
-                if(!stx || !tel) return;
-                
-                if (currentMultiState && currentMultiState.isPlaying) {
-                    const bv = currentMultiState.bellVisibility || '8'; const fs = getFlatSong(currentMultiState.song);
-                    if (currentMultiState.currentIndex >= fs.length) { stx.innerText="✨ 완성! ✨"; tel.innerHTML=""; document.querySelectorAll('.bell').forEach(b=>{b.classList.remove('multi-bell-hidden', 'practice-active-note'); b.innerHTML=`<span>${noteNames[b.id.split('-')[1]]}</span>`; b.classList.add('success-pop'); setTimeout(()=>b.classList.remove('success-pop'),2000);}); return; }
-
-                    const cNote = fs[currentMultiState.currentIndex]; const seq = currentMultiState.roleSequence || []; const tRole = seq[currentMultiState.currentIndex] || 1;
-                    
-                    if (window.myRole === 0) { 
-                        stx.innerText=`진행: ${currentMultiState.currentIndex+1} / ${fs.length}`; stx.style.color="#333";
-                        const nInfo = window.currentStudents[tRole]; const nm = nInfo?nInfo.name:`${tRole}번`; const pho = nInfo&&nInfo.photo?`<img src="${nInfo.photo}" class="preview-img" style="border:4px solid #e74c3c; width:60px; height:60px;">`:`<div class="preview-img" style="border:4px solid #e74c3c; width:60px; height:60px; display:flex; align-items:center; justify-content:center; background:#eee; font-size:2rem;">👤</div>`;
-                        tel.innerHTML = `<div style="display:flex;align-items:center;gap:15px;margin-bottom:15px;">${pho}<span style="font-size:1.6rem;color:#e74c3c;font-weight:bold;background:#fff3e0;padding:10px 20px;border-radius:20px;">[ ${nm} ] 차례!</span></div><span class="note-badge ${cNote.toLowerCase()} together-large-note" id="teacher-target-note">${noteNames[cNote]}</span>`;
-                        document.querySelectorAll('.bell').forEach(b=>{b.classList.remove('multi-bell-hidden','practice-active-note'); b.innerHTML=`<span>${noteNames[b.id.split('-')[1]]}</span>`; if(b.id===`bell-${cNote}`) { b.classList.add('practice-active-note'); setTimeout(()=>{window.drawArrow(document.getElementById('teacher-target-note'), b);}, 50); } });
-                    } else if (!(window.currentStudents[window.myRole] && window.currentStudents[window.myRole].status==='allowed')) {
-                        stx.innerText="관전 모드"; tel.innerHTML="👀"; document.querySelectorAll('.bell').forEach(b=>b.classList.add('multi-bell-hidden'));
-                    } else if (window.myRole === tRole) { 
-                        stx.innerText="내 차례입니다! 연주하세요!"; stx.style.color="#2ECC71";
-                        tel.innerHTML = `<span class="note-badge ${cNote.toLowerCase()} together-large-note" id="student-target-note">${noteNames[cNote]}</span>`;
-                        
-                        let nB = parseInt(bv)||8; let vB = [cNote];
-                        if(nB<8){ let ao = notes.filter(n=>n!==cNote); for(let i=0;i<nB-1;i++){ let pi=(currentMultiState.currentIndex+i*3)%ao.length; vB.push(ao[pi]); ao.splice(pi,1); } } else { vB=[...notes]; }
-                        const hm = window.currentStudents[window.myRole].hintMode || 'none';
-                        
-                        document.querySelectorAll('.bell').forEach(b=>{
-                            b.classList.remove('multi-bell-hidden','practice-active-note'); const bn=b.id.split('-')[1]; b.innerHTML=`<span>${noteNames[bn]}</span>`;
-                            if(vB.indexOf(bn)!==-1) {
-                                if(bn===cNote) {
-                                    if(hm==='arrow') { setTimeout(()=>{window.drawArrow(document.getElementById('student-target-note'), b);}, 50); } 
-                                    else if(hm==='avatar') { const ava=window.currentStudents[window.myRole].photo?`<img src="${window.currentStudents[window.myRole].photo}" style="width:50px;height:50px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">`:`<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`; b.innerHTML=`${ava}<span>${noteNames[bn]}</span>`; }
-                                    else { if(nB===1) b.classList.add('practice-active-note'); }
-                                }
-                            } else { b.classList.add('multi-bell-hidden'); }
-                        });
-                    } else { 
-                        stx.innerText="쉿! 대기하세요."; stx.style.color="#95a5a6"; tel.innerHTML=`<span style="font-size:5rem;">🤫</span>`;
-                        document.querySelectorAll('.bell').forEach(b=>{b.classList.add('multi-bell-hidden'); b.classList.remove('practice-active-note'); });
-                    }
-                } else {
-                    if(window.myRole===0) stx.innerText="전체 시작 대기 중"; else stx.innerText="대기 중..."; stx.style.color="#555"; tel.innerHTML=""; window.hideArrow();
-                    document.querySelectorAll('.bell').forEach(b=>{b.classList.remove('multi-bell-hidden','practice-active-note'); b.innerHTML=`<span>${noteNames[b.id.split('-')[1]]}</span>`;});
-                }
-            } catch(e) { console.error("UI Update:", e); }
-        };
+        window.initMultiplayer();
+        window.renderTeacherDashboard = function() { if(window.myRole !== 0) return; const g = document.getElementById('teacher-dashboard-grid'); g.innerHTML = ''; for(let i=1;i<=6;i++){ const st = window.currentStudents[i]; if(st && st.name){ const sc = st.status==='allowed'?'#2ECC71':'#E74C3C'; g.innerHTML += `<div class="profile-card" style="border-color:${sc}"><h4>${i}번: ${st.name}</h4><img src="${st.photo||''}" class="preview-img"><button onclick="window.dbUpdate(window.dbRef(window.db, 'classSession/students/${i}'), {status:'${st.status==='waiting'?'allowed':'waiting'}'})" class="action-btn">${st.status==='waiting'?'승인':'대기'}</button><button onclick="window.dbSet(window.dbRef(window.db, 'classSession/students/${i}'), null)" class="action-btn" style="background:#e74c3c">삭제</button></div>`; } } };
     </script>
 </body>
 </html>
