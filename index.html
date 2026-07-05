@@ -280,8 +280,8 @@
                 </div>
                 <div class="volume-container">
                     <span class="volume-label">🔊 증폭</span>
-                    <input type="range" id="volume-slider" min="0" max="1000" value="300" oninput="window.updateVolumeDisplay(this.value)">
-                    <span id="volume-value">300%</span>
+                    <input type="range" id="volume-slider" min="100" max="1000" value="500" oninput="window.updateVolumeDisplay(this.value)">
+                    <span id="volume-value">500%</span>
                 </div>
             </div>
         </div>
@@ -478,7 +478,7 @@
         window.singleActiveSlot = 1;
         window.roomId = null;               // 현재 접속한 교실 번호
         window.roomInfo = null;             // {teacherName, password, teacherOnline}
-        window.globalVolumeMultiplier = 3.0; // 기본 300%
+        window.globalVolumeMultiplier = 5.0; // 기본 500%
         window.soundType = localStorage.getItem('hb_soundType') || 'piano';
         let currentSingleModeConfig = 'free';
 
@@ -504,9 +504,12 @@
                 if (!audioCtx) {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     masterGain = audioCtx.createGain();
+                    // 리미터: 찢어짐만 살짝 방지하고, 볼륨 차이는 그대로 통과시킴
                     compressor = audioCtx.createDynamicsCompressor();
-                    compressor.threshold.value = -12; compressor.knee.value = 24;
-                    compressor.ratio.value = 14; compressor.attack.value = 0.002; compressor.release.value = 0.25;
+                    compressor.threshold.value = -2;   // 거의 끝까지 통과 (예전 -12는 큰 소리를 눌러버렸음)
+                    compressor.knee.value = 6;
+                    compressor.ratio.value = 4;        // 부드러운 리미팅
+                    compressor.attack.value = 0.003; compressor.release.value = 0.25;
                     masterGain.connect(compressor); compressor.connect(audioCtx.destination);
                     masterGain.gain.value = 1.0;
                 }
@@ -516,16 +519,21 @@
         }
         ['pointerdown','touchstart','mousedown','keydown'].forEach(evt => document.addEventListener(evt, resumeAudio, {passive:true}));
 
-        // 🎹 기존 건반음 (사인파)
+        // 🎹 건반음 (배음이 있는 파형 → 태블릿 스피커에서 훨씬 크고 또렷하게 들림)
         function playPiano(note) {
             const vol = window.globalVolumeMultiplier;
             const t = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
-            osc.type = 'sine'; osc.frequency.value = frequencies[note];
-            osc.connect(g); g.connect(masterGain);
-            g.gain.setValueAtTime(vol, t);
-            g.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
-            osc.start(t); osc.stop(t + 1.5);
+            // 기음 + 2·3배음을 섞어 체감 음량을 키움 (사인파는 태블릿에서 작게 들림)
+            const parts = [ {type:'triangle', ratio:1, g:0.9}, {type:'sine', ratio:2, g:0.35}, {type:'sine', ratio:3, g:0.18} ];
+            parts.forEach(p => {
+                const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                osc.type = p.type; osc.frequency.value = frequencies[note] * p.ratio;
+                osc.connect(g); g.connect(masterGain);
+                const peak = Math.max(0.001, vol * p.g);
+                g.gain.setValueAtTime(peak, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 1.5);
+                osc.start(t); osc.stop(t + 1.5);
+            });
         }
 
         // 🔔 실제 핸드벨 소리 (배음 합성: 기음 + 12도 배음 + 금속 배음 + 타격음)
@@ -1135,14 +1143,31 @@
             // 학생 화면
             if (window.myRole === turnSlot) {
                 statusEl.innerText = "✨ 네 차례예요! 이 소리를 울려요!";
-                targetBox.innerHTML = `<span class="note-badge ${curNote.toLowerCase()} together-large-note pop-animation" style="width:130px !important; height:130px !important; line-height:130px !important; font-size:3rem !important;">${noteNames[curNote]}</span>`;
+                targetBox.innerHTML = `<span class="note-badge ${curNote.toLowerCase()} together-large-note pop-animation" id="multi-target-badge" style="width:130px !important; height:130px !important; line-height:130px !important; font-size:3rem !important;">${noteNames[curNote]}</span>`;
                 applyBellVisibility(curNote, parseInt(st.bellVisibility || '8'), idx);
+                // 교사가 이 학생에게 설정한 힌트를 합주에도 적용
+                const myInfo = window.currentStudents[window.myRole] || { hintMode: 'none' };
+                applyMultiHint(curNote, myInfo);
             } else {
                 statusEl.innerText = `🤫 쉿! 지금은 ${turnName} 차례예요`;
                 targetBox.innerHTML = '<div style="font-size:4.5rem;">🤫</div>';
+                window.hideArrow();
                 hideAllBells(true);
             }
         };
+
+        // 합주 중 학생별 힌트 표시 (화살표 / 정답 건반 위 사진)
+        function applyMultiHint(curNote, info) {
+            const hm = info ? info.hintMode : 'none';
+            window.hideArrow();
+            document.querySelectorAll('.bell').forEach(b => {
+                const bn = b.id.split('-')[1]; b.classList.remove('practice-active-note'); if(bn) b.innerHTML = `<span>${noteNames[bn]}</span>`;
+                if (bn === curNote) {
+                    if (hm === 'arrow') { b.classList.add('practice-active-note'); setTimeout(()=>window.drawArrow(document.getElementById('multi-target-badge'), b), 50); }
+                    else if (hm === 'avatar') { const ava = info.photo ? `<img src="${info.photo}" style="width:45px;height:45px;border-radius:50%;border:4px solid white;animation:bounce 1s infinite;">` : `<div style="font-size:2.5rem;animation:bounce 1s infinite;">👤</div>`; b.innerHTML = `${ava}<span>${noteNames[bn]}</span>`; }
+                }
+            });
+        }
 
         function hideAllBells(hide) {
             document.querySelectorAll('.bell').forEach(b => b.classList.toggle('multi-bell-hidden', hide));
@@ -1221,10 +1246,38 @@
                 if(st && st.name){
                     any = true;
                     const sc = st.status==='allowed'?'#2ECC71':'#E74C3C';
-                    g.innerHTML += `<div class="profile-card" style="border-color:${sc}"><h4>${i}번: ${st.name}</h4><img src="${st.photo||''}" class="preview-img"><button onclick="window.dbUpdate(window.dbRef(window.db, 'rooms/${window.roomId}/students/${i}'), {status:'${st.status==='waiting'?'allowed':'waiting'}'})" class="action-btn" style="background:${st.status==='waiting'?'#2ecc71':'#f39c12'};">${st.status==='waiting'?'✅ 승인':'⏸ 대기'}</button><button onclick="if(confirm('${st.name} 학생을 내보낼까요?')) window.dbSet(window.dbRef(window.db, 'rooms/${window.roomId}/students/${i}'), null)" class="action-btn" style="background:#e74c3c">삭제</button></div>`;
+                    const hint = st.hintMode || 'none';
+                    const hintBtn = (mode, emoji, label) => {
+                        const on = hint === mode;
+                        const bg = on ? '#2ecc71' : '#e8ebf2';
+                        const col = on ? '#fff' : '#8a90b0';
+                        return `<button onclick="window.setStudentHint(${i},'${mode}')" style="flex:1; padding:8px 4px; border:none; border-radius:8px; background:${bg}; color:${col}; font-weight:800; font-size:clamp(0.75rem,0.5vw+0.55rem,1rem); cursor:pointer;">${emoji}<br>${label}</button>`;
+                    };
+                    g.innerHTML += `<div class="profile-card" style="border-color:${sc}">
+                        <h4>${i}번: ${st.name}</h4>
+                        <img src="${st.photo||''}" class="preview-img">
+                        <div style="display:flex; gap:6px; width:100%; margin-top:4px;">
+                            <button onclick="window.dbUpdate(window.dbRef(window.db, 'rooms/${window.roomId}/students/${i}'), {status:'${st.status==='waiting'?'allowed':'waiting'}'})" class="action-btn" style="flex:1; margin:0; background:${st.status==='waiting'?'#2ecc71':'#f39c12'};">${st.status==='waiting'?'✅ 승인':'⏸ 대기'}</button>
+                            <button onclick="if(confirm('${st.name} 학생을 내보낼까요?')) window.dbSet(window.dbRef(window.db, 'rooms/${window.roomId}/students/${i}'), null)" class="action-btn" style="flex:0 0 auto; margin:0; background:#e74c3c">삭제</button>
+                        </div>
+                        <div style="width:100%; margin-top:10px; border-top:2px solid #eef0f7; padding-top:8px;">
+                            <div style="font-size:clamp(0.75rem,0.5vw+0.55rem,1rem); color:#8a90b0; font-weight:800; margin-bottom:5px;">💡 힌트</div>
+                            <div style="display:flex; gap:5px;">
+                                ${hintBtn('none','🚫','없음')}
+                                ${hintBtn('arrow','➡️','화살표')}
+                                ${hintBtn('avatar','🖼️','사진')}
+                            </div>
+                        </div>
+                    </div>`;
                 }
             }
             if (!any) g.innerHTML = '<p style="color:#8a90b0; font-weight:700; grid-column:1/-1; font-size:var(--fs-body);">아직 접속한 학생이 없습니다.<br>학생 태블릿에서 [학생 입장] → 이 교실 선택 → 비밀번호 입력으로 들어올 수 있어요.</p>';
+        };
+
+        // 대시보드에서 학생별 힌트를 바로 변경 (실시간 반영)
+        window.setStudentHint = function(slot, mode) {
+            if (window.myRole !== 0 || !window.roomId) return;
+            window.dbUpdate(R(`students/${slot}`), { hintMode: mode });
         };
 
         // 초기 UI 상태 반영
