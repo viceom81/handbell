@@ -406,7 +406,7 @@
             </div>
             <div id="multi-student-view" style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; min-height:0; overflow-y:auto;">
                 <h2 id="multi-status-text" class="font-display" style="font-size:clamp(1.5rem, 2vw, 2.4rem); color:#555; margin-bottom:16px;">대기 중...</h2>
-                <div id="multi-target-note" style="display:flex; flex-direction:column; align-items:center;"></div>
+                <div id="multi-target-note" style="display:flex; flex-direction:column; align-items:center; width:100%;"></div>
             </div>
         </div>
 
@@ -799,7 +799,7 @@
         window.joinAsStudent = function() {
             const slot = document.getElementById('entry-slot-select').value, name = document.getElementById('entry-name').value.trim();
             if (!slot || (window.currentStudents[slot] && window.currentStudents[slot].name)) { alert("자리를 다시 선택해주세요."); return; }
-            window.dbUpdate(R(`students/${slot}`), { name: name || `학생${slot}`, photo: window.studentPhotoBase64, status: 'waiting', hintMode: 'none' }).then(() => {
+            window.dbUpdate(R(`students/${slot}`), { name: name || `학생${slot}`, photo: window.studentPhotoBase64, status: 'waiting', hintMode: 'none', sheetMode: 'one' }).then(() => {
                 window.myRole = parseInt(slot); // 저장 완료 후 역할 확정 (입장 직후 튕김 방지)
                 document.getElementById('entry-screen').style.display = 'none';
                 document.getElementById('main-app').classList.remove('hidden');
@@ -1180,31 +1180,69 @@
             const turnName = (window.currentStudents[turnSlot] && window.currentStudents[turnSlot].name) || `${turnSlot}번`;
             const curNote = fs[idx];
 
-            // 교사 화면: 진행 상황 + 방금 연주된 음 재생
+            // 교사 화면: 전체 악보 + 진행 위치 (전자칠판용)
             if (window.myRole === 0) {
                 statusEl.innerText = `🎵 진행 ${idx + 1} / ${fs.length} — 지금 차례: ${turnName}`;
-                targetBox.innerHTML = `<span class="note-badge ${curNote.toLowerCase()} together-large-note">${noteNames[curNote]}</span>`;
+                targetBox.innerHTML = renderMultiSheet(st.song, idx, 'all', false);
                 hideAllBells(false);
                 if (idx > 0 && lastPlayedMultiIdx !== idx) { window.playSound(fs[idx - 1]); }
                 lastPlayedMultiIdx = idx;
                 return;
             }
 
-            // 학생 화면
-            if (window.myRole === turnSlot) {
-                statusEl.innerText = "✨ 네 차례예요! 이 소리를 울려요!";
-                targetBox.innerHTML = `<span class="note-badge ${curNote.toLowerCase()} together-large-note pop-animation" id="multi-target-badge" style="width:130px !important; height:130px !important; line-height:130px !important; font-size:3rem !important;">${noteNames[curNote]}</span>`;
+            // 학생 화면: 교사가 학생별로 지정한 악보 수준(1개/마디/줄/전체)으로 표시
+            const myInfo = window.currentStudents[window.myRole] || { hintMode: 'none', sheetMode: 'one' };
+            const sheetMode = myInfo.sheetMode || 'one';
+            const isMyTurn = (window.myRole === turnSlot);
+
+            if (isMyTurn) statusEl.innerText = "✨ 네 차례예요! 이 소리를 울려요!";
+            else statusEl.innerText = `🤫 쉿! 지금은 ${turnName} 차례예요`;
+
+            if (sheetMode === 'one') {
+                // 1개: 내 차례에만 큰 음표, 아니면 쉿
+                if (isMyTurn) targetBox.innerHTML = `<span class="note-badge ${curNote.toLowerCase()} together-large-note pop-animation" id="multi-target-badge" style="width:130px !important; height:130px !important; line-height:130px !important; font-size:3rem !important;">${noteNames[curNote]}</span>`;
+                else targetBox.innerHTML = '<div style="font-size:4.5rem;">🤫</div>';
+            } else {
+                // 마디/줄/전체: 악보를 계속 보여주고 진행 위치를 표시 (수준 높은 학생은 흐름을 따라감)
+                targetBox.innerHTML = renderMultiSheet(st.song, idx, sheetMode, !isMyTurn);
+            }
+
+            if (isMyTurn) {
                 applyBellVisibility(curNote, parseInt(st.bellVisibility || '8'), idx);
-                // 교사가 이 학생에게 설정한 힌트를 합주에도 적용
-                const myInfo = window.currentStudents[window.myRole] || { hintMode: 'none' };
                 applyMultiHint(curNote, myInfo);
             } else {
-                statusEl.innerText = `🤫 쉿! 지금은 ${turnName} 차례예요`;
-                targetBox.innerHTML = '<div style="font-size:4.5rem;">🤫</div>';
                 window.hideArrow();
                 hideAllBells(true);
             }
         };
+
+        // ═══════ 합주 악보 렌더링 (수준별: 마디 / 줄(4마디) / 전체) ═══════
+        const LINE_MEASURES = 4; // '한 줄' = 4마디
+        function renderMultiSheet(songKey, idx, mode, dimAll) {
+            const measures = songData[songKey] || songData['airplane'];
+            // 몇 번째 마디에 현재 음이 있는지 계산
+            let curMeasure = 0, count = 0;
+            for (let m = 0; m < measures.length; m++) {
+                if (idx < count + measures[m].length) { curMeasure = m; break; }
+                count += measures[m].length;
+            }
+            let startM = 0, endM = measures.length;
+            if (mode === 'measure') { startM = curMeasure; endM = curMeasure + 1; }
+            else if (mode === 'line') { startM = Math.floor(curMeasure / LINE_MEASURES) * LINE_MEASURES; endM = Math.min(startM + LINE_MEASURES, measures.length); }
+            // 시작 마디 앞까지의 음 개수
+            let gIdx = 0; for (let m = 0; m < startM; m++) gIdx += measures[m].length;
+            let html = `<div class="sheet-display" style="background:${dimAll ? 'transparent' : 'var(--panel-soft)'}; opacity:${dimAll ? '0.75' : '1'};">`;
+            for (let m = startM; m < endM; m++) {
+                measures[m].forEach(n => {
+                    const played = gIdx < idx; const cur = gIdx === idx;
+                    html += `<span class="note-badge ${n.toLowerCase()} ${cur ? 'practice-active-note pop-animation' : ''} ${played ? 'practice-completed-note' : ''}" ${cur ? 'id="multi-target-badge"' : ''}>${noteNames[n]}</span>`;
+                    gIdx++;
+                });
+                if (m < endM - 1) html += `<div class="measure-divider"></div>`;
+            }
+            html += '</div>';
+            return html;
+        }
 
         // 합주 중 학생별 힌트 표시 (화살표 / 정답 건반 위 사진)
         function applyMultiHint(curNote, info) {
@@ -1297,11 +1335,18 @@
                     any = true;
                     const sc = st.status==='allowed'?'#2ECC71':'#E74C3C';
                     const hint = st.hintMode || 'none';
+                    const sheet = st.sheetMode || 'one';
                     const hintBtn = (mode, emoji, label) => {
                         const on = hint === mode;
                         const bg = on ? '#2ecc71' : '#e8ebf2';
                         const col = on ? '#fff' : '#8a90b0';
                         return `<button onclick="window.setStudentHint(${i},'${mode}')" style="flex:1; padding:8px 4px; border:none; border-radius:8px; background:${bg}; color:${col}; font-weight:800; font-size:clamp(0.75rem,0.5vw+0.55rem,1rem); cursor:pointer;">${emoji}<br>${label}</button>`;
+                    };
+                    const sheetBtn = (mode, label) => {
+                        const on = sheet === mode;
+                        const bg = on ? '#3498db' : '#e8ebf2';
+                        const col = on ? '#fff' : '#8a90b0';
+                        return `<button onclick="window.setStudentSheet(${i},'${mode}')" style="flex:1; padding:8px 2px; border:none; border-radius:8px; background:${bg}; color:${col}; font-weight:800; font-size:clamp(0.72rem,0.45vw+0.55rem,0.95rem); cursor:pointer;">${label}</button>`;
                     };
                     g.innerHTML += `<div class="profile-card" style="border-color:${sc}">
                         <h4>${i}번: ${st.name}</h4>
@@ -1317,6 +1362,13 @@
                                 ${hintBtn('arrow','➡️','화살표')}
                                 ${hintBtn('avatar','🖼️','사진')}
                             </div>
+                            <div style="font-size:clamp(0.75rem,0.5vw+0.55rem,1rem); color:#8a90b0; font-weight:800; margin:8px 0 5px 0;">🎼 악보 수준 (합주)</div>
+                            <div style="display:flex; gap:4px;">
+                                ${sheetBtn('one','1개')}
+                                ${sheetBtn('measure','마디')}
+                                ${sheetBtn('line','줄')}
+                                ${sheetBtn('all','전체')}
+                            </div>
                         </div>
                     </div>`;
                 }
@@ -1328,6 +1380,11 @@
         window.setStudentHint = function(slot, mode) {
             if (window.myRole !== 0 || !window.roomId) return;
             window.dbUpdate(R(`students/${slot}`), { hintMode: mode });
+        };
+        // 대시보드에서 학생별 악보 수준을 바로 변경 (실시간 반영)
+        window.setStudentSheet = function(slot, mode) {
+            if (window.myRole !== 0 || !window.roomId) return;
+            window.dbUpdate(R(`students/${slot}`), { sheetMode: mode });
         };
 
         // 곡 선택창 채우기 (수록곡 10곡 자동 반영)
