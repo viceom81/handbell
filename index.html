@@ -667,6 +667,9 @@
                 const chip = document.getElementById('room-name-chip'); chip.innerText = `🏫 ${name} 선생님 교실 (방 ${window.roomId})`; chip.classList.remove('hidden');
                 initRoomListeners();
                 window.setMode('dashboard');
+            }).catch(err => {
+                alert("❌ 교실 접속 실패\n\n원인: " + (err && err.message ? err.message : err) +
+                    "\n\n'permission_denied'(권한 거부)라면 Firebase 콘솔 → Realtime Database → 규칙에서 'rooms' 경로에 읽기/쓰기를 허용해야 합니다.");
             });
         };
 
@@ -704,6 +707,10 @@
                 }
                 if (count === 0) { sel.add(new Option("아직 열린 교실이 없습니다", "")); sel.disabled = true; }
                 else sel.disabled = false;
+            }).catch(err => {
+                sel.innerHTML = ''; sel.add(new Option("⚠ 교실 목록을 불러올 수 없습니다", "")); sel.disabled = true;
+                alert("❌ 교실 목록 불러오기 실패\n\n원인: " + (err && err.message ? err.message : err) +
+                    "\n\n'permission_denied'라면 Firebase 규칙에서 'rooms' 경로를 허용해야 합니다.");
             });
         };
 
@@ -721,7 +728,7 @@
                 document.getElementById('student-form-room-title').innerText = `🧑‍🎓 ${info.teacherName} 선생님 교실`;
                 // 슬롯 목록을 위해 학생 데이터 구독 시작
                 initRoomListeners();
-            });
+            }).catch(err => alert("❌ 교실 확인 실패: " + (err && err.message ? err.message : err)));
         };
 
         window.updateEntrySlotUI = function() {
@@ -742,7 +749,7 @@
                 window.setMode('multi');
                 window.checkMyStatus();
                 enableStudentLock(); // 🔒 키오스크 잠금 시작
-            });
+            }).catch(err => alert("❌ 입장 실패: " + (err && err.message ? err.message : err)));
         };
 
         // ═══════ 🔒 학생 키오스크 잠금 ═══════
