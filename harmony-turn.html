@@ -198,7 +198,7 @@ html,body{overflow:visible;background:#fff!important;-webkit-print-color-adjust:
 <div class="opt-row"><span class="opt-label">① 음성 버튼 보이기</span><button type="button" class="opt-toggle" id="optTts"></button></div>
 <div class="opt-row"><span class="opt-label">② 말풍선 문장</span><div class="opt-seg" id="optBubbleSeg"><button type="button" data-val="full">전체</button><button type="button" data-val="blank">빈칸</button><button type="button" data-val="hide">숨김</button></div></div>
 <div class="opt-row"><span class="opt-label">③ 그림 상징</span><button type="button" class="opt-toggle" id="optSymbol"></button></div>
-<div class="opt-row"><span class="opt-label">④ 단계 신호</span><button type="button" class="opt-toggle" id="optPhase"></button></div>
+<div class="opt-row"><span class="opt-label">④ 단계 깜빡임 효과</span><button type="button" class="opt-toggle" id="optPhase"></button></div>
 <div class="opt-row"><span class="opt-label">⑤ 화살표 안내</span><button type="button" class="opt-toggle" id="optArrow"></button></div>
 <div class="opt-row"><span class="opt-label">⑥ 기다림 모래시계</span><button type="button" class="opt-toggle" id="optTimer"></button></div>
 <div class="opt-row"><span class="opt-label">↳ 기다림 시간(초)</span><div class="opt-seg" id="optTimerSecSeg"><button type="button" data-sec="5">5초</button><button type="button" data-sec="10">10초</button><button type="button" data-sec="15">15초</button></div></div>
@@ -399,17 +399,18 @@ if(step<1||step>4){layer.classList.remove('active');stopWaitTimer();return}
 layer.classList.add('active');
 const pf=getRoles().pfs[step-1],pfName=pf&&pf.name?pf.name:`연주자 ${step}`;
 $('btnTtsMc').style.display=hbOpt.tts?'flex':'none';$('btnTtsPf').style.display=hbOpt.tts?'flex':'none';
-const pb=$('phaseBar');pb.classList.toggle('show',!!hbOpt.phase);
-if(hbOpt.phase){
+$('btnTtsMc').style.visibility=cuePhase===1?'visible':'hidden';$('btnTtsPf').style.visibility=cuePhase===3?'visible':'hidden';
+const pb=$('phaseBar');pb.classList.add('show');
 pb.querySelectorAll('.phase-chip').forEach(c=>c.classList.toggle('on',Number(c.dataset.phase)===cuePhase));
+if(hbOpt.phase){
 if(cuePhase===1)mcBox.classList.add('cue-blink-blue');else if(cuePhase===2)pfBox.classList.add('cue-glow-green');else pfBox.classList.add('cue-blink-orange');
 }
-const showMc=hbOpt.bubble!=='hide'&&(!hbOpt.phase||cuePhase===1),showPf=hbOpt.bubble!=='hide'&&(!hbOpt.phase||cuePhase===3);
+const showMc=hbOpt.bubble!=='hide'&&cuePhase===1,showPf=hbOpt.bubble!=='hide'&&cuePhase===3;
 const mcText=hbOpt.bubble==='blank'?'＿＿＿ 차례예요.':`${esc(pfName)} 차례예요.`;
 const mcSym=hbOpt.symbol?'<span class="cue-sym">🗣️👉</span>':'',pfSym=hbOpt.symbol?'<span class="cue-sym">❓🙋</span>':'';
 $('mcBubble').innerHTML=`${mcSym}<span>${mcText}</span>`;$('pfBubble').innerHTML=`${pfSym}<span>다음은 누구 차례예요?</span>`;
 $('mcBubble').classList.toggle('show',showMc);$('pfBubble').classList.toggle('show',showPf);
-$('cueArrow').classList.toggle('show',hbOpt.arrow&&(!hbOpt.phase||cuePhase===1));
+$('cueArrow').classList.toggle('show',hbOpt.arrow&&cuePhase===1);
 $('waitZone').classList.toggle('show',!!hbOpt.timer);
 if(!hbOpt.timer)stopWaitTimer();
 }
@@ -417,8 +418,8 @@ function initCues(){
 loadOpt();syncOptUI();
 const drawer=o=>{$('optBackdrop').classList.toggle('open',o);$('optDrawer').classList.toggle('open',o)};
 $('btnOptTop').onclick=guard(()=>drawer(true));$('btnOptClose').onclick=guard(()=>drawer(false));$('optBackdrop').onclick=guard(()=>drawer(false));
-$('btnTtsMc').onclick=guard(()=>{if(step<1||step>4)return;const pf=getRoles().pfs[step-1];speakKo(`${pf&&pf.name?pf.name:'연주자 '+step} 차례예요.`)});
-$('btnTtsPf').onclick=guard(()=>{if(step<1||step>4)return;speakKo('다음은 누구 차례예요?')});
+$('btnTtsMc').onclick=guard(()=>{if(step<1||step>4||cuePhase!==1)return;const pf=getRoles().pfs[step-1];speakKo(`${pf&&pf.name?pf.name:'연주자 '+step} 차례예요.`)});
+$('btnTtsPf').onclick=guard(()=>{if(step<1||step>4||cuePhase!==3)return;speakKo('다음은 누구 차례예요?')});
 $('phaseBar').onclick=guard(e=>{const b=e.target.closest('.phase-chip');if(!b)return;cuePhase=Number(b.dataset.phase)||1;renderCues()});
 $('btnWait').onclick=guard(toggleWaitTimer);$('timerRingBox').onclick=guard(stopWaitTimer);
 const bind=(id,k)=>{$(id).onclick=guard(()=>{hbOpt[k]=!hbOpt[k];saveOpt();syncOptUI();renderCues()})};
