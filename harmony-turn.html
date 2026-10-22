@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>나비야 하모니 연주 진행판</title>
+<style>
+:root{--bg:#F4F7FB;--card:#fff;--text:#1E293B;--muted:#64748B;--pri:#2563EB;--acc:#10B981;--del:#EF4444;--bdr:#E2E8F0;--do:#E74C3C;--re:#E67E22;--mi:#F1C40F;--fa:#2ECC71;--sol:#3498DB}
+*{box-sizing:border-box;user-select:none;-webkit-user-select:none;margin:0;padding:0}
+html,body{width:100vw;height:100vh;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif}
+button{font-family:inherit;border:none;border-radius:16px;cursor:pointer;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:8px;touch-action:manipulation}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.35;pointer-events:none}
+.btn-pri{background:var(--pri);color:#fff}.btn-acc{background:var(--acc);color:#fff}.btn-neu{background:var(--bdr);color:var(--text)}.btn-del{background:#FEE2E2;color:var(--del)}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;padding:24px 36px}
+.screen.active{display:flex}
+.avatar{border-radius:50%;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;border:4px solid #CBD5E1;flex-shrink:0}
+.avatar img{width:100%;height:100%;object-fit:cover;object-position:center 22%;background:#fff;display:block}
+.avatar span{font-size:2rem;font-weight:900;color:#94A3B8}
+.top-bar{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:16px 24px;border-radius:20px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,.04)}
+.top-bar h1{font-size:1.9rem;font-weight:900}.top-bar p{font-size:1rem;color:var(--muted);margin-top:4px}
+.actions{display:flex;gap:12px}.actions button{font-size:1.3rem;padding:14px 24px}
+.info-bar{background:#EFF6FF;border:2px solid #BFDBFE;padding:10px 20px;border-radius:14px;font-size:1.1rem;font-weight:700;color:#1E3A8A;margin-bottom:14px}
+.grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(300px,1fr);gap:16px;overflow-y:auto}
+.empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;background:var(--card);border:3px dashed #CBD5E1;border-radius:24px;color:var(--muted);font-size:1.5rem;font-weight:700}
+.tile{background:var(--card);border-radius:22px;padding:14px 18px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;border:3px solid var(--bdr)}
+.tile.mc{border-color:var(--pri);background:#F8FAFC}
+.tile-head{width:100%;display:flex;justify-content:space-between;align-items:center}
+.tag{font-size:1.05rem;font-weight:900;padding:5px 12px;border-radius:10px;background:var(--bdr)}
+.tag.mc{background:#DBEAFE;color:#1D4ED8}.tag.pf{background:#D1FAE5;color:#047857}
+.tile .avatar{width:135px;height:135px}
+.name-btn{font-size:1.65rem;font-weight:900;background:#F1F5F9;padding:8px 16px;border-radius:12px;width:100%;border:2px solid var(--bdr);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.move-bar{width:100%;display:flex;gap:10px}.move-bar button{flex:1;height:50px;font-size:1.4rem}
+.play-header{display:flex;justify-content:center;align-items:center;position:relative;min-height:126px}
+.mc-box{display:flex;align-items:center;gap:22px;background:var(--card);padding:10px 28px;border-radius:999px;border:3px solid #BFDBFE;box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.mc-badge{background:var(--pri);color:#fff;font-size:1.2rem;font-weight:900;padding:8px 16px;border-radius:999px}
+.mc-list{display:flex;gap:24px;align-items:center}
+.mc-item{display:flex;align-items:center;gap:12px;font-size:1.65rem;font-weight:900}
+.mc-item .avatar{width:88px;height:88px;border-color:var(--pri)}
+.btn-cfg{position:absolute;right:0;top:0;font-size:1.2rem;padding:12px 20px}
+.stage{flex:1;min-height:0;background:var(--card);border-radius:32px;margin:14px 0;padding:24px 36px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(0,0,0,.05)}
+.panel{width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:space-between}
+.panel.active{display:flex}
+.center-box{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;text-align:center}
+.hero-title{font-size:3.8rem;font-weight:900}.hero-sub{font-size:1.8rem;font-weight:700;color:var(--muted)}
+.btn-start{font-size:3rem;padding:28px 90px;border-radius:32px}
+.lineup{display:flex;gap:24px}
+.lineup-item{background:#F8FAFC;border:3px solid var(--bdr);border-radius:20px;padding:14px 22px;display:flex;flex-direction:column;align-items:center;gap:8px;min-width:170px;font-size:1.5rem;font-weight:900}
+.lineup-item .avatar{width:100px;height:100px}
+.phrase-top{display:flex;flex-direction:column;align-items:center;gap:8px}
+.phrase-title{font-size:2.2rem;font-weight:900;color:var(--pri);background:#EFF6FF;padding:4px 28px;border-radius:999px}
+.dots{display:flex;gap:14px}.dot{width:20px;height:20px;border-radius:50%;background:#CBD5E1}
+.dot.on{background:var(--pri);transform:scale(1.25)}.dot.done{background:#93C5FD}
+.perf-box{display:flex;align-items:center;gap:32px;padding:14px 44px;border-radius:36px;background:#F8FAFC;border:4px solid var(--bdr);cursor:pointer}
+.perf-box.touched{border-color:var(--acc);background:#ECFDF5;box-shadow:0 0 0 8px rgba(16,185,129,.2)}
+.perf-box .avatar{width:min(220px,19vh);height:min(220px,19vh);border:6px solid var(--acc)}
+.panel#panelPhrase{gap:10px}
+.perf-label{font-size:1.4rem;font-weight:800;color:var(--muted)}.perf-name{font-size:3.8rem;font-weight:900}
+.strip-wrap{width:100%;display:flex;justify-content:center;align-items:center;padding:16px;background:#F1F5F9;border-radius:28px;min-height:150px}
+.strip{display:flex;align-items:center;justify-content:center;gap:min(20px,1vw)}
+.gap{width:min(44px,2.2vw);height:90px;display:flex;align-items:center;justify-content:center}
+.gap::after{content:"";width:6px;height:65%;background:#CBD5E1;border-radius:4px}
+.note{width:min(190px,9vw,17.5vh);height:min(190px,9vw,17.5vh);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:min(5rem,4vw,7.5vh);font-weight:900;color:#fff;border:5px solid #fff;box-shadow:0 8px 18px rgba(0,0,0,.15)}
+.n-도{background:var(--do)}.n-레{background:var(--re)}.n-미{background:var(--mi);color:var(--text)}.n-파{background:var(--fa)}.n-솔{background:var(--sol)}
+.nav-bar{display:flex;gap:20px;min-height:92px}
+.nav-bar button{flex:1;height:92px;font-size:2.3rem;border-radius:24px}
+.end-btns{display:flex;gap:20px;margin-top:12px}.end-btns button{font-size:2rem;padding:24px 42px;border-radius:24px}
+.print-view{position:fixed;inset:0;background:#fff;z-index:100;display:none;flex-direction:column;padding:24px 36px}
+.print-view.active{display:flex}
+.print-sheet{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:12px}
+.print-row{display:flex;align-items:center;background:#F8FAFC;border:2px solid #CBD5E1;border-radius:20px;padding:12px 24px;gap:24px}
+.print-label{font-size:1.9rem;font-weight:900;min-width:110px}
+.print-row .strip{flex:1;gap:12px}
+.print-row .gap{width:34px}
+.print-row .note{width:104px;height:104px;font-size:2.8rem;box-shadow:none;border:3px solid rgba(0,0,0,.12)}
+@media (max-height:900px){.tile .avatar{width:110px;height:110px}.hero-title{font-size:3rem}.btn-start{font-size:2.4rem;padding:20px 70px}}
+@media print{
+@page{size:A4 landscape;margin:10mm}
+html,body{overflow:visible;background:#fff!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+.screen,.print-head{display:none!important}
+.print-view{position:static!important;display:flex!important;padding:0!important;height:185mm}
+.print-row .note{width:92px;height:92px;font-size:2.4rem}
+}
+</style>
+</head>
+<body>
+<input type="file" id="fileInput" multiple accept="image/*" style="display:none">
+<section id="setupScreen" class="screen active">
+<div class="top-bar">
+<div><h1>하모니 연주 준비 화면 (나비야)</h1><p>학생 사진을 불러오고 순서를 정하세요. 이름을 탭하면 수정할 수 있습니다. 사진은 이 기기에만 저장됩니다.</p></div>
+<div class="actions">
+<button class="btn-neu" id="btnLoad">📷 사진 불러오기</button>
+<button class="btn-neu" id="btnPrintOpen">🖨️ 순서 띠 인쇄</button>
+<button class="btn-pri" id="btnGoPlay">▶ 진행 시작</button>
+</div>
+</div>
+<div class="info-bar">진행자 조: 목록 순서대로 2명씩(1조=1·2번, 2조=3·4번, 3조=5·6번) / 연주자: 나머지 학생이 악구 1~4에 순서대로 배정</div>
+<div class="grid" id="studentGrid"></div>
+</section>
+<section id="playScreen" class="screen">
+<div class="play-header">
+<div class="mc-box"><span class="mc-badge" id="mcBadge">진행자</span><div class="mc-list" id="mcList"></div></div>
+<button class="btn-neu btn-cfg" id="btnCfgTop">⚙️ 설정</button>
+</div>
+<div class="stage">
+<div id="panelReady" class="panel">
+<div class="center-box">
+<div class="hero-title">나비야 하모니 연주</div>
+<div class="hero-sub">진행자가 순서를 말하고 얼굴을 터치하며 연주를 이어 가요</div>
+<div class="lineup" id="lineupBox"></div>
+<button class="btn-acc btn-start" id="btnBegin">시작</button>
+</div>
+</div>
+<div id="panelPhrase" class="panel">
+<div class="phrase-top"><div class="phrase-title" id="phraseTitle">악구 1 / 4</div><div class="dots" id="dotsBox"></div></div>
+<div class="perf-box" id="perfBox"><div class="avatar" id="perfAvatar"></div><div><div class="perf-label">이번 연주자</div><div class="perf-name" id="perfName">이름</div></div></div>
+<div class="strip-wrap"><div class="strip" id="noteStrip"></div></div>
+</div>
+<div id="panelEnd" class="panel">
+<div class="center-box">
+<div class="hero-title">🎉 연주 끝!</div>
+<div class="hero-sub">친구들과 묻고 답하며 끝까지 멋지게 연주했어요!</div>
+<div class="end-btns">
+<button class="btn-acc" id="btnNextMc">🔄 진행자 교체(다음 조)</button>
+<button class="btn-pri" id="btnRestart">⏮️ 처음부터</button>
+<button class="btn-neu" id="btnCfgEnd">⚙️ 설정</button>
+</div>
+</div>
+</div>
+</div>
+<div class="nav-bar" id="navBar"><button class="btn-neu" id="btnPrev">◀ 이전</button><button class="btn-pri" id="btnNext">다음 ▶</button></div>
+</section>
+<div class="print-view" id="printView">
+<div class="top-bar print-head"><h1>나비야 악구별 순서 띠 (A4 인쇄)</h1>
+<div class="actions"><button class="btn-pri" id="btnDoPrint">🖨️ 인쇄하기</button><button class="btn-neu" id="btnClosePrint">닫기</button></div></div>
+<div class="print-sheet" id="printSheet"></div>
+</div>
+<script>
+const PHRASES=[
+{label:'① 악구 1',m1:['솔','미','미'],m2:['파','레','레']},
+{label:'② 악구 2',m1:['도','레','미','파'],m2:['솔','솔','솔']},
+{label:'③ 악구 3',m1:['솔','미','미','미'],m2:['파','레','레','레']},
+{label:'④ 악구 4',m1:['도','미','솔','솔'],m2:['미','미','미']}
+];
+let students=[],mcGroup=0,step=0,db=null,lastTap=0;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function guard(fn){return e=>{const now=Date.now();if(now-lastTap<300)return;lastTap=now;fn(e)}}
+function initDB(){
+return new Promise(res=>{
+if(!window.indexedDB)return res();
+try{
+const req=indexedDB.open('HandbellV1',1);
+req.onupgradeneeded=e=>e.target.result.createObjectStore('st',{keyPath:'k'});
+req.onsuccess=e=>{
+db=e.target.result;
+const g=db.transaction('st','readonly').objectStore('st').get('list');
+g.onsuccess=()=>{
+if(g.result&&Array.isArray(g.result.data)){
+students=g.result.data.map(x=>({id:x.id,name:x.name,blob:x.blob,url:x.blob?URL.createObjectURL(x.blob):''}));
+}
+res();
+};
+g.onerror=()=>res();
+};
+req.onerror=()=>res();
+}catch(_){res()}
+});
+}
+function saveDB(){
+if(!db)return;
+try{
+const data=students.map(s=>({id:s.id,name:s.name,blob:s.blob||null}));
+db.transaction('st','readwrite').objectStore('st').put({k:'list',data});
+}catch(_){}
+}
+function getRoles(){
+const n=students.length;
+if(!n)return{mcs:[],pfs:[null,null,null,null]};
+const groups=Math.ceil(n/2);
+if(mcGroup>=groups)mcGroup=0;
+const i1=mcGroup*2,i2=i1+1;
+const mcs=[students[i1],...(i2<n?[students[i2]]:[])];
+const rem=students.filter((_,i)=>i!==i1&&i!==i2);
+const src=rem.length?rem:mcs;
+const pfs=[0,1,2,3].map(i=>src[i<src.length?i:i%src.length]);
+return{mcs,pfs};
+}
+function avatarHTML(s){
+return s&&s.url?`<img src="${s.url}" alt="${esc(s.name)}">`:`<span>${s&&s.name?esc(s.name[0]):'?'}</span>`;
+}
+function stripHTML(p){
+const notes=arr=>arr.map(n=>`<div class="note n-${n}">${n}</div>`).join('');
+return notes(p.m1)+`<div class="gap"></div>`+notes(p.m2);
+}
+function renderSetup(){
+const grid=$('studentGrid');
+if(!students.length){
+grid.innerHTML=`<div class="empty">등록된 학생 사진이 없습니다. [📷 사진 불러오기]를 눌러 추가하세요.</div>`;
+return;
+}
+const{mcs,pfs}=getRoles();
+const mcIds=new Set(mcs.map(m=>m.id));
+grid.innerHTML=students.map((s,i)=>{
+const isMc=mcIds.has(s.id);
+const pIdx=pfs.findIndex(p=>p&&p.id===s.id);
+const cls=isMc?'mc':(pIdx>-1?'pf':'');
+const label=isMc?`${i+1}번 · 진행자(${mcGroup+1}조)`:(pIdx>-1?`${i+1}번 · 악구 ${pIdx+1}`:`${i+1}번 (${Math.floor(i/2)+1}조)`);
+return `<div class="tile ${isMc?'mc':''}">
+<div class="tile-head"><span class="tag ${cls}">${label}</span><button class="btn-del" style="width:42px;height:42px;font-size:1.2rem" data-del="${i}">✕</button></div>
+<div class="avatar" style="width:135px;height:135px">${avatarHTML(s)}</div>
+<button class="name-btn" data-edit="${i}">${esc(s.name)}</button>
+<div class="move-bar"><button class="btn-neu" data-mv="${i}:-1" ${i===0?'disabled':''}>◀</button><button class="btn-neu" data-mv="${i}:1" ${i===students.length-1?'disabled':''}>▶</button></div>
+</div>`;
+}).join('');
+}
+function renderPlay(){
+const{mcs,pfs}=getRoles();
+$('mcBadge').textContent=`진행자 (${mcGroup+1}조)`;
+$('mcList').innerHTML=mcs.length?mcs.map(m=>`<div class="mc-item"><div class="avatar">${avatarHTML(m)}</div><span>${esc(m.name)}</span></div>`).join(''):`<div class="mc-item">학생 미등록</div>`;
+$('panelReady').classList.toggle('active',step===0);
+$('panelPhrase').classList.toggle('active',step>=1&&step<=4);
+$('panelEnd').classList.toggle('active',step===5);
+$('navBar').style.visibility=(step>=1&&step<=4)?'visible':'hidden';
+if(step===0){
+$('lineupBox').innerHTML=pfs.map((p,i)=>`<div class="lineup-item"><span class="tag mc">악구 ${i+1}</span><div class="avatar">${avatarHTML(p)}</div><div>${p?esc(p.name):`연주자 ${i+1}`}</div></div>`).join('');
+}else if(step>=1&&step<=4){
+const idx=step-1,p=pfs[idx];
+$('phraseTitle').textContent=`악구 ${step} / 4`;
+$('dotsBox').innerHTML=[0,1,2,3].map(i=>`<span class="dot ${i<idx?'done':(i===idx?'on':'')}"></span>`).join('');
+$('perfBox').classList.remove('touched');
+$('perfAvatar').innerHTML=avatarHTML(p);
+$('perfName').textContent=p?p.name:`연주자 ${step}`;
+$('noteStrip').innerHTML=stripHTML(PHRASES[idx]);
+$('btnPrev').textContent=step===1?'◀ 처음으로':'◀ 이전';
+$('btnNext').textContent=step===4?'완료 ▶':'다음 ▶';
+}
+}
+$('studentGrid').onclick=guard(e=>{
+const btn=e.target.closest('button');
+if(!btn)return;
+if(btn.dataset.del!==undefined){
+const i=+btn.dataset.del;
+if(students[i].url)URL.revokeObjectURL(students[i].url);
+students.splice(i,1);saveDB();renderSetup();
+}else if(btn.dataset.edit!==undefined){
+const s=students[+btn.dataset.edit];
+const name=prompt('학생 이름을 입력하세요:',s.name);
+if(name&&name.trim()){s.name=name.trim();saveDB();renderSetup()}
+}else if(btn.dataset.mv){
+const[i,d]=btn.dataset.mv.split(':').map(Number);
+const j=i+d;
+if(j>=0&&j<students.length){[students[i],students[j]]=[students[j],students[i]];saveDB();renderSetup()}
+}
+});
+$('btnLoad').onclick=guard(()=>{$('fileInput').value='';$('fileInput').click()});
+$('fileInput').onchange=e=>{
+const files=Array.from(e.target.files||[]).sort((a,b)=>a.name.localeCompare(b.name,'ko'));
+if(!files.length)return;
+files.forEach(f=>students.push({id:Date.now()+Math.random(),name:f.name.replace(/\.[^/.]+$/,'').trim()||'학생',blob:f,url:URL.createObjectURL(f)}));
+saveDB();renderSetup();
+};
+const showScreen=play=>{
+$('setupScreen').classList.toggle('active',!play);
+$('playScreen').classList.toggle('active',play);
+play?renderPlay():renderSetup();
+};
+$('btnGoPlay').onclick=guard(()=>{mcGroup=0;step=0;showScreen(true)});
+$('btnCfgTop').onclick=guard(()=>showScreen(false));
+$('btnCfgEnd').onclick=guard(()=>showScreen(false));
+$('btnBegin').onclick=guard(()=>{step=1;renderPlay()});
+$('perfBox').onclick=guard(()=>$('perfBox').classList.toggle('touched'));
+$('btnPrev').onclick=guard(()=>{if(step>0){step--;renderPlay()}});
+$('btnNext').onclick=guard(()=>{if(step<5){step++;renderPlay()}});
+$('btnRestart').onclick=guard(()=>{step=0;renderPlay()});
+$('btnNextMc').onclick=guard(()=>{mcGroup=(mcGroup+1)%Math.max(1,Math.ceil(students.length/2));step=0;renderPlay()});
+$('btnPrintOpen').onclick=guard(()=>$('printView').classList.add('active'));
+$('btnClosePrint').onclick=guard(()=>$('printView').classList.remove('active'));
+$('btnDoPrint').onclick=guard(()=>window.print());
+window.addEventListener('DOMContentLoaded',async()=>{
+$('printSheet').innerHTML=PHRASES.map(p=>`<div class="print-row"><div class="print-label">${p.label}</div><div class="strip">${stripHTML(p)}</div></div>`).join('');
+await initDB();
+renderSetup();
+});
+</script>
+</body>
+</html>
