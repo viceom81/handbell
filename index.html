@@ -60,7 +60,7 @@
         #room-name-chip { font-size: clamp(0.85rem, 0.6vw + 0.6rem, 1.2rem); background: var(--accent); color: #4a3200; padding: 5px 16px; border-radius: 30px; font-weight: 800; font-family:'Pretendard'; }
 
         .header-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .sound-toggle { display: flex; background: rgba(255,255,255,0.12); border-radius: 40px; padding: 5px; border: 2px solid rgba(255,255,255,0.25); }
+        .sound-toggle { display: flex; flex-wrap: wrap; justify-content: center; background: rgba(255,255,255,0.12); border-radius: 40px; padding: 5px; border: 2px solid rgba(255,255,255,0.25); }
         .sound-toggle button { border: none; background: transparent; color: rgba(255,255,255,0.75); font-weight: 800; font-size: clamp(0.9rem, 0.6vw + 0.6rem, 1.25rem); padding: clamp(7px, 0.7vw, 12px) clamp(12px, 1.2vw, 24px); border-radius: 30px; cursor: pointer; transition: 0.15s; white-space: nowrap; }
         .sound-toggle button.on { background: var(--accent); color: #4a3200; box-shadow: 0 3px 8px rgba(0,0,0,0.25); }
 
@@ -165,6 +165,7 @@
             .volume-container { padding: 5px 10px; gap: 6px; }
             #volume-slider { width: 90px; }
             .sound-toggle button { padding: 6px 10px; font-size: 0.85rem; }
+            .sound-toggle .snd-lbl { display: none; } /* 좁은 화면: 그림만 표시 (길게 누르면 이름) */
             /* 탭: 가로 스크롤 한 줄 */
             .tabs { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; padding: 2px 4px 6px 4px; -webkit-overflow-scrolling: touch; touch-action: pan-x; }
             .tab-btn { white-space: nowrap; flex: 0 0 auto; padding: 8px 14px; font-size: 0.95rem; }
@@ -304,8 +305,12 @@
             <h1 class="app-title font-display">🎵 스마트 핸드벨 교실 <span id="room-name-chip" class="hidden"></span></h1>
             <div class="header-controls">
                 <div class="sound-toggle" title="소리 종류">
-                    <button id="snd-piano" class="on" onclick="window.setSoundType('piano')">🎹 건반음</button>
-                    <button id="snd-bell" onclick="window.setSoundType('bell')">🔔 핸드벨</button>
+                    <button id="snd-piano" class="on" data-snd="piano" onclick="window.setSoundType('piano')" title="건반음">🎹<span class="snd-lbl"> 건반음</span></button>
+                    <button id="snd-bell" data-snd="bell" onclick="window.setSoundType('bell')" title="핸드벨">🔔<span class="snd-lbl"> 핸드벨</span></button>
+                    <button id="snd-xylo" data-snd="xylo" onclick="window.setSoundType('xylo')" title="실로폰">🌈<span class="snd-lbl"> 실로폰</span></button>
+                    <button id="snd-marimba" data-snd="marimba" onclick="window.setSoundType('marimba')" title="마림바">🪵<span class="snd-lbl"> 마림바</span></button>
+                    <button id="snd-musicbox" data-snd="musicbox" onclick="window.setSoundType('musicbox')" title="오르골">✨<span class="snd-lbl"> 오르골</span></button>
+                    <button id="snd-recorder" data-snd="recorder" onclick="window.setSoundType('recorder')" title="리코더">🎶<span class="snd-lbl"> 리코더</span></button>
                 </div>
                 <div class="volume-container">
                     <span class="volume-label">🔊 증폭</span>
@@ -619,16 +624,75 @@
             });
         }
 
+        // ═══════ 추가 악기 (외부 음원 파일 없이 합성 → 파일 크기 그대로, 와이파이 부담 없음) ═══════
+        // 공통: 배음(ratio) 여러 개를 각각 다른 길이로 감쇠시켜 악기 고유의 음색을 만든다
+        function synthPartials(f, parts, opt = {}) {
+            const vol = window.globalVolumeMultiplier;
+            const t = audioCtx.currentTime;
+            const atk = opt.attack || 0.004;
+            let dest = saturator;
+            if (opt.lowpass) { const lp = audioCtx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = opt.lowpass; lp.connect(saturator); dest = lp; }
+            parts.forEach(p => {
+                const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                osc.type = p.type || 'sine'; osc.frequency.value = f * p.r;
+                if (opt.vibrato) { const lfo = audioCtx.createOscillator(); const lg = audioCtx.createGain(); lfo.frequency.value = 5.2; lg.gain.value = f * p.r * 0.004; lfo.connect(lg); lg.connect(osc.frequency); lfo.start(t + 0.15); lfo.stop(t + p.d + 0.05); }
+                osc.connect(g); g.connect(dest);
+                const peak = Math.max(0.001, vol * p.g);
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.linearRampToValueAtTime(peak, t + atk);
+                if (p.hold) g.gain.setValueAtTime(peak, t + p.hold);
+                g.gain.exponentialRampToValueAtTime(0.0001, t + p.d);
+                osc.start(t); osc.stop(t + p.d + 0.05);
+            });
+            if (opt.click) strikeNoise(opt.click.freq, opt.click.g * vol, opt.click.d);
+        }
+        // 채(말렛)로 때리는 순간의 '딱' 소리 (아주 짧은 잡음)
+        let noiseBuf = null;
+        function strikeNoise(freq, gain, dur) {
+            if (!noiseBuf) { noiseBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+            const t = audioCtx.currentTime;
+            const src = audioCtx.createBufferSource(); src.buffer = noiseBuf;
+            const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = 1.2;
+            const g = audioCtx.createGain(); g.gain.setValueAtTime(Math.max(0.001, gain), t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+            src.connect(bp); bp.connect(g); g.connect(saturator); src.start(t); src.stop(t + dur + 0.02);
+        }
+        // 🌈 실로폰(교실용 철금): 한 옥타브 위, 금속 막대 특유의 비조화 배음(2.76·5.4배)
+        function playXylophone(note) {
+            const f = frequencies[note] * 2;
+            synthPartials(f, [ {r:1, g:0.9, d:1.6}, {r:2.76, g:0.28, d:0.6}, {r:5.40, g:0.12, d:0.25} ], { attack:0.002, click:{freq:f*3, g:0.12, d:0.03} });
+        }
+        // 🪵 마림바: 원래 음높이, 나무 막대의 따뜻하고 둥근 소리(4배 배음 + 고음 줄임)
+        function playMarimba(note) {
+            const f = frequencies[note];
+            synthPartials(f, [ {r:1, g:1.0, d:1.1}, {r:4, g:0.22, d:0.22}, {r:9.2, g:0.05, d:0.08} ], { attack:0.005, lowpass:2600, click:{freq:f*2, g:0.1, d:0.025} });
+        }
+        // ✨ 오르골: 두 옥타브 위, 맑고 작은 금속 빗살 소리
+        function playMusicBox(note) {
+            const f = frequencies[note] * 4;
+            synthPartials(f, [ {r:1, g:0.55, d:1.8}, {r:2, g:0.10, d:0.5}, {r:5.9, g:0.05, d:0.15} ], { attack:0.002 });
+        }
+        // 🎶 리코더: 한 옥타브 위(학교 소프라노 리코더 음역), 숨을 불어 길게 이어지는 소리
+        function playRecorder(note) {
+            const f = frequencies[note] * 2;
+            synthPartials(f, [ {r:1, type:'sine', g:0.75, hold:0.55, d:0.9}, {r:2, g:0.10, hold:0.55, d:0.85}, {r:3, g:0.07, hold:0.55, d:0.8} ], { attack:0.045, lowpass:3200, vibrato:true, click:{freq:f*1.5, g:0.05, d:0.06} });
+        }
+
+        const SOUND_PLAYERS = { piano: playPiano, bell: playHandbell, xylo: playXylophone, marimba: playMarimba, musicbox: playMusicBox, recorder: playRecorder };
+        if (!SOUND_PLAYERS[window.soundType]) window.soundType = 'piano'; // 예전에 저장된 값이 없거나 잘못된 경우
+
         window.playSound = function(note, highlight=true) {
             resumeAudio(); if(!audioCtx || !frequencies[note]) return;
-            if (window.soundType === 'bell') playHandbell(note); else playPiano(note);
+            (SOUND_PLAYERS[window.soundType] || playPiano)(note);
             if(highlight){ const bell = document.getElementById(`bell-${note}`); if(bell){ bell.classList.add('playing'); setTimeout(()=>bell.classList.remove('playing'),300); } }
         };
 
+        function refreshSoundButtons() {
+            document.querySelectorAll('.sound-toggle button[data-snd]').forEach(b => b.classList.toggle('on', b.dataset.snd === window.soundType));
+        }
         window.setSoundType = function(type) {
-            window.soundType = type; localStorage.setItem('hb_soundType', type);
-            document.getElementById('snd-piano').classList.toggle('on', type === 'piano');
-            document.getElementById('snd-bell').classList.toggle('on', type === 'bell');
+            if (!SOUND_PLAYERS[type]) type = 'piano';
+            window.soundType = type; try { localStorage.setItem('hb_soundType', type); } catch(e) {}
+            refreshSoundButtons();
             window.playSound('G4', false); // 미리듣기
         };
 
@@ -1394,8 +1458,7 @@
         });
 
         // 초기 UI 상태 반영
-        document.getElementById('snd-piano').classList.toggle('on', window.soundType === 'piano');
-        document.getElementById('snd-bell').classList.toggle('on', window.soundType === 'bell');
+        refreshSoundButtons();
     </script>
 </body>
 </html>
