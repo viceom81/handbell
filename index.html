@@ -182,6 +182,131 @@
             :root { --bell-h: clamp(140px, 40dvh, 220px); }
             h1.app-title { font-size: 1.1rem; }
         }
+
+        /* ═══════════════════════════════════════════════════════════════
+           2.0 디자인 — '만지는 악기 교구함'
+           따뜻한 크림색 교구실 + 원목 트레이 위에 악기별 모양의 건반
+           (음별 색: 도 빨강 ~ 시 보라, 높은도 흰색은 그대로 유지)
+           ═══════════════════════════════════════════════════════════════ */
+        :root {
+            --cream: #F7F4EB; --cream-2: #EFECE1; --wood: #E2DEC9; --wood-d: #C7C2B0;
+            --char: #2C302E; --char-soft: #6B6F68; --coral: #FF8A5B; --coral-d: #D9622F;
+            --tray-1: #D9B88A; --tray-2: #B98A57; --felt: #F4ECDD;
+            --ink: var(--char); --ink-soft: var(--char-soft); --panel-soft: var(--cream);
+        }
+        html, body { background: var(--cream); background-image: radial-gradient(circle at 1px 1px, rgba(44,48,46,0.08) 1.2px, transparent 0); background-size: 24px 24px; color: var(--char); }
+
+        /* 입장 화면 */
+        .entry-box { border: 3px solid var(--wood); border-radius: 30px; box-shadow: 0 10px 0 var(--wood), 0 26px 50px rgba(110,85,45,0.14); }
+        #entry-selection::before { content: "🔔 🎹 🌈 🪵 ✨ 🎶"; display: block; font-size: clamp(1.4rem, 1.8vw, 2.2rem); letter-spacing: 0.25em; margin-bottom: 8px; }
+        .entry-title { color: var(--char); }
+        .btn-large { border-radius: 20px; min-height: 64px; box-shadow: 0 6px 0 rgba(0,0,0,0.2); }
+        .admin-link { color: var(--char-soft); }
+        .entry-input { border-color: var(--wood); background: var(--cream); }
+
+        /* 상단 바 */
+        .header-area { background: #fff; border: 3px solid var(--wood); border-radius: 22px; box-shadow: 0 5px 0 var(--wood); padding: 5px 14px; margin-bottom: 4px; row-gap: 4px; }
+        h1.app-title { color: var(--char); text-shadow: none; margin: 0; }
+        #room-name-chip { background: var(--cream-2); color: var(--char); border: 2px solid var(--wood); }
+        .header-controls { gap: 8px; }
+        .sound-toggle { background: var(--cream-2); border: 2px solid var(--wood); border-radius: 18px; gap: 3px; padding: 3px; }
+        .sound-toggle button { color: var(--char); border-radius: 14px; min-height: 44px; padding: 6px clamp(9px, 0.8vw, 16px); }
+        .volume-container { padding: 4px 14px; min-height: 48px; }
+        #volume-slider { width: clamp(90px, 8vw, 170px); }
+        .sound-toggle button.on { background: #fff; color: var(--char); box-shadow: inset 0 0 0 3px var(--coral), 0 4px 0 var(--wood-d); }
+        .volume-container { background: var(--cream-2); border: 2px solid var(--wood); border-radius: 18px; }
+        .volume-label { color: var(--char); }
+        #volume-value { color: var(--coral-d); }
+        #volume-slider { accent-color: var(--coral); }
+
+        /* 활동 탭: 눌리는 타일 */
+        .tab-btn { background: var(--wood); color: var(--char); border-radius: 16px; min-height: 52px; box-shadow: 0 5px 0 var(--wood-d); }
+        .tab-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--wood-d); }
+        .tab-btn.active { background: #fff; color: var(--char); box-shadow: inset 0 0 0 3px var(--char), 0 5px 0 var(--wood-d); }
+        #tab-multi { background: var(--coral) !important; color: #fff !important; }
+        #tab-multi.active { background: #fff !important; color: var(--coral-d) !important; box-shadow: inset 0 0 0 3px var(--coral), 0 5px 0 var(--wood-d); }
+        #tab-free-reg { background: #4CB063 !important; }
+
+        /* 활동 패널: 두꺼운 테두리의 교구 판 */
+        .control-panel { border: 3px solid var(--wood); border-radius: 24px; box-shadow: 0 6px 0 var(--wood); }
+        .panel-head { border-bottom: 3px dashed var(--cream-2); }
+        .sheet-display { background-color: var(--cream); border: 2px solid var(--cream-2); }
+        .action-btn { border-radius: 16px; min-height: 52px; box-shadow: 0 5px 0 rgba(0,0,0,0.18); }
+        .profile-card { background: var(--cream); border-color: var(--wood); border-radius: 20px; }
+        .modal-box { border: 3px solid var(--wood); border-radius: 26px; }
+        .modal-overlay { background: rgba(60,50,35,0.55); }
+        .setting-select { border-color: var(--wood); }
+
+        /* 대기·잠금 화면 */
+        #student-blocker { background: rgba(247,244,235,0.98); color: var(--char); }
+        #student-blocker h2 { color: var(--coral-d) !important; }
+        #blocker-name { color: var(--char) !important; }
+        #lock-btn { background: #fff; border: 3px solid var(--wood); color: var(--char); box-shadow: 0 4px 0 var(--wood); }
+
+        /* ───── 원목 트레이 + 펠트 ───── */
+        .bell-area-container { background: linear-gradient(180deg, var(--tray-1), var(--tray-2)); border-radius: 26px 26px 18px 18px; padding: clamp(8px, 1vw, 16px); box-shadow: inset 0 3px 0 rgba(255,255,255,0.35), 0 6px 0 #9C7244; margin-bottom: 0.6vh; }
+        .bell-container { background: var(--felt); border-radius: 18px; padding: clamp(8px, 1vw, 16px); box-shadow: inset 0 4px 12px rgba(90,60,30,0.28); }
+
+        /* 음별 색 변수 (악보 배지 .c4 등은 기존 색 그대로) */
+        .bell.c4 { --nc: #E74C3C; --nl: #FF7A6E; --on: #fff; --step: 0; }
+        .bell.d4 { --nc: #E67E22; --nl: #FFA45C; --on: #fff; --step: 1; }
+        .bell.e4 { --nc: #F1C40F; --nl: #FFE066; --on: #4a3200; --step: 2; }
+        .bell.f4 { --nc: #2ECC71; --nl: #6BE6A0; --on: #fff; --step: 3; }
+        .bell.g4 { --nc: #3498DB; --nl: #7DBDF5; --on: #fff; --step: 4; }
+        .bell.a4 { --nc: #1A5276; --nl: #4A7FB0; --on: #fff; --step: 5; }
+        .bell.b4 { --nc: #8E44AD; --nl: #B77AD4; --on: #fff; --step: 6; }
+        .bell.c5 { --nc: #DADCE4; --nl: #FFFFFF; --on: #444; --step: 7; }
+
+        /* 공통: 누르면 살짝 내려가고 흰 테두리 (네온 번쩍임 대신 차분한 반응) */
+        .bell { position: relative; color: var(--on); border: 3px solid rgba(0,0,0,0.12); box-shadow: 0 6px 0 rgba(0,0,0,0.18); }
+        .bell > span { position: relative; z-index: 2; }
+        .bell:active, .bell.playing { transform: translateY(5px); filter: brightness(1.1); box-shadow: 0 1px 0 rgba(0,0,0,0.18), 0 0 0 6px rgba(255,255,255,0.85); }
+        .bell.c5 { border-color: #A9ADB8; }
+        /* 기존 기능 보호: 합주에서 숨긴 건반은 자리를 차지하지 않음 / 힌트 목표 건반은 굵은 테두리 + 확대 */
+        .bell.multi-bell-hidden { position: absolute !important; }
+        .bell.practice-active-note { border: 5px solid #333 !important; transform: scale(1.12); z-index: 10; box-shadow: 0 0 0 6px #FFD43B, 0 6px 0 rgba(0,0,0,0.18); }
+
+        /* 🎹 건반음: 흰 건반 + 아래쪽 색 띠 */
+        body[data-inst="piano"] .bell { border-radius: 8px 8px 18px 18px; background: linear-gradient(to top, var(--nc) 0 45%, #fff 45% 100%); border-color: #D5D2C6; }
+        body[data-inst="piano"] .bell-container { gap: clamp(3px, 0.4vw, 6px); }
+
+        /* 🔔 핸드벨: 손잡이 + 종 몸통 + 넓은 테 (낮은 음일수록 큰 종) */
+        body[data-inst="bell"] .bell { border-radius: 46% 46% 16px 16px / 36% 36% 16px 16px; background: radial-gradient(90% 55% at 30% 20%, rgba(255,255,255,0.55), transparent 45%), linear-gradient(180deg, var(--nl), var(--nc)); overflow: visible; }
+        body[data-inst="bell"] .bell::before { content: ""; position: absolute; top: -24px; left: 50%; width: 24%; height: 30px; transform: translateX(-50%); background: linear-gradient(180deg, #6A5238, #3A2C1E); border-radius: 12px 12px 4px 4px; }
+        body[data-inst="bell"] .bell::after { content: ""; position: absolute; bottom: -4px; left: -7%; right: -7%; height: 16px; background: var(--nc); border-radius: 10px; filter: brightness(0.9); }
+
+        /* 🌈 실로폰: 길이가 줄어드는 막대 + 은색 고정핀 2개 */
+        body[data-inst="xylo"] .bell-container { align-items: center; }
+        body[data-inst="xylo"] .bell { border-radius: 12px; justify-content: center; padding-bottom: 0; background: linear-gradient(90deg, rgba(255,255,255,0.28), transparent 30%, transparent 72%, rgba(0,0,0,0.10)), linear-gradient(180deg, var(--nl), var(--nc)); }
+        body[data-inst="xylo"] .bell::before, body[data-inst="xylo"] .bell::after { content: ""; position: absolute; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #A9AEB8 60%, #7E8590); box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        body[data-inst="xylo"] .bell::before { top: 10px; } body[data-inst="xylo"] .bell::after { bottom: 10px; }
+
+        /* 🪵 마림바: 나뭇결 막대 + 위쪽 음 색깔 머리 */
+        body[data-inst="marimba"] .bell { border-radius: 16px; justify-content: center; padding-bottom: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.4); border-color: #8A5A2E; background: linear-gradient(180deg, var(--nc) 0 30%, transparent 30%), repeating-linear-gradient(90deg, rgba(90,50,20,0.10) 0 3px, transparent 3px 10px), linear-gradient(180deg, #DDA66C, #AE6F3D); }
+
+        /* ✨ 오르골: 금속 빗살 (위쪽 받침에 매달린 모양) */
+        body[data-inst="musicbox"] .bell-container { align-items: flex-start; border-top: 14px solid #A7ACB5; }
+        body[data-inst="musicbox"] .bell { max-width: clamp(60px, 7.5vw, 112px); border-radius: 4px 4px 26px 26px; justify-content: flex-end; padding-bottom: clamp(8px, 1vw, 14px); color: var(--on); border-color: rgba(0,0,0,0.18); background: linear-gradient(0deg, var(--nc) 0 38%, transparent 38%), linear-gradient(90deg, #B8BCC4, #F2F3F6 45%, #C9CCD3 60%, #9EA3AC); }
+
+        /* 🎶 리코더: 가로로 놓인 리코더 몸통 위의 동그란 구멍 */
+        body[data-inst="recorder"] .bell-container { align-items: center; background: linear-gradient(180deg, transparent 0 30%, #E2CFA2 30%, #F6EDD3 42%, #E9D9B4 62%, #D7C08D 70%, transparent 70%), var(--felt); }
+        body[data-inst="recorder"] .bell { flex: 0 1 auto; height: auto; aspect-ratio: 1; width: min(10.5vw, calc(var(--bell-h) * 0.5)); max-width: none; border-radius: 50%; justify-content: center; padding: 0; border: 4px solid #C9B27E; background: radial-gradient(circle, #2E2A26 0 30%, var(--nc) 31% 100%); }
+        body[data-inst="recorder"] .bell > span { color: #fff; font-size: 0.8em; }
+
+        /* 태블릿·전자칠판: 막대·종은 높은 음일수록 짧게 */
+        @media (min-width: 761px) {
+            body[data-inst="bell"] .bell { height: calc(100% - 26px - var(--step) * 2.6%); }
+            body[data-inst="xylo"] .bell { height: calc(100% - var(--step) * 5%); }
+            body[data-inst="marimba"] .bell { height: calc(100% - var(--step) * 4.2%); }
+            body[data-inst="musicbox"] .bell { height: calc(100% - var(--step) * 5.5%); }
+        }
+        @media (max-width: 760px) {
+            .header-area { border-radius: 16px; }
+            .tab-btn { min-height: 46px; }
+            body[data-inst="bell"] .bell::before { top: -14px; height: 18px; }
+            body[data-inst="recorder"] .bell { flex: 0 0 auto; width: auto; height: calc(50% - 8px); }
+            body[data-inst="musicbox"] .bell { max-width: none; }
+        }
     </style>
 </head>
 <body>
@@ -688,6 +813,7 @@
 
         function refreshSoundButtons() {
             document.querySelectorAll('.sound-toggle button[data-snd]').forEach(b => b.classList.toggle('on', b.dataset.snd === window.soundType));
+            document.body.dataset.inst = window.soundType; // 악기에 따라 건반 모양이 바뀜 (CSS)
         }
         window.setSoundType = function(type) {
             if (!SOUND_PLAYERS[type]) type = 'piano';
