@@ -447,6 +447,7 @@
 
         <div class="tabs no-print" id="main-tabs">
             <button class="tab-btn active" onclick="window.setMode('dashboard')" id="tab-dashboard">👨‍👩‍👧‍👦 접속 관리</button>
+            <button class="tab-btn" onclick="window.setMode('options')" id="tab-options" style="background:#8e44ad; color:white;">⚙️ 옵션·편성</button>
             <button class="tab-btn hidden" onclick="window.openFreeUserRegistration()" id="tab-free-reg" style="background-color:#27ae60; color:white;">👤 연주자 등록</button>
             <button class="tab-btn" onclick="window.setMode('free')">자유 연주</button>
             <button class="tab-btn" onclick="window.setMode('game')">소리 맞추기</button>
@@ -467,7 +468,43 @@
                     <button class="action-btn" onclick="window.teacherLogout()" style="background:#34495e; margin:0;">🚪 로그아웃</button>
                 </div>
             </div>
+            <div id="qr-box" style="display:flex; align-items:center; gap:18px; flex-wrap:wrap; background:var(--panel-soft); border-radius:16px; padding:12px 18px; margin-bottom:12px;">
+                <div id="qr-canvas" style="background:#fff; padding:8px; border-radius:10px; min-width:190px; min-height:190px;"></div>
+                <div style="flex:1; min-width:220px;">
+                    <div style="font-weight:900; font-size:var(--fs-h3); color:#8e44ad;">📱 디벗으로 QR을 찍어 보세요</div>
+                    <div style="font-weight:700; color:var(--ink-soft); font-size:var(--fs-body); margin-top:4px;">이 교실로 바로 들어와요. 이름·사진을 정하고 입장합니다.<br><span id="qr-pw-hint"></span></div>
+                    <div id="qr-url" style="font-size:0.85rem; color:#8a90b0; margin-top:6px; word-break:break-all;"></div>
+                </div>
+            </div>
             <div class="profile-container" id="teacher-dashboard-grid"></div>
+        </div>
+
+        <!-- 옵션·편성 -->
+        <div id="panel-options" class="control-panel hidden">
+            <div class="panel-head"><h3 style="color:#8e44ad;">⚙️ 옵션 · 연주 편성</h3></div>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div style="background:var(--panel-soft); border-radius:16px; padding:14px 18px;">
+                    <div style="font-weight:900; font-size:var(--fs-h3); margin-bottom:8px;">🔊 소리 나오는 곳</div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="action-btn" id="opt-snd-local" onclick="window.setRoomOpt('boardSound', false)" style="margin:0;">📱 디벗에서 소리</button>
+                        <button class="action-btn" id="opt-snd-board" onclick="window.setRoomOpt('boardSound', true)" style="margin:0;">🖥️ 전자칠판에서 소리 (디벗은 무음)</button>
+                    </div>
+                </div>
+                <div style="background:var(--panel-soft); border-radius:16px; padding:14px 18px;">
+                    <div style="font-weight:900; font-size:var(--fs-h3); margin-bottom:4px;">🎼 누가 연주할까요? <span id="opt-formation-label" style="color:#8e44ad;"></span></div>
+                    <div style="font-weight:700; color:var(--ink-soft); font-size:var(--fs-body); margin-bottom:10px;">연주할 학생을 <b>누르는 순서대로</b> 정해져요. 1명 = 독주, 2~6명 = 협주(차례대로 돌아가며). 아무도 안 고르면 승인된 학생 모두가 번갈아 연주해요. 고르지 않은 학생은 지켜봐요.</div>
+                    <div id="opt-player-grid" style="display:flex; gap:12px; flex-wrap:wrap;"></div>
+                    <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+                        <button class="action-btn" onclick="window.setRoomPlayers([])" style="margin:0; background:#95a5a6;">선택 모두 해제</button>
+                        <button class="action-btn" onclick="window.setRoomPlayers('all')" style="margin:0; background:#3498db;">승인된 학생 모두 선택</button>
+                        <button class="action-btn" onclick="window.setMode('multi')" style="margin:0; background:#e74c3c;">📡 실시간 합주로 가기 ▶</button>
+                    </div>
+                </div>
+                <div style="background:var(--panel-soft); border-radius:16px; padding:14px 18px;">
+                    <div style="font-weight:900; font-size:var(--fs-h3); margin-bottom:8px;">🔗 QR 코드</div>
+                    <button class="action-btn" id="opt-qrpw" onclick="window.setRoomOpt('qrPw', !window.roomOpts.qrPw)" style="margin:0;"></button>
+                </div>
+            </div>
         </div>
 
         <!-- 자유 연주 -->
@@ -605,6 +642,7 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, set, onValue, update, get, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
@@ -805,9 +843,9 @@
         const SOUND_PLAYERS = { piano: playPiano, bell: playHandbell, xylo: playXylophone, marimba: playMarimba, musicbox: playMusicBox, recorder: playRecorder };
         if (!SOUND_PLAYERS[window.soundType]) window.soundType = 'piano'; // 예전에 저장된 값이 없거나 잘못된 경우
 
-        window.playSound = function(note, highlight=true) {
-            resumeAudio(); if(!audioCtx || !frequencies[note]) return;
-            (SOUND_PLAYERS[window.soundType] || playPiano)(note);
+        window.playSound = function(note, highlight=true, mute=false) {
+            if(!mute){ resumeAudio(); if(!audioCtx || !frequencies[note]) return;
+            (SOUND_PLAYERS[window.soundType] || playPiano)(note); }
             if(highlight){ const bell = document.getElementById(`bell-${note}`); if(bell){ bell.classList.add('playing'); setTimeout(()=>bell.classList.remove('playing'),300); } }
         };
 
@@ -863,6 +901,7 @@
             const ms = document.getElementById('maker-status'); if(ms) ms.classList.add('hidden');
             if (window.myRole !== null && window.myRole > 0 && mode !== 'multi') { document.getElementById('main-tabs').style.display='none'; window.setMode('multi'); return; }
             if (window.myRole === -1 && mode === 'multi') { alert("자유 이용자는 실시간 합주에 참여할 수 없습니다."); window.setMode('free'); return; }
+            if (mode === 'options' && window.myRole === 0) window.renderOptionsPanel();
             if (mode === 'multi') {
                 const tc = document.getElementById('multi-teacher-controls');
                 if(tc) { if(window.myRole===0) tc.classList.remove('hidden'); else tc.classList.add('hidden'); }
@@ -942,7 +981,7 @@
         // ═══════ 학생: 방 목록 → 비번 → 프로필 ═══════
         window.refreshRoomList = function() {
             const sel = document.getElementById('room-list-select'); sel.innerHTML = '<option value="">교실 목록 불러오는 중...</option>';
-            window.dbGet(window.dbRef(window.db, 'rooms')).then(snap => {
+            return window.dbGet(window.dbRef(window.db, 'rooms')).then(snap => {
                 const rooms = snap.val() || {}; sel.innerHTML = '';
                 let count = 0;
                 for (let i = 1; i <= MAX_ROOMS; i++) {
@@ -1082,7 +1121,7 @@
             document.getElementById('entry-screen').style.display = 'none';
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('tab-dashboard').style.display = 'none';
-            document.getElementById('tab-multi').style.display = 'none';
+            document.getElementById('tab-multi').style.display = 'none'; document.getElementById('tab-options').style.display = 'none';
             document.getElementById('tab-free-reg').classList.remove('hidden');
             window.setMode('free');
         };
@@ -1280,7 +1319,12 @@
                 if (note !== fs[currentMultiState.currentIndex]) ok = false;
             }
 
-            if (ok) window.playSound(note);
+            if (ok) {
+                if (window.myRole > 0 && window.roomOpts.boardSound) {
+                    window.playSound(note, true, true); // 디벗은 무음(화면 효과만)
+                    window.dbSet(R('play'), { note: note, slot: window.myRole, t: Date.now() + Math.random() });
+                } else window.playSound(note);
+            }
             else { document.getElementById(`bell-${note}`).classList.add('error-shake'); setTimeout(()=>document.getElementById(`bell-${note}`).classList.remove('error-shake'),400); return; }
 
             if(window.currentMode === 'free') {
@@ -1327,8 +1371,10 @@
             const song = document.getElementById('multi-song-select').value;
             const fs = getFlatSong(song);
             // 승인된 학생을 섞은 뒤 돌아가며 차례 배정 (모두 공평하게)
-            const shuffled = approved.slice().sort(() => Math.random() - 0.5);
-            const seq = fs.map((_, i) => shuffled[i % shuffled.length]);
+            const chosen = (window.roomOpts.players || []).filter(i => approved.includes(i));
+            if ((window.roomOpts.players || []).length && chosen.length === 0) { alert("옵션·편성에서 고른 학생이 아직 승인되지 않았습니다."); return; }
+            const order = chosen.length ? chosen : approved.slice().sort(() => Math.random() - 0.5);
+            const seq = fs.map((_, i) => order[i % order.length]);
             lastPlayedMultiIdx = -1;
             window.dbSet(sessionRef, { isPlaying: true, song: song, currentIndex: 0, roleSequence: seq, bellVisibility: document.getElementById('multi-bell-visibility').value });
         };
@@ -1375,7 +1421,7 @@
                 statusEl.innerText = `🎵 진행 ${idx + 1} / ${fs.length} — 지금 차례: ${turnName}`;
                 targetBox.innerHTML = renderMultiSheet(st.song, idx, 'all', false);
                 hideAllBells(false);
-                if (idx > 0 && lastPlayedMultiIdx !== idx) { window.playSound(fs[idx - 1]); }
+                if (idx > 0 && lastPlayedMultiIdx !== idx && !window.roomOpts.boardSound) { window.playSound(fs[idx - 1]); }
                 lastPlayedMultiIdx = idx;
                 return;
             }
@@ -1493,13 +1539,26 @@
                 if (window.myRole > 0 && !s[window.myRole]) { lockActive = false; location.reload(); } // 교사가 삭제하면 퇴장
                 if (window.myRole !== -1) window.currentStudents = s;
                 window.updateEntrySlotUI();
-                if (window.myRole === 0) window.renderTeacherDashboard();
+                if (window.myRole === 0) { window.renderTeacherDashboard(); window.renderOptionsPanel(); }
                 if (window.myRole > 0) window.checkMyStatus();
                 if (window.currentMode === 'multi') window.updateMultiplayerUI();
             });
             window.dbOnValue(sessionRef, snap => {
                 const d = snap.val();
                 if (d) { currentMultiState = d; if (window.currentMode === 'multi' && window.myRole !== null) window.updateMultiplayerUI(); }
+            });
+            window.dbOnValue(R('opts'), snap => {
+                const o = snap.val() || {};
+                window.roomOpts = { players: o.players || [], boardSound: !!o.boardSound, qrPw: !!o.qrPw };
+                if (window.myRole === 0) { window.renderOptionsPanel(); window.renderQR(); }
+            });
+            let firstPlay = true, lastPlayT = null;
+            window.dbOnValue(R('play'), snap => {
+                const d = snap.val();
+                if (firstPlay) { firstPlay = false; lastPlayT = d ? d.t : null; return; }
+                if (!d || d.t === lastPlayT) return;
+                lastPlayT = d.t;
+                if (window.myRole === 0 && window.roomOpts.boardSound) window.playSound(d.note);
             });
             window.dbOnValue(infoRef, snap => {
                 const info = snap.val();
@@ -1511,6 +1570,7 @@
                 if (window.myRole === 0) {
                     const pwEl = document.getElementById('room-pw-display');
                     if (pwEl) pwEl.innerText = `🔑 교실 비밀번호: ${info.password}`;
+                    window.renderQR();
                 }
             });
         }
@@ -1576,6 +1636,64 @@
             if (window.myRole !== 0 || !window.roomId) return;
             window.dbUpdate(R(`students/${slot}`), { sheetMode: mode });
         };
+
+        // ═══════ 옵션·편성 / QR ═══════
+        window.roomOpts = { players: [], boardSound: false, qrPw: false };
+        function saveRoomOpts() { window.dbSet(R('opts'), window.roomOpts); }
+        window.setRoomOpt = function(key, val) { if (window.myRole !== 0) return; window.roomOpts[key] = val; saveRoomOpts(); window.renderOptionsPanel(); window.renderQR(); };
+        window.setRoomPlayers = function(list) {
+            if (window.myRole !== 0) return;
+            if (list === 'all') { list = []; for (let i = 1; i <= 6; i++) { const st = window.currentStudents[i]; if (st && st.name && st.status === 'allowed') list.push(i); } }
+            window.roomOpts.players = list; saveRoomOpts(); window.renderOptionsPanel();
+        };
+        window.togglePlayer = function(i) {
+            const l = (window.roomOpts.players || []).slice(); const k = l.indexOf(i);
+            if (k >= 0) l.splice(k, 1); else l.push(i);
+            window.setRoomPlayers(l);
+        };
+        window.renderOptionsPanel = function() {
+            const g = document.getElementById('opt-player-grid'); if (!g || window.myRole !== 0) return;
+            const players = window.roomOpts.players || [];
+            let html = '', any = false;
+            for (let i = 1; i <= 6; i++) {
+                const st = window.currentStudents[i]; if (!st || !st.name) continue; any = true;
+                const k = players.indexOf(i), on = k >= 0, ok = st.status === 'allowed';
+                html += `<button onclick="window.togglePlayer(${i})" style="position:relative; width:140px; padding:10px 6px; border-radius:16px; border:4px solid ${on ? '#8e44ad' : '#d7dcec'}; background:${on ? '#f4ecf7' : '#fff'}; cursor:pointer; opacity:${ok ? 1 : 0.55};">
+                    ${on ? `<span style="position:absolute; top:-10px; left:-10px; background:#8e44ad; color:#fff; border-radius:50%; width:34px; height:34px; line-height:34px; font-weight:900; font-size:1.2rem;">${k + 1}</span>` : ''}
+                    <img src="${st.photo || ''}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; background:#eee;"><br>
+                    <b style="font-size:1.1rem;">${st.name}</b>${ok ? '' : '<br><span style="font-size:0.8rem; color:#e67e22;">(승인 대기)</span>'}</button>`;
+            }
+            g.innerHTML = any ? html : '<span style="color:#8a90b0; font-weight:700;">아직 접속한 학생이 없습니다. 접속 관리의 QR을 찍어 들어오게 하세요.</span>';
+            const n = players.length;
+            const lab = document.getElementById('opt-formation-label');
+            if (lab) lab.innerText = n === 0 ? '(선택 없음: 승인된 학생 모두 번갈아)' : n === 1 ? '— 독주' : `— ${n}인 협주`;
+            const sOn = (id, on) => { const b = document.getElementById(id); if (b) b.style.background = on ? '#8e44ad' : '#b9bfd4'; };
+            sOn('opt-snd-local', !window.roomOpts.boardSound); sOn('opt-snd-board', window.roomOpts.boardSound);
+            const q = document.getElementById('opt-qrpw'); if (q) { q.innerText = window.roomOpts.qrPw ? '🔓 QR에 비밀번호 포함 (켜짐: 찍으면 바로 입장)' : '🔒 QR에 비밀번호 포함 (꺼짐: 비밀번호는 직접 입력)'; q.style.background = window.roomOpts.qrPw ? '#8e44ad' : '#b9bfd4'; }
+        };
+        window.renderQR = function() {
+            const box = document.getElementById('qr-canvas'); if (!box || window.myRole !== 0 || !window.roomId) return;
+            let url = location.origin + location.pathname + '?room=' + window.roomId;
+            if (window.roomOpts.qrPw && window.roomInfo) url += '&pw=' + encodeURIComponent(window.roomInfo.password);
+            box.innerHTML = '';
+            if (typeof QRCode !== 'undefined') { new QRCode(box, { text: url, width: 190, height: 190, correctLevel: QRCode.CorrectLevel.M }); }
+            else box.innerText = 'QR 라이브러리를 불러오지 못했어요. 아래 주소를 사용하세요.';
+            document.getElementById('qr-url').innerText = window.roomOpts.qrPw ? location.origin + location.pathname + '?room=' + window.roomId + '&pw=****' : url;
+            document.getElementById('qr-pw-hint').innerText = window.roomOpts.qrPw ? '비밀번호가 QR에 들어 있어 찍으면 바로 이름 입력 화면으로 가요.' : (window.roomInfo ? `비밀번호 ${window.roomInfo.password} 를 입력하면 들어와요.` : '');
+        };
+        // QR로 들어온 학생: 교실을 미리 선택
+        (function() {
+            const qp = new URLSearchParams(location.search); const rid = qp.get('room'); if (!rid) return;
+            window.showStudentForm();
+            const r = window.refreshRoomList();
+            if (r && r.then) r.then(() => {
+                const sel = document.getElementById('room-list-select'); if (!sel) return;
+                sel.value = String(rid);
+                const pw = qp.get('pw');
+                if (pw && sel.value === String(rid)) { document.getElementById('student-room-pw').value = pw; window.verifyRoomPassword(); }
+                else document.getElementById('student-room-pw').focus();
+            });
+        })();
 
         // 곡 선택창 채우기 (수록곡 10곡 자동 반영)
         ['multi-song-select','modal-practice-song','modal-together-song'].forEach(id => {
