@@ -131,6 +131,42 @@ html,body{overflow:visible;background:#fff!important;-webkit-print-color-adjust:
 .cue-flash{position:fixed;inset:0;background:rgba(16,185,129,.28);pointer-events:none;opacity:0;z-index:240;transition:opacity .35s ease}.cue-flash.on{opacity:1}
 @media (max-width:1550px),(max-height:860px){.btn-tts-edge{width:122px;min-height:144px;font-size:1.25rem}.pf-bubble{left:calc(50% + 185px);max-width:260px;font-size:1.35rem;padding:8px 16px}.wait-zone{right:calc(50% + 185px)}.cue-bubble{font-size:1.35rem;padding:8px 16px}.phase-bar{right:140px}.phase-chip{font-size:.92rem;padding:6px 10px}}
 @media print{.btn-opt,.cue-layer,.opt-backdrop,.opt-drawer,.cue-toast,.cue-flash{display:none!important}}
+
+.note{position:relative}
+.note .own{position:absolute;right:-8px;bottom:-8px;width:44%;height:44%;border-radius:50%;overflow:hidden;border:3px solid #fff;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.note .own img{width:100%;height:100%;object-fit:cover;object-position:center 22%}
+.n-라{background:#9B59B6}
+.perf-box{padding:8px 34px}.owners{display:flex;gap:22px;align-items:flex-end;justify-content:center;margin-top:4px}
+.owner{display:flex;flex-direction:column;align-items:center;gap:4px}
+.perf-box .owner .avatar,.owner .avatar{width:min(130px,11vh);height:min(130px,11vh);border:5px solid var(--acc)}
+.oname{font-size:min(1.9rem,3vh);font-weight:900}
+.onotes{display:flex;gap:4px;justify-content:center}
+.onotes i{font-style:normal;font-weight:900;font-size:.95rem;color:#fff;padding:2px 9px;border-radius:999px}
+.onotes i.n-미{color:var(--text)}
+.dist-modal{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:300;display:none;align-items:center;justify-content:center}
+.dist-modal.open{display:flex}
+.dist-box{background:#fff;border-radius:28px;width:min(1500px,96vw);max-height:96vh;overflow-y:auto;padding:22px 30px;display:flex;flex-direction:column;gap:12px}
+.dist-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dist-title{font-size:2rem;font-weight:900;margin-right:10px}
+.dist-songs{display:flex;gap:8px;margin-right:auto}
+.dist-songs button,.dist-head>button{font-size:1.2rem;padding:10px 18px;border-radius:14px}
+.dist-songs button.on{background:var(--pri);color:#fff}
+.dist-help{font-size:1.1rem;color:var(--muted);font-weight:700}
+.dist-label{font-size:1.2rem;font-weight:800}
+.dist-notes{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.dnote{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 14px;border-radius:20px;border:4px dashed #CBD5E1;cursor:pointer;min-width:120px;background:#F8FAFC}
+.dnote.sel{border-color:var(--pri);border-style:solid;background:#EFF6FF;box-shadow:0 0 0 6px rgba(37,99,235,.2)}
+.dnote.has{border-style:solid;border-color:var(--acc)}
+.dnote .note{width:76px;height:76px;font-size:2.2rem;box-shadow:none}
+.dnote .avatar{width:76px;height:76px}
+.dist-students{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.dstu{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 12px;border-radius:20px;border:4px solid var(--bdr);cursor:pointer;min-width:150px;background:#fff}
+.dstu .avatar{width:96px;height:96px}
+.dstu b{font-size:1.4rem}
+.dist-foot{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.dist-status{font-size:1.2rem;font-weight:800}
+.dist-foot button{font-size:1.6rem;padding:14px 46px;border-radius:18px}
+.dist-foot button:disabled{opacity:.35}
 </style>
 </head>
 <body>
@@ -140,11 +176,12 @@ html,body{overflow:visible;background:#fff!important;-webkit-print-color-adjust:
 <div><h1>하모니 연주 준비 화면 (나비야)</h1><p>학생 사진을 불러오고 순서를 정하세요. 이름을 탭하면 수정할 수 있습니다. 사진은 이 기기에만 저장됩니다.</p></div>
 <div class="actions">
 <button class="btn-neu" id="btnLoad">📷 사진 불러오기</button>
+<button class="btn-acc" id="btnDistOpen">🔔 음 나누기</button>
 <button class="btn-neu" id="btnPrintOpen">🖨️ 순서 띠 인쇄</button>
 <button class="btn-pri" id="btnGoPlay">▶ 진행 시작</button>
 </div>
 </div>
-<div class="info-bar">진행자 조: 목록 순서대로 2명씩(1조=1·2번, 2조=3·4번, 3조=5·6번) / 연주자: 나머지 학생이 악구 1~4에 순서대로 배정</div>
+<div class="info-bar">진행자 조: 목록 순서대로 2명씩(1조=1·2번, 2조=3·4번, 3조=5·6번) / 핸드벨: [🔔 음 나누기]에서 곡을 고르고 음마다 한 친구씩 정해요(겹치지 않아요)</div>
 <div class="grid" id="studentGrid"></div>
 </section>
 <section id="playScreen" class="screen">
@@ -156,15 +193,15 @@ html,body{overflow:visible;background:#fff!important;-webkit-print-color-adjust:
 <div class="stage">
 <div id="panelReady" class="panel">
 <div class="center-box">
-<div class="hero-title">나비야 하모니 연주</div>
+<div class="hero-title" id="heroTitle">나비야 하모니 연주</div>
 <div class="hero-sub">진행자가 순서를 말하고 얼굴을 터치하며 연주를 이어 가요</div>
 <div class="lineup" id="lineupBox"></div>
-<button class="btn-acc btn-start" id="btnBegin">시작</button>
+<div style="display:flex;gap:18px;align-items:center"><button class="btn-neu" id="btnDistReady" style="font-size:1.6rem;padding:20px 34px;border-radius:22px">🔔 음 나누기</button><button class="btn-acc btn-start" id="btnBegin">시작</button></div>
 </div>
 </div>
 <div id="panelPhrase" class="panel">
 <div class="phrase-top"><div class="phrase-title" id="phraseTitle">악구 1 / 4</div><div class="dots" id="dotsBox"></div></div>
-<div class="perf-box" id="perfBox"><div class="avatar" id="perfAvatar"></div><div><div class="perf-label">이번 연주자</div><div class="perf-name" id="perfName">이름</div></div></div>
+<div class="perf-box" id="perfBox"><div><div class="perf-label">이번 악구를 치는 친구들</div><div class="owners" id="perfOwners"></div></div></div>
 <div class="strip-wrap"><div class="strip" id="noteStrip"></div></div>
 </div>
 <div id="panelEnd" class="panel">
@@ -201,23 +238,53 @@ html,body{overflow:visible;background:#fff!important;-webkit-print-color-adjust:
 <div class="opt-row"><span class="opt-label">④ 단계 깜빡임 효과</span><button type="button" class="opt-toggle" id="optPhase"></button></div>
 <div class="opt-row"><span class="opt-label">⑤ 화살표 안내</span><button type="button" class="opt-toggle" id="optArrow"></button></div>
 <div class="opt-row"><span class="opt-label">⑥ 기다림 모래시계</span><button type="button" class="opt-toggle" id="optTimer"></button></div>
-<div class="opt-row" style="flex-direction:column;align-items:stretch"><span class="opt-label">⑦ 음표 개수 (학생별, 앞에서부터)</span><div id="optNoteList" style="display:flex;flex-direction:column;gap:8px"></div></div>
 <div class="opt-row"><span class="opt-label">↳ 기다림 시간(초)</span><div class="opt-seg" id="optTimerSecSeg"><button type="button" data-sec="5">5초</button><button type="button" data-sec="10">10초</button><button type="button" data-sec="15">15초</button></div></div>
 </div></aside>
 <div class="cue-toast" id="cueToast">이 기기는 음성을 지원하지 않아요</div>
 <div class="cue-flash" id="cueFlash"></div>
+<div id="distModal" class="dist-modal"><div class="dist-box">
+<div class="dist-head"><div class="dist-title">🔔 핸드벨 음 나누기</div><div id="distSongs" class="dist-songs"></div><button class="btn-neu" id="distAuto">✨ 자동 나누기</button><button class="btn-neu" id="distClear">비우기</button></div>
+<div class="dist-help" id="distHelp"></div>
+<div class="dist-label">① 음을 누르고 ② 그 음을 칠 친구를 누르세요 (한 음은 한 명만 쳐요)</div>
+<div id="distNotes" class="dist-notes"></div>
+<div id="distStudents" class="dist-students"></div>
+<div class="dist-foot"><div id="distStatus" class="dist-status"></div><button class="btn-acc" id="distOk">확인</button></div>
+</div></div>
 <div class="print-view" id="printView">
 <div class="top-bar print-head"><h1>나비야 악구별 순서 띠 (A4 인쇄)</h1>
 <div class="actions"><button class="btn-pri" id="btnDoPrint">🖨️ 인쇄하기</button><button class="btn-neu" id="btnClosePrint">닫기</button></div></div>
 <div class="print-sheet" id="printSheet"></div>
 </div>
 <script>
-const PHRASES=[
+const ORDER=['도','레','미','파','솔','라'];
+const SONGS=[
+{key:'nabiya',title:'나비야',phrases:[
 {label:'① 악구 1',m1:['솔','미','미'],m2:['파','레','레']},
 {label:'② 악구 2',m1:['도','레','미','파'],m2:['솔','솔','솔']},
 {label:'③ 악구 3',m1:['솔','미','미','미'],m2:['파','레','레','레']},
-{label:'④ 악구 4',m1:['도','미','솔','솔'],m2:['미','미','미']}
+{label:'④ 악구 4',m1:['도','미','솔','솔'],m2:['미','미','미']}]},
+{key:'star',title:'작은 별',phrases:[
+{label:'① 악구 1',m1:['도','도','솔','솔'],m2:['라','라','솔']},
+{label:'② 악구 2',m1:['파','파','미','미'],m2:['레','레','도']},
+{label:'③ 악구 3',m1:['솔','솔','파','파'],m2:['미','미','레']},
+{label:'④ 악구 4',m1:['솔','솔','파','파'],m2:['미','미','레']},
+{label:'⑤ 악구 5',m1:['도','도','솔','솔'],m2:['라','라','솔']},
+{label:'⑥ 악구 6',m1:['파','파','미','미'],m2:['레','레','도']}]}
 ];
+let songIdx=0,dist={};
+try{const d=JSON.parse(localStorage.getItem('hbDist')||'{}');if(d&&typeof d==='object'){dist=d.dist||{};songIdx=Math.min(d.songIdx||0,SONGS.length-1)}}catch(_){}
+function saveDist(){try{localStorage.setItem('hbDist',JSON.stringify({dist,songIdx}))}catch(_){}}
+const song=()=>SONGS[songIdx];
+let PHRASES=SONGS[songIdx].phrases;
+const NP=()=>PHRASES.length;
+const songNotes=()=>{const u=new Set();PHRASES.forEach(p=>[...p.m1,...p.m2].forEach(n=>u.add(n)));return ORDER.filter(n=>u.has(n))};
+const noteMap=()=>dist[song().key]||(dist[song().key]={});
+function ownerOf(n){const id=noteMap()[n];return students.find(s=>String(s.id)===String(id))||null}
+function phraseOwners(idx){const seen=[];[...PHRASES[idx].m1,...PHRASES[idx].m2].forEach(n=>{const o=ownerOf(n);if(o&&!seen.includes(o))seen.push(o)});return seen}
+const heldNotes=s=>songNotes().filter(n=>{const o=ownerOf(n);return o&&o.id===s.id});
+const distComplete=()=>students.length>0&&songNotes().every(n=>ownerOf(n));
+function ownerNames(idx){const o=phraseOwners(idx);return o.length?o.map(x=>x.name).join(', '):'친구들'}
+
 let students=[],mcGroup=0,step=0,db=null,lastTap=0;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -252,25 +319,19 @@ db.transaction('st','readwrite').objectStore('st').put({k:'list',data});
 }
 function getRoles(){
 const n=students.length;
-if(!n)return{mcs:[],pfs:[null,null,null,null]};
+if(!n)return{mcs:[]};
 const groups=Math.ceil(n/2);
 if(mcGroup>=groups)mcGroup=0;
 const i1=mcGroup*2,i2=i1+1;
 const mcs=[students[i1],...(i2<n?[students[i2]]:[])];
-const rem=students.filter((_,i)=>i!==i1&&i!==i2);
-const src=rem.length?rem:mcs;
-const pfs=[0,1,2,3].map(i=>src[i<src.length?i:i%src.length]);
-return{mcs,pfs};
+return{mcs};
 }
 function avatarHTML(s){
 return s&&s.url?`<img src="${s.url}" alt="${esc(s.name)}">`:`<span>${s&&s.name?esc(s.name[0]):'?'}</span>`;
 }
-function stripHTML(p,max){
-const notes=arr=>arr.map(n=>`<div class="note n-${n}">${n}</div>`).join('');
-const L=max>0?max:99;
-if(L>=p.m1.length+p.m2.length)return notes(p.m1)+`<div class="gap"></div>`+notes(p.m2);
-if(L<=p.m1.length)return notes(p.m1.slice(0,L));
-return notes(p.m1)+`<div class="gap"></div>`+notes(p.m2.slice(0,L-p.m1.length));
+function stripHTML(p,own){
+const notes=arr=>arr.map(n=>{const o=own?ownerOf(n):null;return `<div class="note n-${n}">${n}${o?`<span class="own">${avatarHTML(o)}</span>`:''}</div>`}).join('');
+return notes(p.m1)+`<div class="gap"></div>`+notes(p.m2);
 }
 function renderSetup(){
 const grid=$('studentGrid');
@@ -278,41 +339,42 @@ if(!students.length){
 grid.innerHTML=`<div class="empty">등록된 학생 사진이 없습니다. [📷 사진 불러오기]를 눌러 추가하세요.</div>`;
 return;
 }
-const{mcs,pfs}=getRoles();
+const{mcs}=getRoles();
 const mcIds=new Set(mcs.map(m=>m.id));
 grid.innerHTML=students.map((s,i)=>{
 const isMc=mcIds.has(s.id);
-const pIdx=pfs.findIndex(p=>p&&p.id===s.id);
-const cls=isMc?'mc':(pIdx>-1?'pf':'');
-const label=isMc?`${i+1}번 · 진행자(${mcGroup+1}조)`:(pIdx>-1?`${i+1}번 · 악구 ${pIdx+1}`:`${i+1}번 (${Math.floor(i/2)+1}조)`);
+const cls=isMc?'mc':'';
+const hn=heldNotes(s);
+const label=isMc?`${i+1}번 · 진행자(${mcGroup+1}조)`:`${i+1}번 (${Math.floor(i/2)+1}조)`;
 return `<div class="tile ${isMc?'mc':''}">
 <div class="tile-head"><span class="tag ${cls}">${label}</span><button class="btn-del" style="width:42px;height:42px;font-size:1.2rem" data-del="${i}">✕</button></div>
 <div class="avatar" style="width:135px;height:135px">${avatarHTML(s)}</div>
 <button class="name-btn" data-edit="${i}">${esc(s.name)}</button>
+<div class="onotes" style="min-height:30px">${hn.length?hn.map(n=>`<i class="n-${n}">${n}</i>`).join(''):'<span style="color:#94A3B8;font-weight:700">벨 없음</span>'}</div>
 <div class="move-bar"><button class="btn-neu" data-mv="${i}:-1" ${i===0?'disabled':''}>◀</button><button class="btn-neu" data-mv="${i}:1" ${i===students.length-1?'disabled':''}>▶</button></div>
 </div>`;
 }).join('');
 }
 function renderPlay(){
-const{mcs,pfs}=getRoles();
+const{mcs}=getRoles(),N=NP();
 $('mcBadge').textContent=`진행자 (${mcGroup+1}조)`;
 $('mcList').innerHTML=mcs.length?mcs.map(m=>`<div class="mc-item"><div class="avatar">${avatarHTML(m)}</div><span>${esc(m.name)}</span></div>`).join(''):`<div class="mc-item">학생 미등록</div>`;
+$('heroTitle').textContent=`${song().title} 하모니 연주`;
 $('panelReady').classList.toggle('active',step===0);
-$('panelPhrase').classList.toggle('active',step>=1&&step<=4);
-$('panelEnd').classList.toggle('active',step===5);
-$('navBar').style.visibility=(step>=1&&step<=4)?'visible':'hidden';
+$('panelPhrase').classList.toggle('active',step>=1&&step<=N);
+$('panelEnd').classList.toggle('active',step===N+1);
+$('navBar').style.visibility=(step>=1&&step<=N)?'visible':'hidden';
 if(step===0){
-$('lineupBox').innerHTML=pfs.map((p,i)=>`<div class="lineup-item"><span class="tag mc">악구 ${i+1}</span><div class="avatar">${avatarHTML(p)}</div><div>${p?esc(p.name):`연주자 ${i+1}`}</div></div>`).join('');
-}else if(step>=1&&step<=4){
-const idx=step-1,p=pfs[idx];
-$('phraseTitle').textContent=`악구 ${step} / 4`;
-$('dotsBox').innerHTML=[0,1,2,3].map(i=>`<span class="dot ${i<idx?'done':(i===idx?'on':'')}"></span>`).join('');
+$('lineupBox').innerHTML=songNotes().map(n=>{const o=ownerOf(n);return `<div class="lineup-item"><div class="note n-${n}" style="width:70px;height:70px;font-size:2rem;position:relative">${n}</div><div class="avatar" style="width:110px;height:110px">${avatarHTML(o)}</div><div>${o?esc(o.name):'(주인 없음)'}</div></div>`}).join('');
+}else if(step>=1&&step<=N){
+const idx=step-1;
+$('phraseTitle').textContent=`악구 ${step} / ${N}`;
+$('dotsBox').innerHTML=PHRASES.map((_,i)=>`<span class="dot ${i<idx?'done':(i===idx?'on':'')}"></span>`).join('');
 $('perfBox').classList.remove('touched');
-$('perfAvatar').innerHTML=avatarHTML(p);
-$('perfName').textContent=p?p.name:`연주자 ${step}`;
-$('noteStrip').innerHTML=stripHTML(PHRASES[idx],p?(hbOpt.noteMax||{})[p.id]:0);
+$('perfOwners').innerHTML=phraseOwners(idx).map(o=>`<div class="owner"><div class="avatar">${avatarHTML(o)}</div><div class="oname">${esc(o.name)}</div></div>`).join('');
+$('noteStrip').innerHTML=stripHTML(PHRASES[idx],true);
 $('btnPrev').textContent=step===1?'◀ 처음으로':'◀ 이전';
-$('btnNext').textContent=step===4?'완료 ▶':'다음 ▶';
+$('btnNext').textContent=step===N?'완료 ▶':'다음 ▶';
 }
 renderCues();
 }
@@ -348,21 +410,51 @@ play?renderPlay():renderSetup();
 $('btnGoPlay').onclick=guard(()=>{mcGroup=0;step=0;showScreen(true)});
 $('btnCfgTop').onclick=guard(()=>showScreen(false));
 $('btnCfgEnd').onclick=guard(()=>showScreen(false));
-$('btnBegin').onclick=guard(()=>{step=1;renderPlay()});
+$('btnBegin').onclick=guard(()=>{if(!distComplete()){openDist();return}step=1;renderPlay()});
 $('perfBox').onclick=guard(()=>$('perfBox').classList.toggle('touched'));
 $('btnPrev').onclick=guard(()=>{if(step>0){step--;renderPlay()}});
-$('btnNext').onclick=guard(()=>{if(step<5){step++;renderPlay()}});
+$('btnNext').onclick=guard(()=>{if(step<NP()+1){step++;renderPlay()}});
 $('btnRestart').onclick=guard(()=>{step=0;renderPlay()});
 $('btnNextMc').onclick=guard(()=>{mcGroup=(mcGroup+1)%Math.max(1,Math.ceil(students.length/2));step=0;renderPlay()});
 $('btnPrintOpen').onclick=guard(()=>$('printView').classList.add('active'));
 $('btnClosePrint').onclick=guard(()=>$('printView').classList.remove('active'));
 $('btnDoPrint').onclick=guard(()=>window.print());
+function renderPrint(){
+$('printSheet').innerHTML=PHRASES.map(p=>`<div class="print-row"><div class="print-label">${p.label}</div><div class="strip">${stripHTML(p,true)}</div></div>`).join('');
+const h=document.querySelector('.print-head h1');if(h)h.textContent=`${song().title} 악구별 순서 띠 (A4 인쇄)`;
+}
+let selNote=null;
+function setSong(i){songIdx=i;PHRASES=SONGS[i].phrases;selNote=null;saveDist();step=0;renderDist();renderSetup();renderPrint()}
+function openDist(){selNote=null;renderDist();$('distModal').classList.add('open')}
+function renderDist(){
+$('distSongs').innerHTML=SONGS.map((sg,i)=>`<button class="btn-neu ${i===songIdx?'on':''}" data-song="${i}">${sg.title}</button>`).join('');
+const ns=songNotes();
+$('distNotes').innerHTML=ns.map(n=>{const o=ownerOf(n);return `<div class="dnote ${selNote===n?'sel':''} ${o?'has':''}" data-note="${n}"><div class="note n-${n}">${n}</div><div class="avatar">${o?avatarHTML(o):'<span>?</span>'}</div><div style="font-weight:800">${o?esc(o.name):'주인 없음'}</div></div>`}).join('');
+$('distStudents').innerHTML=students.map(st=>{const h=heldNotes(st);return `<div class="dstu" data-stu="${st.id}" style="${selNote?'border-color:#93C5FD':''}"><div class="avatar">${avatarHTML(st)}</div><b>${esc(st.name)}</b><div class="onotes" style="min-height:26px">${h.length?h.map(n=>`<i class="n-${n}">${n}</i>`).join(''):'<span style="color:#94A3B8;font-weight:700">벨 없음</span>'}</div></div>`}).join('');
+const miss=ns.filter(n=>!ownerOf(n)),idle=students.filter(st=>!heldNotes(st).length);
+$('distHelp').textContent=students.length?`이 곡에는 음 ${ns.length}개가 필요해요. 친구는 ${students.length}명이에요.${students.length<ns.length?' 한 친구가 여러 음을 쳐요.':''}`:'먼저 학생 사진을 불러오세요.';
+$('distStatus').innerHTML=miss.length?`<span style="color:#DC2626">아직 주인이 없는 음: ${miss.join(', ')}</span>`:`<span style="color:#059669">✅ 모든 음이 나뉘었어요${idle.length?` · 벨 없는 친구: ${idle.map(x=>esc(x.name)).join(', ')} (진행자로 도와요)`:''}</span>`;
+$('distOk').disabled=miss.length>0||!students.length;
+}
+function autoDist(){
+const m=noteMap();Object.keys(m).forEach(k=>delete m[k]);
+const ns=songNotes();if(!students.length)return;
+ns.forEach((n,i)=>{m[n]=students[i%students.length].id});
+saveDist();renderDist();
+}
+$('distSongs').onclick=guard(e=>{const b=e.target.closest('[data-song]');if(b)setSong(+b.dataset.song)});
+$('distNotes').onclick=guard(e=>{const c=e.target.closest('[data-note]');if(!c)return;const n=c.dataset.note;selNote=selNote===n?null:n;renderDist()});
+$('distStudents').onclick=guard(e=>{const c=e.target.closest('[data-stu]');if(!c||!selNote)return;const m=noteMap();if(String(m[selNote])===c.dataset.stu)delete m[selNote];else m[selNote]=students.find(x=>String(x.id)===c.dataset.stu).id;selNote=null;saveDist();renderDist();renderSetup()});
+$('distAuto').onclick=guard(()=>{autoDist();renderSetup()});
+$('distClear').onclick=guard(()=>{const m=noteMap();Object.keys(m).forEach(k=>delete m[k]);saveDist();renderDist();renderSetup()});
+$('distOk').onclick=guard(()=>{$('distModal').classList.remove('open');if($('playScreen').classList.contains('active'))renderPlay()});
+$('btnDistOpen').onclick=guard(openDist);$('btnDistReady').onclick=guard(openDist);
 window.addEventListener('DOMContentLoaded',async()=>{
-$('printSheet').innerHTML=PHRASES.map(p=>`<div class="print-row"><div class="print-label">${p.label}</div><div class="strip">${stripHTML(p)}</div></div>`).join('');
+renderPrint();
 await initDB();
 renderSetup();
 });
-const hbOpt={noteMax:{},tts:true,bubble:'hide',symbol:false,phase:false,arrow:false,timer:false,timerSec:10};
+const hbOpt={tts:true,bubble:'hide',symbol:false,phase:false,arrow:false,timer:false,timerSec:10};
 let cuePhase=1,lastCueStep=-1,waitTimerId=null,toastTimerId=null;
 function loadOpt(){try{const s=JSON.parse(localStorage.getItem('hbOpt')||'{}');if(s&&typeof s==='object')Object.assign(hbOpt,s)}catch(_){}}
 function saveOpt(){try{localStorage.setItem('hbOpt',JSON.stringify(hbOpt))}catch(_){}}
@@ -388,12 +480,7 @@ num.textContent=Math.ceil(rem);circle.style.strokeDashoffset=String(circ*(el/tot
 if(rem<=0){stopWaitTimer();const fl=$('cueFlash');if(fl){fl.classList.add('on');setTimeout(()=>fl.classList.remove('on'),420)}}
 },80);
 }
-function renderNoteOpts(){
-const box=$('optNoteList');if(!box)return;
-const m=hbOpt.noteMax||(hbOpt.noteMax={});
-box.innerHTML=students.map(s=>{const cur=m[s.id]||0;return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><b style="font-size:1.15rem">${esc(s.name)}</b><div class="opt-seg" data-sid="${s.id}">${[[0,'전체'],[4,'4개'],[3,'3개'],[2,'2개']].map(([v,t])=>`<button type="button" data-n="${v}" class="${cur===v?'on':''}">${t}</button>`).join('')}</div></div>`}).join('');
-}
-function syncOptUI(){renderNoteOpts();
+function syncOptUI(){
 const tg=(id,on)=>{const b=$(id);if(!b)return;b.classList.toggle('on',!!on);b.textContent=on?'켜짐':'꺼짐'};
 tg('optTts',hbOpt.tts);tg('optSymbol',hbOpt.symbol);tg('optPhase',hbOpt.phase);tg('optArrow',hbOpt.arrow);tg('optTimer',hbOpt.timer);
 document.querySelectorAll('#optBubbleSeg button').forEach(b=>b.classList.toggle('on',b.dataset.val===hbOpt.bubble));
@@ -404,9 +491,9 @@ const layer=$('cueLayer'),mcBox=document.querySelector('.mc-box'),pfBox=$('perfB
 if(!layer||!mcBox||!pfBox)return;
 if(step!==lastCueStep){cuePhase=1;stopWaitTimer();lastCueStep=step}
 mcBox.classList.remove('cue-blink-blue');pfBox.classList.remove('cue-glow-green','cue-blink-orange');
-if(step<1||step>4){layer.classList.remove('active');stopWaitTimer();return}
+if(step<1||step>NP()){layer.classList.remove('active');stopWaitTimer();return}
 layer.classList.add('active');
-const pf=getRoles().pfs[step-1],pfName=pf&&pf.name?pf.name:`연주자 ${step}`;
+const pfName=ownerNames(step-1);
 $('btnTtsMc').style.display=hbOpt.tts?'flex':'none';$('btnTtsPf').style.display=hbOpt.tts?'flex':'none';
 $('btnTtsMc').style.visibility=cuePhase===1?'visible':'hidden';$('btnTtsPf').style.visibility=cuePhase===3?'visible':'hidden';
 const pb=$('phaseBar');pb.classList.add('show');
@@ -426,14 +513,13 @@ if(!hbOpt.timer)stopWaitTimer();
 function initCues(){
 loadOpt();syncOptUI();
 const drawer=o=>{$('optBackdrop').classList.toggle('open',o);$('optDrawer').classList.toggle('open',o)};
-$('btnOptTop').onclick=guard(()=>{renderNoteOpts();drawer(true)});$('btnOptClose').onclick=guard(()=>drawer(false));$('optBackdrop').onclick=guard(()=>drawer(false));
-$('btnTtsMc').onclick=guard(()=>{if(step<1||step>4||cuePhase!==1)return;const pf=getRoles().pfs[step-1];speakKo(`${pf&&pf.name?pf.name:'연주자 '+step} 차례예요.`)});
-$('btnTtsPf').onclick=guard(()=>{if(step<1||step>4||cuePhase!==3)return;speakKo('다음은 누구 차례예요?')});
+$('btnOptTop').onclick=guard(()=>drawer(true));$('btnOptClose').onclick=guard(()=>drawer(false));$('optBackdrop').onclick=guard(()=>drawer(false));
+$('btnTtsMc').onclick=guard(()=>{if(step<1||step>NP()||cuePhase!==1)return;speakKo(`${ownerNames(step-1)} 차례예요.`)});
+$('btnTtsPf').onclick=guard(()=>{if(step<1||step>NP()||cuePhase!==3)return;speakKo('다음은 누구 차례예요?')});
 $('phaseBar').onclick=guard(e=>{const b=e.target.closest('.phase-chip');if(!b)return;cuePhase=Number(b.dataset.phase)||1;renderCues()});
 $('btnWait').onclick=guard(toggleWaitTimer);$('timerRingBox').onclick=guard(stopWaitTimer);
 const bind=(id,k)=>{$(id).onclick=guard(()=>{hbOpt[k]=!hbOpt[k];saveOpt();syncOptUI();renderCues()})};
 bind('optTts','tts');bind('optSymbol','symbol');bind('optPhase','phase');bind('optArrow','arrow');bind('optTimer','timer');
-$('optNoteList').onclick=guard(e=>{const b=e.target.closest('button'),g=e.target.closest('[data-sid]');if(!b||!g)return;const st=students.find(x=>String(x.id)===g.dataset.sid);if(!st)return;const n=Number(b.dataset.n)||0;if(n)hbOpt.noteMax[st.id]=n;else delete hbOpt.noteMax[st.id];saveOpt();syncOptUI();renderPlay()});
 $('optBubbleSeg').onclick=guard(e=>{const b=e.target.closest('button');if(!b)return;hbOpt.bubble=b.dataset.val;saveOpt();syncOptUI();renderCues()});
 $('optTimerSecSeg').onclick=guard(e=>{const b=e.target.closest('button');if(!b)return;hbOpt.timerSec=Number(b.dataset.sec)||10;stopWaitTimer();saveOpt();syncOptUI();renderCues()});
 }
