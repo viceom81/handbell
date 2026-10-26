@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>도레미 이어 연주 진행판</title>
+<title>핸드벨 수업 진행판 (활동 1·2·3)</title>
 <style>
 :root{--bg:#F4F7FB;--card:#fff;--text:#1E293B;--muted:#64748B;--pri:#2563EB;--acc:#10B981;--del:#EF4444;--bdr:#E2E8F0;--do:#E74C3C;--re:#E67E22;--mi:#F1C40F;--fa:#2ECC71;--sol:#3498DB}
 *{box-sizing:border-box;user-select:none;-webkit-user-select:none;margin:0;padding:0}
@@ -172,9 +172,56 @@ html,body{overflow:visible;background:#fff!important;-webkit-print-color-adjust:
 .note.cur{outline:6px solid var(--text);outline-offset:4px}
 .lineup-item.hot{border-color:var(--pri);background:#EFF6FF;transform:scale(1.06)}
 #perfOwners{align-items:center}
+
+/* ===== v4: 큰 화면 + 활동 탭 ===== */
+.screen{top:54px}
+#actTabs{position:fixed;top:0;left:0;right:0;height:54px;z-index:200;display:flex;gap:10px;align-items:center;padding:6px 20px;background:#1E293B}
+#actTabs button{height:42px;padding:0 22px;font-size:1.15rem;border-radius:12px;background:#334155;color:#CBD5E1}
+#actTabs button.on{background:#fff;color:#1E293B}
+#actTabs .ttl{color:#94A3B8;font-weight:800;margin-right:10px}
+#engineFrame{position:fixed;left:0;right:0;bottom:0;top:54px;width:100%;height:calc(100% - 54px);border:0;display:none;background:#fff;z-index:150}
+#engineFrame.show{display:block}
+.stage{padding:16px 28px}
+.phase-bar{top:8px;left:50%;right:auto;transform:translateX(-50%);padding:6px;gap:8px;z-index:30}
+.phase-chip{font-size:min(1.9rem,3.4vh);padding:min(12px,1.6vh) min(26px,2.2vw);border:3px solid #CBD5E1;background:#fff;color:#64748B}
+.phase-chip.p1.on{background:var(--pri);border-color:var(--pri);color:#fff}.phase-chip.p2.on{background:var(--acc);border-color:var(--acc);color:#fff}.phase-chip.p3.on{background:#F59E0B;border-color:#F59E0B;color:#fff}
+#panelPhrase{justify-content:space-between;gap:1vh;padding-top:min(72px,9vh)}
+.phrase-top{position:absolute;top:14px;right:24px;align-items:flex-end;gap:4px}
+.phrase-title{font-size:1.3rem;padding:2px 16px}.dot{width:14px;height:14px}
+.phase-chip{white-space:nowrap}
+.perf-box{flex:1;min-height:0;gap:2.5vw;padding:1vh 3vw;border-radius:36px;border-width:6px;margin:0 auto;width:min(1000px,70vw);justify-content:center}
+.perf-box>div{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+.perf-box .owners{gap:3vw}
+.perf-box .owner{gap:0}
+.perf-box .owner .avatar,.perf-box .avatar{width:min(31vh,28vw);height:min(31vh,28vw);border:10px solid var(--pri);animation:pulseRing 1.4s infinite ease-in-out}
+.perf-box .oname{font-size:min(6vh,5vw);line-height:1.15}
+.perf-label{font-size:min(2.4vh,2vw);color:var(--pri);margin-bottom:2px}
+.perf-box .note{width:min(23vh,20vw)!important;height:min(23vh,20vw)!important;font-size:min(11vh,9vw)!important}
+@keyframes pulseRing{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.45)}50%{box-shadow:0 0 0 14px rgba(37,99,235,.12)}}
+.strip-wrap{padding:1vh;min-height:0;border-radius:24px;flex:none}
+.note{width:min(190px,8.5vw,11.5vh);height:min(190px,8.5vw,11.5vh);font-size:min(5rem,4vw,5.5vh)}
+.strip .note{opacity:.5}.strip .note.cur{opacity:1;transform:scale(1.15);box-shadow:0 0 0 5px var(--pri),0 8px 18px rgba(0,0,0,.2)}.strip .note.done{opacity:.8}
+.btn-tts-edge{width:min(210px,14vw);min-height:min(230px,28vh);font-size:min(1.8rem,3.2vh);top:42%}
+.btn-tts-edge .tts-ico{font-size:min(3.4rem,6vh)}
+.btn-tts-mc{animation:wob 1.2s infinite}@keyframes wob{0%,100%{transform:translateY(-50%) rotate(0)}25%{transform:translateY(-50%) rotate(-3deg)}75%{transform:translateY(-50%) rotate(3deg)}}
+.pf-bubble{left:auto;right:calc(max(15vw,210px) - 190px);top:24%;font-size:min(2.2rem,4vh);max-width:min(420px,24vw)}.cue-bubble{font-size:min(2.2rem,4vh)}
+.mc-cue-zone{top:56px}
+.mc-item .avatar{width:min(84px,9.5vh);height:min(84px,9.5vh)}.mc-item{font-size:min(2rem,3.6vh)}
+.nav-bar{min-height:min(96px,10vh);gap:30px}.nav-bar button{height:min(96px,10vh);font-size:min(2.6rem,4vh)}
+.btn-opt,.btn-cfg{opacity:.65}
+.perf-label{display:none}
+.perf-box .owner .avatar,.perf-box .avatar{width:min(25vh,26vw);height:min(25vh,26vw);border-width:8px}
+.perf-box .oname{font-size:min(5.2vh,4.5vw)}
+.perf-box .note{width:min(19vh,18vw)!important;height:min(19vh,18vw)!important;font-size:min(9vh,8vw)!important}
+.screen{padding:10px 36px 14px}.stage{margin:8px 0}.mc-box{padding:4px 22px}
+.mc-item .avatar{width:min(64px,8vh);height:min(64px,8vh)}.mc-item{font-size:min(1.7rem,3.2vh)}
+.play-header{min-height:0}
+#panelPhrase{padding-top:min(66px,8.5vh)}
 </style>
 </head>
 <body>
+<div id="actTabs"><span class="ttl">🔔 핸드벨 수업</span><button type="button" data-act="1" class="on">활동 1 · 차례 체크</button><button type="button" data-act="2">활동 2 · 동요 전체 연주</button><button type="button" data-act="3">활동 3 · 연주회</button></div>
+<iframe id="engineFrame" title="핸드벨 엔진" allow="autoplay; fullscreen"></iframe>
 <input type="file" id="fileInput" multiple accept="image/*" style="display:none">
 <section id="setupScreen" class="screen active">
 <div class="top-bar">
@@ -526,6 +573,22 @@ $('optBubbleSeg').onclick=guard(e=>{const b=e.target.closest('button');if(!b)ret
 $('optTimerSecSeg').onclick=guard(e=>{const b=e.target.closest('button');if(!b)return;hbOpt.timerSec=Number(b.dataset.sec)||10;stopWaitTimer();saveOpt();syncOptUI();renderCues()});
 }
 window.addEventListener('DOMContentLoaded',initCues);
+
+// ===== 활동 탭 =====
+(function(){
+const fr=document.getElementById('engineFrame');let loaded=false;
+function setAct(a){
+document.querySelectorAll('#actTabs button').forEach(b=>b.classList.toggle('on',Number(b.dataset.act)===a));
+fr.classList.toggle('show',a>1);
+if(a>1){
+if(!loaded){loaded=true;fr.src='harmony-engine.html'}
+fr.contentWindow.__wantAct=a;try{fr.contentWindow.hostSetAct&&fr.contentWindow.hostSetAct(a)}catch(e){}
+}
+}
+document.getElementById('actTabs').onclick=e=>{const b=e.target.closest('button');if(b)setAct(Number(b.dataset.act))};
+fr.addEventListener('load',()=>{try{const a=Number(document.querySelector('#actTabs button.on').dataset.act);fr.contentWindow.__wantAct=a}catch(e){}});
+window.__setAct=setAct;
+})();
 </script>
 </body>
 </html>
