@@ -163,6 +163,8 @@ html,body{overflow:visible;background:#fff!important;-webkit-print-color-adjust:
 .dstu{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 12px;border-radius:20px;border:4px solid var(--bdr);cursor:pointer;min-width:150px;background:#fff}
 .dstu .avatar{width:96px;height:96px}
 .dstu b{font-size:1.4rem}
+.dmc{font-size:.95rem;padding:6px 10px;border-radius:10px}.dmc.on{background:#DBEAFE;color:#1D4ED8}
+.dq{display:flex;align-items:center;gap:6px;font-size:1rem;font-weight:800}.dq button{width:34px;height:34px;font-size:1.2rem;border-radius:10px}
 .dist-foot{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .dist-status{font-size:1.2rem;font-weight:800}
 .dist-foot button{font-size:1.6rem;padding:14px 46px;border-radius:18px}
@@ -306,6 +308,7 @@ body.song .btn-start{font-size:2.2rem;padding:14px 60px}
 <aside class="opt-drawer" id="optDrawer">
 <div class="opt-head"><h2>🎛️ 수업 지원 옵션</h2><button type="button" class="btn-neu" id="btnOptClose" style="font-size:1.2rem;padding:10px 18px">닫기 ✕</button></div>
 <div class="opt-list">
+<div class="opt-row"><span class="opt-label">⑦ 악보(음표 줄)</span><div class="opt-seg" id="optStripSeg"><button type="button" data-val="all">모두 보이기</button><button type="button" data-val="cur">지금 음만</button></div></div>
 <div class="opt-row"><span class="opt-label">① 음성 버튼 보이기</span><button type="button" class="opt-toggle" id="optTts"></button></div>
 <div class="opt-row"><span class="opt-label">② 말풍선 문장</span><div class="opt-seg" id="optBubbleSeg"><button type="button" data-val="full">전체</button><button type="button" data-val="blank">빈칸</button><button type="button" data-val="hide">숨김</button></div></div>
 <div class="opt-row"><span class="opt-label">③ 그림 상징</span><button type="button" class="opt-toggle" id="optSymbol"></button></div>
@@ -317,7 +320,7 @@ body.song .btn-start{font-size:2.2rem;padding:14px 60px}
 <div class="cue-toast" id="cueToast">이 기기는 음성을 지원하지 않아요</div>
 <div class="cue-flash" id="cueFlash"></div>
 <div id="distModal" class="dist-modal"><div class="dist-box">
-<div class="dist-head"><div class="dist-title">🔔 핸드벨 음 나누기</div><div id="distSongs" class="dist-songs"></div><button class="btn-neu" id="distAuto">✨ 자동 나누기</button><button class="btn-neu" id="distClear">비우기</button></div>
+<div class="dist-head"><div class="dist-title">🔔 핸드벨 음 나누기</div><div id="distSongs" class="dist-songs"></div><button class="btn-neu" id="distAuto">✨ 자동 나누기</button><button class="btn-neu" id="distMix">🎲 섞어서 나누기</button><button class="btn-neu" id="distClear">비우기</button></div>
 <div class="dist-help" id="distHelp"></div>
 <div class="dist-label">① 음을 누르고 ② 그 음을 칠 친구를 누르세요 (한 음은 한 명만 쳐요)</div>
 <div id="distNotes" class="dist-notes"></div>
@@ -336,8 +339,8 @@ let PATTERNS=[
 {title:'도레미파솔',sub:'오르기',seq:['도','레','미','파','솔']},
 {title:'솔파미레도',sub:'내려오기',seq:['솔','파','미','레','도']},
 {title:'도미솔미도',sub:'오르내리기',seq:['도','미','솔','미','도']},
-{title:'무작위 한 음씩',sub:'무작위',seq:['도','레','미','파','솔'],rand:true}];
-let PLAN=[{p:3,t:'① 무작위 한 음씩'},{p:0,t:'② 도레미파솔'},{p:1,t:'③ 솔파미레도'},{p:2,t:'④ 도미솔미도'},{p:2,t:'④ 한 번 더'}];
+{title:'섞어서 한 음씩',sub:'섞기',seq:['도','레','미','파','솔'],rand:true}];
+let PLAN=[{p:3,t:'① 섞어서 한 음씩'},{p:0,t:'② 도레미파솔'},{p:1,t:'③ 솔파미레도'},{p:2,t:'④ 도미솔미도'},{p:2,t:'④ 한 번 더'}];
 const SONGS=[{"title":"비행기","seq":["미","레","도","레","미","미","미","레","레","레","미","솔","솔","미","레","도","레","미","미","미","레","레","미","레","도"],"u":4},{"title":"나비야","seq":["솔","미","미","파","레","레","도","레","미","파","솔","솔","솔","솔","미","미","파","레","레","도","미","솔","솔","미","미","미"],"u":5},{"title":"학교종","seq":["솔","솔","라","라","솔","솔","미","솔","솔","미","미","레","솔","솔","라","라","솔","솔","미","솔","미","레","미","도"],"u":5},{"title":"환희의 송가","seq":["미","미","파","솔","솔","파","미","레","도","도","레","미","미","레","레","미","미","파","솔","솔","파","미","레","도","도","레","미","레","도","도"],"u":5},{"title":"징글벨","seq":["미","미","미","미","미","미","미","솔","도","레","미","파","파","파","파","파","미","미","미","미","레","레","미","레","솔","미","미","미","미","미","미","미","솔","도","레","미","파","파","파","파","파","미","미","미","솔","솔","파","레","도"],"u":5},{"title":"작은 별","seq":["도","도","솔","솔","라","라","솔","파","파","미","미","레","레","도","솔","솔","파","파","미","미","레","솔","솔","파","파","미","미","레","도","도","솔","솔","라","라","솔","파","파","미","미","레","레","도"],"u":6},{"title":"곰 세 마리","seq":["도","도","도","도","도","미","솔","솔","미","도","솔","솔","미","솔","솔","미","도","도","도","솔","솔","미","도","솔","솔","솔","솔","솔","미","도","솔","솔","솔","솔","솔","미","도","솔","솔","솔","라","솔","높은도","솔","높은도","솔","미","레","도"],"u":6},{"title":"산토끼","seq":["솔","미","미","솔","미","도","레","미","레","도","미","솔","높은도","솔","높은도","솔","높은도","솔","미","솔","레","파","미","레","도"],"u":6},{"title":"똑같아요","seq":["도","미","솔","도","미","솔","라","라","라","솔","파","파","파","미","미","미","레","레","레","도","도","미","솔","도","미","솔","라","라","라","솔","파","파","파","미","미","미","레","레","레","도"],"u":6},{"title":"런던 다리","seq":["솔","라","솔","파","미","파","솔","레","미","파","미","파","솔","솔","라","솔","파","미","파","솔","레","솔","미","도"],"u":6}];
 const PATS1=PATTERNS,PLAN1=PLAN,PATS3=SONGS.map(x=>({title:x.title,sub:x.u+'음',seq:x.seq,song:true}));
 const PLAN3=[{p:PATS3.findIndex(x=>x.title==='나비야'),t:'1곡'},{p:PATS3.findIndex(x=>x.title==='작은 별'),t:'2곡'}];
@@ -384,14 +387,18 @@ const SEQ=()=>R().seq;
 const songNotes=()=>uniq(SEQ());
 const NP=()=>SEQ().length;
 const stuById=id=>students.find(s=>String(s.id)===String(id))||null;
-function buildRound(i){
-const P=present(),pt=PATTERNS[PLAN[i].p];
-const mc=P.length>1?P[i%P.length]:null;
-const players=P.filter(x=>x!==mc).sort((a,b)=>(plays[a.id]||0)-(plays[b.id]||0)||students.indexOf(a)-students.indexOf(b));
+const quota={};const qOf=id=>Math.min(3,Math.max(1,quota[id]||1));
+function buildRound(i,mix,keepMc){
+const P=present(),pt=PATTERNS[PLAN[i].p],old=rounds[i];
+const mc=old&&(mix||keepMc)?stuById(old.mcId):(P.length>1?P[i%P.length]:null);
+let players=P.filter(x=>x!==mc);
+if(mix){for(let k=players.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[players[k],players[j]]=[players[j],players[k]]}}
+else players.sort((a,b)=>(plays[a.id]||0)-(plays[b.id]||0)||students.indexOf(a)-students.indexOf(b));
+const pool=[];for(let r=1;r<=3;r++)players.forEach(x=>{if(qOf(x.id)>=r)pool.push(x)});
 const assign={};
-uniq(pt.seq).forEach((n,k)=>{if(players.length)assign[n]=players[k%players.length].id});
-let seq=pt.seq.slice();
-if(pt.rand){const key=a=>a.join();let t=0;do{for(let k=seq.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[seq[k],seq[j]]=[seq[j],seq[k]]}t++}while(t<20&&(key(seq)===key(PATS1[0].seq)||key(seq)===key(PATS1[1].seq)))}
+uniq(pt.seq).forEach((n,k)=>{if(pool.length)assign[n]=pool[k%pool.length].id});
+let seq=old&&keepMc&&!mix?old.seq.slice():pt.seq.slice();
+if(pt.rand&&!(old&&keepMc&&!mix)){const key=a=>a.join();let t=0;do{for(let k=seq.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[seq[k],seq[j]]=[seq[j],seq[k]]}t++}while(t<20&&(key(seq)===key(PATS1[0].seq)||key(seq)===key(PATS1[1].seq)))}
 rounds[i]={mcId:mc?mc.id:null,assign,counted:[],seq};
 }
 const R=()=>{if(!rounds[roundIdx])buildRound(roundIdx);return rounds[roundIdx]};
@@ -455,7 +462,7 @@ $('dotsBox').innerHTML=SQ.length>10?`<div class="pbar"><div style="width:${Math.
 $('perfBox').classList.remove('touched');
 $('perfOwners').innerHTML=`<div class="owner"><div class="avatar">${avatarHTML(o)}</div><div class="oname">${o?esc(o.name):'친구'}</div></div><div class="note n-${n}" style="width:min(120px,11vh);height:min(120px,11vh);font-size:min(3.4rem,5vh)">${lab(n)}</div>`;
 const w0=SQ.length>8?Math.max(0,Math.min(idx-1,SQ.length-8)):0;
-$('noteStrip').innerHTML=SQ.map((m,i)=>({m,i})).slice(w0,w0+8).map(({m,i})=>noteChip(m,true,i<idx?'done':(i===idx?'cur':''))).join('');
+$('noteStrip').innerHTML=SQ.map((m,i)=>({m,i})).filter(({i})=>hbOpt.strip!=='cur'||i===idx).slice(hbOpt.strip==='cur'?0:w0,hbOpt.strip==='cur'?1:w0+8).map(({m,i})=>noteChip(m,true,i<idx?'done':(i===idx?'cur':''))).join('');
 $('btnPrev').textContent=step===1?'◀ 처음으로':'◀ 이전';
 $('btnNext').textContent=step===N?'완성 ▶':'다음 ▶';
 }else if(step===N+1){
@@ -526,16 +533,17 @@ $('distSongs').innerHTML=PATTERNS.map((pt,i)=>`<button class="btn-neu ${i===PLAN
 const ns=songNotes(),P=present();
 $('distNotes').innerHTML=ns.map(n=>{const o=ownerOf(n);return `<div class="dnote ${selNote===n?'sel':''} ${o?'has':''}" data-note="${n}"><div class="note n-${n}">${lab(n)}</div><div class="avatar">${o?avatarHTML(o):'<span>?</span>'}</div><div style="font-weight:800">${o?esc(o.name):'주인 없음'}</div></div>`}).join('');
 const mc=mcOf();
-$('distStudents').innerHTML=P.map(st=>{const h=songNotes().filter(n=>{const o=ownerOf(n);return o&&o.id===st.id});return `<div class="dstu" data-stu="${st.id}" style="${selNote?'border-color:#93C5FD':''}"><div class="avatar">${avatarHTML(st)}</div><b>${esc(st.name)}</b><div class="onotes" style="min-height:26px">${mc&&mc.id===st.id?'<span style="color:#2563EB;font-weight:800">진행자</span>':(h.length?h.map(n=>`<i class="n-${n}">${lab(n)}</i>`).join(''):'<span style="color:#94A3B8;font-weight:700">쉬어요</span>')}</div></div>`}).join('');
+$('distStudents').innerHTML=P.map(st=>{const h=songNotes().filter(n=>{const o=ownerOf(n);return o&&o.id===st.id});return `<div class="dstu" data-stu="${st.id}" style="${selNote?'border-color:#93C5FD':''}"><div class="avatar">${avatarHTML(st)}</div><b>${esc(st.name)}</b><div class="onotes" style="min-height:26px">${mc&&mc.id===st.id?'<span style="color:#2563EB;font-weight:800">진행자</span>':(h.length?h.map(n=>`<i class="n-${n}">${lab(n)}</i>`).join(''):'<span style="color:#94A3B8;font-weight:700">쉬어요</span>')}</div><button type="button" class="btn-neu dmc ${mc&&mc.id===st.id?'on':''}" data-mc="${st.id}">${mc&&mc.id===st.id?'🎤 진행자 해제':'🎤 진행자로'}</button>${mc&&mc.id===st.id?'':`<div class="dq"><button type="button" class="btn-neu" data-q="${st.id}:-1">−</button><span>음 ${qOf(st.id)}개까지</span><button type="button" class="btn-neu" data-q="${st.id}:1">＋</button></div>`}</div>`}).join('');
 const miss=ns.filter(n=>!ownerOf(n));
-$('distHelp').textContent=`${PLAN[roundIdx].t}: 음 ${ns.length}개 · 참여 ${P.length}명${mc?' (진행자 1명 포함)':''}.${P.length-1<ns.length?' 한 친구가 여러 음을 쳐요.':''} 덜 친 친구가 먼저 배정돼요.`;
+$('distHelp').textContent=`${PLAN[roundIdx].t}: 음 ${ns.length}개 · 참여 ${P.length}명${mc?' (진행자 1명 포함)':''}. 진행자는 「🎤 진행자로」로 바꿔요.${P.length-1<ns.length?' 한 친구가 여러 음을 쳐요.':''} 덜 친 친구가 먼저 배정돼요. 2음 이상 칠 친구는 「음 ○개까지」의 ＋로 정한 뒤 섞기·자동 나누기를 누르거나, 음을 누르고 그 친구를 또 눌러 직접 정해요.`;
 $('distStatus').innerHTML=miss.length?`<span style="color:#DC2626">아직 주인이 없는 음: ${miss.join(', ')}</span>`:`<span style="color:#059669">✅ 모든 음이 나뉘었어요</span>`;
 $('distOk').disabled=miss.length>0||!P.length;
 }
 $('distSongs').onclick=guard(e=>{const b=e.target.closest('[data-song]');if(b)setPat(+b.dataset.song)});
 $('distNotes').onclick=guard(e=>{const c=e.target.closest('[data-note]');if(!c)return;const n=c.dataset.note;selNote=selNote===n?null:n;renderDist()});
-$('distStudents').onclick=guard(e=>{const c=e.target.closest('[data-stu]');if(!c||!selNote)return;const m=R().assign;if(String(m[selNote])===c.dataset.stu)delete m[selNote];else m[selNote]=stuById(c.dataset.stu).id;selNote=null;renderDist()});
-$('distAuto').onclick=guard(()=>{rounds[roundIdx]=null;R();renderDist()});
+$('distStudents').onclick=guard(e=>{const mb=e.target.closest('[data-mc]');if(mb){const r=R(),id=stuById(mb.dataset.mc).id;r.mcId=String(r.mcId)===String(id)?null:id;selNote=null;buildRound(roundIdx,false,true);renderDist();return}const q=e.target.closest('[data-q]');if(q){const [id,d]=q.dataset.q.split(':');quota[id]=Math.min(3,Math.max(1,qOf(id)+Number(d)));renderDist();return}const c=e.target.closest('[data-stu]');if(!c||!selNote)return;const m=R().assign;if(String(m[selNote])===c.dataset.stu)delete m[selNote];else m[selNote]=stuById(c.dataset.stu).id;selNote=null;renderDist()});
+$('distAuto').onclick=guard(()=>{R();buildRound(roundIdx,false,true);renderDist()});
+$('distMix').onclick=guard(()=>{R();buildRound(roundIdx,true);renderDist()});
 $('distClear').onclick=guard(()=>{R().assign={};renderDist()});
 $('distOk').onclick=guard(()=>{$('distModal').classList.remove('open');if($('playScreen').classList.contains('active'))renderPlay()});
 $('btnDistReady').onclick=guard(openDist);
@@ -545,7 +553,7 @@ renderPrint();
 await initDB();
 renderSetup();
 });
-const hbOpt={tts:true,bubble:'hide',symbol:false,phase:false,arrow:false,timer:false,timerSec:10};
+const hbOpt={strip:'all',tts:true,bubble:'hide',symbol:false,phase:false,arrow:false,timer:false,timerSec:10};
 let cuePhase=1,lastCueStep=-1,waitTimerId=null,toastTimerId=null;
 function loadOpt(){try{const s=JSON.parse(localStorage.getItem('hbOpt')||'{}');if(s&&typeof s==='object')Object.assign(hbOpt,s)}catch(_){}}
 function saveOpt(){try{localStorage.setItem('hbOpt',JSON.stringify(hbOpt))}catch(_){}}
@@ -574,6 +582,7 @@ if(rem<=0){stopWaitTimer();const fl=$('cueFlash');if(fl){fl.classList.add('on');
 function syncOptUI(){
 const tg=(id,on)=>{const b=$(id);if(!b)return;b.classList.toggle('on',!!on);b.textContent=on?'켜짐':'꺼짐'};
 tg('optTts',hbOpt.tts);tg('optSymbol',hbOpt.symbol);tg('optPhase',hbOpt.phase);tg('optArrow',hbOpt.arrow);tg('optTimer',hbOpt.timer);
+document.querySelectorAll('#optStripSeg button').forEach(b=>b.classList.toggle('on',b.dataset.val===hbOpt.strip));
 document.querySelectorAll('#optBubbleSeg button').forEach(b=>b.classList.toggle('on',b.dataset.val===hbOpt.bubble));
 document.querySelectorAll('#optTimerSecSeg button').forEach(b=>b.classList.toggle('on',Number(b.dataset.sec)===Number(hbOpt.timerSec)));
 }
@@ -612,6 +621,7 @@ $('phaseBar').onclick=guard(e=>{const b=e.target.closest('.phase-chip');if(!b)re
 $('btnWait').onclick=guard(toggleWaitTimer);$('timerRingBox').onclick=guard(stopWaitTimer);
 const bind=(id,k)=>{$(id).onclick=guard(()=>{hbOpt[k]=!hbOpt[k];saveOpt();syncOptUI();renderCues()})};
 bind('optTts','tts');bind('optSymbol','symbol');bind('optPhase','phase');bind('optArrow','arrow');bind('optTimer','timer');
+$('optStripSeg').onclick=guard(e=>{const b=e.target.closest('button');if(!b)return;hbOpt.strip=b.dataset.val;saveOpt();syncOptUI();renderPlay()});
 $('optBubbleSeg').onclick=guard(e=>{const b=e.target.closest('button');if(!b)return;hbOpt.bubble=b.dataset.val;saveOpt();syncOptUI();renderCues()});
 $('optTimerSecSeg').onclick=guard(e=>{const b=e.target.closest('button');if(!b)return;hbOpt.timerSec=Number(b.dataset.sec)||10;stopWaitTimer();saveOpt();syncOptUI();renderCues()});
 }
