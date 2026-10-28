@@ -84,7 +84,7 @@ html,body{overflow:visible;background:#fff!important;-webkit-print-color-adjust:
 .stage{position:relative}
 .btn-opt{position:absolute;right:148px;top:0;font-size:1.2rem;padding:12px 20px}
 .btn-ros{position:absolute;right:292px;top:0;font-size:1.2rem;padding:12px 20px}
-#rosterModal{z-index:400}.ros-grid{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin:18px 0}.ros-card{width:170px;padding:12px;border-radius:18px;background:#fff;border:2px solid #E2E8F0;text-align:center;cursor:pointer}.ros-card .avatar{width:100px;height:100px;margin:0 auto 6px}.ros-card.off{opacity:.45;background:#F1F5F9}.ros-card .rn{font-size:1.4rem;font-weight:800}.ros-card .rs{font-size:1.1rem;margin-top:4px;color:#059669;font-weight:700}.ros-card.off .rs{color:#64748B}
+#handoutModal .ros-card{width:200px}.ho-notes{display:flex;gap:6px;justify-content:center;margin:6px 0}.ho-notes .note{width:54px;height:54px;font-size:1.6rem}.ho-ck{margin-top:6px;font-size:1.2rem;font-weight:800;color:#64748B}.ros-card.got{background:#DCFCE7;border-color:#22C55E;opacity:1}.ros-card.got .ho-ck{color:#15803D}#rosterModal{z-index:400}.btn-tts-edge.pressed{outline:6px solid #FBBF24}.btn-tts-q{left:16px;background:#7C3AED;color:#fff;top:26%}body:not(.song) .btn-tts-mc{top:66%}body:not(.song) .btn-tts-q{top:27%}body:not(.song) .btn-tts-q,body:not(.song) .btn-tts-mc{min-height:min(150px,19vh);width:min(200px,14vw);font-size:min(1.5rem,2.8vh)}body:not(.song) .btn-tts-q .tts-ico,body:not(.song) .btn-tts-mc .tts-ico{font-size:min(2.4rem,4.4vh)}body:not(.song) .mc-cue-zone{left:max(15.5vw,225px);top:62px}.ros-grid{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin:18px 0}.ros-card{width:170px;padding:12px;border-radius:18px;background:#fff;border:2px solid #E2E8F0;text-align:center;cursor:pointer}.ros-card .avatar{width:100px;height:100px;margin:0 auto 6px}.ros-card.off{opacity:.45;background:#F1F5F9}.ros-card .rn{font-size:1.4rem;font-weight:800}.ros-card .rs{font-size:1.1rem;margin-top:4px;color:#059669;font-weight:700}.ros-card.off .rs{color:#64748B}
 .cue-layer{position:absolute;inset:0;pointer-events:none;display:none;z-index:20}
 .cue-layer.active{display:block}
 .cue-layer button,.cue-layer .phase-bar,.cue-layer .timer-ring-box{pointer-events:auto}
@@ -274,6 +274,7 @@ body.song .lineup{gap:10px}.song .lineup-item{min-width:100px;padding:8px 10px;f
 body.song .lineup-item .avatar{width:72px!important;height:72px!important}
 body.song .lineup-item .note{width:50px!important;height:50px!important;font-size:1.4rem!important}
 body.song .btn-start{font-size:2.2rem;padding:14px 60px}
+@media (max-height:860px){body:not(.song) #panelReady .center-box{gap:8px}body:not(.song) #panelReady .hero-title{font-size:2.3rem}body:not(.song) #panelReady .hero-sub{font-size:1.1rem}body:not(.song) .sp-label{font-size:1rem}body:not(.song) .sp-btn{font-size:1rem;padding:6px 10px}body:not(.song) .lineup{gap:8px}body:not(.song) .lineup-item{min-width:92px;padding:6px 8px;font-size:1.05rem;gap:3px}body:not(.song) .lineup-item .avatar{width:66px!important;height:66px!important}body:not(.song) .lineup-item .note{width:46px!important;height:46px!important;font-size:1.3rem!important}body:not(.song) #panelReady .btn-start{font-size:2rem;padding:12px 44px}body:not(.song) #panelReady .center-box>div:last-child button{font-size:1.15rem!important;padding:14px 18px!important}}
 </style>
 </head>
 <body>
@@ -320,7 +321,7 @@ body.song .btn-start{font-size:2.2rem;padding:14px 60px}
 <div class="hero-sub" id="heroSub">먼저 소리를 들어 보고, 한 사람씩 이어서 소리를 완성해요</div>
 <div id="songPick" class="song-pick"></div>
 <div class="lineup" id="lineupBox"></div>
-<div style="display:flex;gap:18px;align-items:center"><button class="btn-pri" id="btnListen" style="font-size:1.6rem;padding:20px 34px;border-radius:22px">🎧 먼저 들어보기</button><button class="btn-neu" id="btnDistReady" style="font-size:1.4rem;padding:20px 28px;border-radius:22px">🔔 배정 바꾸기</button><button class="btn-neu" id="btnMixReady" style="font-size:1.4rem;padding:20px 28px;border-radius:22px">🎲 섞기</button><button class="btn-neu btn-rosopen" style="font-size:1.4rem;padding:20px 28px;border-radius:22px">👥 학생</button><button class="btn-acc btn-start" id="btnBegin">시작</button></div>
+<div style="display:flex;gap:18px;align-items:center"><button class="btn-acc" id="btnHandout" style="font-size:1.4rem;padding:20px 28px;border-radius:22px">🎨 핸드벨 나눠주기</button><button class="btn-pri" id="btnListen" style="font-size:1.6rem;padding:20px 34px;border-radius:22px">🎧 먼저 들어보기</button><button class="btn-neu" id="btnDistReady" style="font-size:1.4rem;padding:20px 28px;border-radius:22px">🔔 배정 바꾸기</button><button class="btn-neu" id="btnMixReady" style="font-size:1.4rem;padding:20px 28px;border-radius:22px">🎲 섞기</button><button class="btn-neu btn-rosopen" style="font-size:1.4rem;padding:20px 28px;border-radius:22px">👥 학생</button><button class="btn-acc btn-start" id="btnBegin">시작</button></div>
 </div>
 </div>
 <div id="panelPhrase" class="panel">
@@ -335,7 +336,7 @@ body.song .btn-start{font-size:2.2rem;padding:14px 60px}
 <div class="owners" id="endSummary"></div>
 <div class="end-btns">
 <button class="btn-pri" id="btnListenEnd">🎧 우리가 만든 소리 듣기</button>
-<button class="btn-acc" id="btnAgain">🔁 다시 하기(음 섞기)</button>
+<button class="btn-acc" id="btnAgain">🔁 다시 하기(같은 색)</button>
 <button class="btn-acc" id="btnNextMc">▶ 다음 라운드(진행자 교체)</button>
 <button class="btn-pri" id="btnRestart">⏮️ 처음부터</button>
 <button class="btn-neu btn-rosopen">👥 학생</button>
@@ -344,6 +345,7 @@ body.song .btn-start{font-size:2.2rem;padding:14px 60px}
 </div>
 </div>
 <div class="cue-layer" id="cueLayer">
+<button type="button" class="btn-tts-edge btn-tts-q" id="btnTtsQ"><span class="tts-ico">🔊</span><span>① 누구 차례예요?</span></button>
 <button type="button" class="btn-tts-edge btn-tts-mc" id="btnTtsMc"><span class="tts-ico">🔊</span><span>진행자 말</span></button>
 <div class="mc-cue-zone"><div class="cue-bubble mc-bubble" id="mcBubble"></div></div>
 <div class="cue-arrow" id="cueArrow">▼</div>
@@ -379,6 +381,12 @@ body.song .btn-start{font-size:2.2rem;padding:14px 60px}
 <div id="distStudents" class="dist-students"></div>
 <div class="dist-foot"><div id="distStatus" class="dist-status"></div><button class="btn-acc" id="distOk">확인</button></div>
 </div></div>
+<div id="handoutModal" class="dist-modal"><div class="dist-box">
+<div class="dist-head"><div class="dist-title">🎨 핸드벨 나눠주기 · 진행자가 색에 맞게 나눠줘요</div></div>
+<div class="dist-help">핸드벨을 받으면 그 친구 카드를 눌러 ✓ 표시를 해요.</div>
+<div id="hoGrid" class="ros-grid"></div>
+<div class="dist-foot"><div id="hoStatus" class="dist-status"></div><button class="btn-neu" id="hoReset">체크 지우기</button><button class="btn-acc" id="hoOk">확인</button></div>
+</div></div>
 <div id="rosterModal" class="dist-modal"><div class="dist-box">
 <div class="dist-head"><div class="dist-title">👥 오늘 참여할 친구</div></div>
 <div class="dist-help">친구를 누르면 넣거나 뺄 수 있어요. 바꾸면 이 화면의 핸드벨 음을 새로 나눠요. (최소 2명)</div>
@@ -397,13 +405,19 @@ let PATTERNS=[
 {title:'도레미파솔',sub:'오르기',seq:['도','레','미','파','솔']},
 {title:'솔파미레도',sub:'내려오기',seq:['솔','파','미','레','도']},
 {title:'도미솔미도',sub:'오르내리기',seq:['도','미','솔','미','도']},
-{title:'섞어서 한 음씩',sub:'섞기',seq:['도','레','미','파','솔'],rand:true}];
+{title:'섞어서 한 음씩',sub:'섞기',seq:['도','레','미','파','솔'],rand:true},
+{title:'도솔미솔도',sub:'오르내리기',seq:['도','솔','미','솔','도']},
+{title:'솔미도미솔',sub:'오르내리기',seq:['솔','미','도','미','솔']},
+{title:'미솔도솔미',sub:'오르내리기',seq:['미','솔','도','솔','미']},
+{title:'레미솔미레',sub:'오르내리기',seq:['레','미','솔','미','레']}];
+const ORDER1=[3,0,1,2,4,5,6,7];
 let PLAN=[{p:3,t:'① 섞어서 한 음씩'},{p:0,t:'② 도레미파솔'},{p:1,t:'③ 솔파미레도'},{p:2,t:'④ 도미솔미도'},{p:2,t:'④ 한 번 더'}];
 const SONGS=[{"title":"비행기","seq":["미","레","도","레","미","미","미","레","레","레","미","솔","솔","미","레","도","레","미","미","미","레","레","미","레","도"],"u":4},{"title":"나비야","seq":["솔","미","미","파","레","레","도","레","미","파","솔","솔","솔","솔","미","미","파","레","레","도","미","솔","솔","미","미","미"],"u":5},{"title":"학교종","seq":["솔","솔","라","라","솔","솔","미","솔","솔","미","미","레","솔","솔","라","라","솔","솔","미","솔","미","레","미","도"],"u":5},{"title":"환희의 송가","seq":["미","미","파","솔","솔","파","미","레","도","도","레","미","미","레","레","미","미","파","솔","솔","파","미","레","도","도","레","미","레","도","도"],"u":5},{"title":"징글벨","seq":["미","미","미","미","미","미","미","솔","도","레","미","파","파","파","파","파","미","미","미","미","레","레","미","레","솔","미","미","미","미","미","미","미","솔","도","레","미","파","파","파","파","파","미","미","미","솔","솔","파","레","도"],"u":5},{"title":"작은 별","seq":["도","도","솔","솔","라","라","솔","파","파","미","미","레","레","도","솔","솔","파","파","미","미","레","솔","솔","파","파","미","미","레","도","도","솔","솔","라","라","솔","파","파","미","미","레","레","도"],"u":6},{"title":"곰 세 마리","seq":["도","도","도","도","도","미","솔","솔","미","도","솔","솔","미","솔","솔","미","도","도","도","솔","솔","미","도","솔","솔","솔","솔","솔","미","도","솔","솔","솔","솔","솔","미","도","솔","솔","솔","라","솔","높은도","솔","높은도","솔","미","레","도"],"u":6},{"title":"산토끼","seq":["솔","미","미","솔","미","도","레","미","레","도","미","솔","높은도","솔","높은도","솔","높은도","솔","미","솔","레","파","미","레","도"],"u":6},{"title":"똑같아요","seq":["도","미","솔","도","미","솔","라","라","라","솔","파","파","파","미","미","미","레","레","레","도","도","미","솔","도","미","솔","라","라","라","솔","파","파","파","미","미","미","레","레","레","도"],"u":6},{"title":"런던 다리","seq":["솔","라","솔","파","미","파","솔","레","미","파","미","파","솔","솔","라","솔","파","미","파","솔","레","솔","미","도"],"u":6}];
 const PATS1=PATTERNS,PLAN1=PLAN,PATS3=SONGS.map(x=>({title:x.title,sub:x.u+'음',seq:x.seq,song:true}));
 const PLAN3=[{p:PATS3.findIndex(x=>x.title==='나비야'),t:'1곡'},{p:PATS3.findIndex(x=>x.title==='작은 별'),t:'2곡'}];
 let cur=1;const ACT={1:null,3:{PATTERNS:PATS3,PLAN:PLAN3,roundIdx:0,rounds:[],plays:{},step:0}};
-function resetAll(){rounds=[];step=0;Object.values(ACT).forEach(a=>{if(a){a.rounds=[];a.step=0}})}
+let G={mcId:null,assign:null,noMc:false},handed={};
+function resetAll(){G={mcId:null,assign:null,noMc:false};handed={};rounds=[];step=0;Object.values(ACT).forEach(a=>{if(a){a.rounds=[];a.step=0}})}
 function useAct(a){if(cur===a)return;stopSeq();ACT[cur]={PATTERNS,PLAN,roundIdx,rounds,plays,step};({PATTERNS,PLAN,roundIdx,rounds,plays,step}=ACT[a]);cur=a;lastCueStep=-1}
 let students=[],step=0,db=null,lastTap=0,roundIdx=0,rounds=[],plays={};
 const $=id=>document.getElementById(id);
@@ -446,7 +460,28 @@ const songNotes=()=>uniq(SEQ());
 const NP=()=>SEQ().length;
 const stuById=id=>students.find(s=>String(s.id)===String(id))||null;
 const quota={};const qOf=id=>Math.min(3,Math.max(1,quota[id]||1));
+function buildRound1(i,mix,keepMc){
+const P=present(),pt=PATTERNS[PLAN[i].p],old=rounds[i];
+let mc=null;
+if(P.length>1&&!G.noMc){mc=(G.mcId!=null&&P.find(x=>String(x.id)===String(G.mcId)))||(old&&old.mcId!=null&&stuById(old.mcId))||P[0];if(!P.includes(mc))mc=P[0]}
+G.mcId=mc?mc.id:null;
+const players=P.filter(x=>x!==mc);
+const need=uniq(PATTERNS.flatMap(x=>x.seq));
+const valid=n=>G.assign&&G.assign[n]!=null&&players.some(x=>String(x.id)===String(G.assign[n]));
+if(mix||!G.assign){G.assign={};rounds.forEach((x,k)=>{if(k!==i)rounds[k]=null});handed={}}
+let order=players.slice();
+if(mix){for(let k=order.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[order[k],order[j]]=[order[j],order[k]]}}
+else order.sort((a,b)=>(plays[a.id]||0)-(plays[b.id]||0)||students.indexOf(a)-students.indexOf(b));
+const cnt=x=>Object.values(G.assign).filter(v=>String(v)===String(x.id)).length;
+if(players.length)need.forEach(n=>{if(!valid(n)){delete G.assign[n];const c=order.slice().sort((a,b)=>((cnt(a)>=qOf(a.id))-(cnt(b)>=qOf(b.id)))||(cnt(a)-cnt(b)));G.assign[n]=c[0].id}});
+const assign={};uniq(pt.seq).forEach(n=>{if(G.assign[n]!=null)assign[n]=G.assign[n]});
+let seq=old&&keepMc&&!mix?old.seq.slice():pt.seq.slice();
+if(pt.rand&&!(old&&keepMc&&!mix)){const key=a=>a.join();let t=0;do{for(let k=seq.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[seq[k],seq[j]]=[seq[j],seq[k]]}t++}while(t<20&&(key(seq)===key(PATS1[0].seq)||key(seq)===key(PATS1[1].seq)))}
+rounds[i]={mcId:mc?mc.id:null,assign,counted:[],seq};
+}
+function syncG(){if(cur!==1)return;const r=rounds[roundIdx];if(!r)return;G.mcId=r.mcId;G.noMc=r.mcId===null;G.assign=Object.assign({},G.assign||{},r.assign);if(r.mcId!==null)Object.keys(G.assign).forEach(n=>{if(String(G.assign[n])===String(r.mcId))delete G.assign[n]});rounds.forEach((x,k)=>{if(k!==roundIdx)rounds[k]=null});handed={}}
 function buildRound(i,mix,keepMc){
+if(cur===1&&PATTERNS===PATS1)return buildRound1(i,mix,keepMc);
 const P=present(),pt=PATTERNS[PLAN[i].p],old=rounds[i];
 const mc=old&&(mix||keepMc)?stuById(old.mcId):(P.length>1?P[i%P.length]:null);
 let players=P.filter(x=>x!==mc);
@@ -504,9 +539,11 @@ document.body.classList.toggle('song',cur===3);
 {const T=PLAN[roundIdx].t,pt=pat().title,base=T.includes(pt)?T:`${T} · ${pt}`;$('heroTitle').textContent=cur===3?`${base} (${songNotes().length}음)`:base}
 $('heroSub').textContent=cur===3?'곡과 음 담당을 확인하고, 칠판 악보를 보며 핸드벨로 함께 연주해요':'먼저 소리를 들어 보고, 한 사람씩 이어서 소리를 완성해요';
 $('endSub').textContent=cur===3?'칠판 악보를 보며 모두 함께 곡을 연주했어요!':'친구들과 묻고 답하며 우리 소리를 완성했어요!';
-$('songPick').style.display=cur===3&&step===0?'flex':'none';
+$('songPick').style.display=step===0?'flex':'none';
+if(cur===1&&step===0)$('songPick').innerHTML='<div class="sp-label">음 순서 고르기</div>'+ORDER1.filter(i=>PATTERNS[i]).map(i=>`<button class="btn-neu sp-btn ${i===PLAN[roundIdx].p?'on':''}" data-song="${i}">${esc(PATTERNS[i].title)}</button>`).join('');
 if(cur===3&&step===0)$('songPick').innerHTML='<div class="sp-label">곡 고르기 (음 개수)</div>'+PATTERNS.map((pt,i)=>({pt,i,u:uniq(pt.seq).length})).sort((a,b)=>a.u-b.u||a.i-b.i).map(o=>`<button class="btn-neu sp-btn ${o.i===PLAN[roundIdx].p?'on':''}" data-song="${o.i}">${esc(o.pt.title)} · ${o.u}음</button>`).join('');
-$('btnNextMc').textContent=cur===3?'▶ 다음 곡(진행자 교체)':'▶ 다음 라운드(진행자 교체)';
+if(step===0){cueQ=-1;cueM=-1}
+$('btnNextMc').textContent=cur===3?'▶ 다음 곡(진행자 교체)':'▶ 다음 라운드';
 $('panelReady').classList.toggle('active',step===0);
 $('panelPhrase').classList.toggle('active',step>=1&&step<=N);
 $('panelEnd').classList.toggle('active',step===N+1);
@@ -572,6 +609,13 @@ $('btnNext').onclick=guard(()=>{
 if(step>=1&&step<=NP()){const r=R();if(!r.counted.includes(step-1)){r.counted.push(step-1);const o=performer(step-1);if(o)plays[o.id]=(plays[o.id]||0)+1}}
 if(step<NP()+1){step++;renderPlay()}
 });
+function renderHandout(){const r=R(),P=present(),mc=mcOf();const rows=P.map(x=>({x,ns:Object.keys(r.assign).filter(n=>String(r.assign[n])===String(x.id))}));
+$('hoGrid').innerHTML=rows.map(({x,ns})=>{const k=x.id+'|'+ns.join('');const isMc=mc&&x===mc;const got=!isMc&&ns.length&&handed[k];return `<div class="ros-card ${got?'got':''} ${(!ns.length&&!isMc)?'off':''}" data-hk="${esc(String(x.id))}"><div class="avatar">${avatarHTML(x)}</div><div class="rn">${esc(x.name)}</div>${isMc?'<div class="rs">🎤 진행자 (나눠줘요)</div>':`<div class="ho-notes">${ns.map(n=>`<div class="note n-${n}">${lab(n)}</div>`).join('')||'<span style="color:#94A3B8">쉬어요</span>'}</div><div class="ho-ck">${got?'✓ 받았어요':'받으면 눌러요'}</div>`}</div>`}).join('');
+const need=rows.filter(o=>o.ns.length&&o.x!==mc),d=need.filter(o=>handed[o.x.id+'|'+o.ns.join('')]).length;$('hoStatus').textContent=need.length&&d===need.length?'👏 모두 잘 받았어요!':`받은 친구 ${d} / ${need.length}명`}
+$('btnHandout').onclick=guard(()=>{stopSeq();R();renderHandout();$('handoutModal').classList.add('open')});
+$('hoGrid').onclick=guard(e=>{const c=e.target.closest('[data-hk]');if(!c)return;const r=R(),x=stuById(c.dataset.hk);if(!x||x===mcOf())return;const ns=Object.keys(r.assign).filter(n=>String(r.assign[n])===String(x.id));if(!ns.length)return;const k=x.id+'|'+ns.join('');handed[k]=!handed[k];renderHandout()});
+$('hoReset').onclick=guard(()=>{handed={};renderHandout()});
+$('hoOk').onclick=guard(()=>$('handoutModal').classList.remove('open'));
 function renderRoster(){$('rosterGrid').innerHTML=students.map((s,i)=>`<div class="ros-card ${s.absent?'off':''}" data-ri="${i}"><div class="avatar">${avatarHTML(s)}</div><div class="rn">${esc(s.name)}</div><div class="rs">${s.absent?'쉬는 중':'✓ 참여'}</div></div>`).join('');$('rosterStatus').textContent=`참여 ${present().length}명 / 전체 ${students.length}명`}
 function openRoster(){stopSeq();renderRoster();$('rosterModal').classList.add('open')}
 document.addEventListener('click',e=>{if(e.target.closest('.btn-rosopen'))guard(openRoster)()});
@@ -579,7 +623,7 @@ $('btnRosTop').onclick=guard(openRoster);
 $('rosterGrid').onclick=guard(e=>{const c=e.target.closest('[data-ri]');if(!c)return;const st=students[+c.dataset.ri];if(!st.absent&&present().length<=2){$('rosterStatus').textContent='최소 2명은 있어야 해요';return}st.absent=!st.absent;saveDB();renderRoster()});
 $('rosterOk').onclick=guard(()=>{try{renderCheck()}catch(_){}$('rosterModal').classList.remove('open');resetAll();step=0;if($('distModal').classList.contains('open')){R();renderDist()}renderPlay()});
 $('btnMixReady').onclick=guard(()=>{R();buildRound(roundIdx,true);renderPlay()});
-$('btnAgain').onclick=guard(()=>{stopSeq();R();buildRound(roundIdx,true);step=0;renderPlay()});
+$('btnAgain').onclick=guard(()=>{stopSeq();R();buildRound(roundIdx,cur!==1);step=0;renderPlay()});
 $('btnRestart').onclick=guard(()=>{roundIdx=0;rounds=[];plays={};step=0;renderPlay()});
 $('btnNextMc').onclick=guard(()=>{stopSeq();if(roundIdx<PLAN.length-1){roundIdx++;step=0;renderPlay()}});
 $('btnListen').onclick=guard(()=>playSeq(SEQ(),n=>{const el=document.querySelector(`.lineup-item[data-n="${n}"]`);if(el){el.classList.add('hot');setTimeout(()=>el.classList.remove('hot'),600)}}));
@@ -593,7 +637,7 @@ const h=document.querySelector('.print-head h1');if(h)h.textContent='도레미 �
 }
 let selNote=null;
 function openDist(){selNote=null;renderDist();$('distModal').classList.add('open')}
-function setPat(i){PLAN[roundIdx].p=i;rounds[roundIdx]=null;selNote=null;step=0;renderDist()}
+function setPat(i){PLAN[roundIdx].p=i;if(cur===1)PLAN[roundIdx].t='①②③④⑤'[roundIdx]+' '+PATTERNS[i].title;rounds[roundIdx]=null;selNote=null;step=0;renderDist()}
 function renderDist(){
 $('distSongs').innerHTML=PATTERNS.map((pt,i)=>`<button class="btn-neu ${i===PLAN[roundIdx].p?'on':''}" data-song="${i}">${pt.song?pt.title+' '+uniq(pt.seq).length+'음':pt.title}</button>`).join('');
 const ns=songNotes(),P=present();
@@ -607,11 +651,11 @@ $('distOk').disabled=miss.length>0||!P.length;
 }
 $('distSongs').onclick=guard(e=>{const b=e.target.closest('[data-song]');if(b)setPat(+b.dataset.song)});
 $('distNotes').onclick=guard(e=>{const c=e.target.closest('[data-note]');if(!c)return;const n=c.dataset.note;selNote=selNote===n?null:n;renderDist()});
-$('distStudents').onclick=guard(e=>{const mb=e.target.closest('[data-mc]');if(mb){const r=R(),id=stuById(mb.dataset.mc).id;r.mcId=String(r.mcId)===String(id)?null:id;selNote=null;buildRound(roundIdx,false,true);renderDist();return}const q=e.target.closest('[data-q]');if(q){const [id,d]=q.dataset.q.split(':');quota[id]=Math.min(3,Math.max(1,qOf(id)+Number(d)));renderDist();return}const c=e.target.closest('[data-stu]');if(!c||!selNote)return;const m=R().assign;if(String(m[selNote])===c.dataset.stu)delete m[selNote];else m[selNote]=stuById(c.dataset.stu).id;selNote=null;renderDist()});
-$('distAuto').onclick=guard(()=>{R();buildRound(roundIdx,false,true);renderDist()});
+$('distStudents').onclick=guard(e=>{const mb=e.target.closest('[data-mc]');if(mb){const r=R(),id=stuById(mb.dataset.mc).id;r.mcId=String(r.mcId)===String(id)?null:id;selNote=null;if(cur===1){G.mcId=r.mcId;G.noMc=r.mcId===null;G.assign=null}buildRound(roundIdx,false,true);renderDist();return}const q=e.target.closest('[data-q]');if(q){const [id,d]=q.dataset.q.split(':');quota[id]=Math.min(3,Math.max(1,qOf(id)+Number(d)));renderDist();return}const c=e.target.closest('[data-stu]');if(!c||!selNote)return;const m=R().assign;if(String(m[selNote])===c.dataset.stu)delete m[selNote];else m[selNote]=stuById(c.dataset.stu).id;selNote=null;renderDist()});
+$('distAuto').onclick=guard(()=>{R();if(cur===1)G.assign=null;buildRound(roundIdx,false,true);renderDist()});
 $('distMix').onclick=guard(()=>{R();buildRound(roundIdx,true);renderDist()});
 $('distClear').onclick=guard(()=>{R().assign={};renderDist()});
-$('distOk').onclick=guard(()=>{$('distModal').classList.remove('open');if($('playScreen').classList.contains('active'))renderPlay()});
+$('distOk').onclick=guard(()=>{syncG();$('distModal').classList.remove('open');if($('playScreen').classList.contains('active'))renderPlay()});
 $('btnDistReady').onclick=guard(openDist);
 $('songPick').onclick=guard(e=>{const b=e.target.closest('[data-song]');if(b){setPat(+b.dataset.song);renderPlay()}});
 window.addEventListener('DOMContentLoaded',async()=>{
@@ -620,7 +664,7 @@ await initDB();
 renderSetup();
 });
 const hbOpt={strip:'all',tts:true,bubble:'hide',symbol:false,phase:false,arrow:false,timer:false,timerSec:10};
-let cuePhase=1,lastCueStep=-1,waitTimerId=null,toastTimerId=null;
+let cueQ=-1,cueM=-1,cuePhase=1,lastCueStep=-1,waitTimerId=null,toastTimerId=null;
 function loadOpt(){try{const s=JSON.parse(localStorage.getItem('hbOpt')||'{}');if(s&&typeof s==='object')Object.assign(hbOpt,s)}catch(_){}}
 function saveOpt(){try{localStorage.setItem('hbOpt',JSON.stringify(hbOpt))}catch(_){}}
 function showCueToast(msg){const el=$('cueToast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(toastTimerId);toastTimerId=setTimeout(()=>el.classList.remove('show'),2200)}
@@ -663,7 +707,9 @@ layer.classList.add('active');
 const pfName=ownerNames(step-1);
 $('btnTtsMc').style.display=hbOpt.tts?'flex':'none';$('btnTtsPf').style.display=hbOpt.tts?'flex':'none';
 $('btnTtsMc').style.visibility=cuePhase===1?'visible':'hidden';$('btnTtsPf').style.visibility=(!songMode&&cuePhase===3&&step<NP())?'visible':'hidden';
-const pb=$('phaseBar');pb.classList.toggle('show',!songMode);
+const pb=$('phaseBar');pb.classList.toggle('show',false);
+const q=$('btnTtsQ');q.style.display=songMode?'none':'flex';
+if(!songMode){const m=$('btnTtsMc');m.style.display='flex';m.style.visibility='visible';$('btnTtsPf').style.visibility='hidden';m.querySelector('span:last-child').textContent='② '+pfName+' 차례예요';q.classList.toggle('pressed',cueQ===step);m.classList.toggle('pressed',cueM===step)}
 pb.querySelectorAll('.phase-chip').forEach(c=>c.classList.toggle('on',Number(c.dataset.phase)===cuePhase));
 if(hbOpt.phase&&!songMode){
 if(cuePhase===1)mcBox.classList.add('cue-blink-blue');else if(cuePhase===2)pfBox.classList.add('cue-glow-green');else pfBox.classList.add('cue-blink-orange');
@@ -681,7 +727,9 @@ function initCues(){
 loadOpt();syncOptUI();
 const drawer=o=>{$('optBackdrop').classList.toggle('open',o);$('optDrawer').classList.toggle('open',o)};
 $('btnOptTop').onclick=guard(()=>drawer(true));$('btnOptClose').onclick=guard(()=>drawer(false));$('optBackdrop').onclick=guard(()=>drawer(false));
-$('btnTtsMc').onclick=guard(()=>{if(step<1||step>NP()||cuePhase!==1)return;speakKo(`${ownerNames(step-1)} 차례예요.`)});
+function flashBub(t){const b=$('mcBubble');b.innerHTML='<span>'+esc(t)+'</span>';b.classList.add('show');clearTimeout(flashBub.t);flashBub.t=setTimeout(()=>{b.classList.remove('show')},3500)}
+$('btnTtsMc').onclick=guard(()=>{if(step<1||step>NP())return;if(cur===1){cueM=step;const t=ownerNames(step-1)+' 차례예요.';speakKo(t);flashBub(t);$('btnTtsMc').classList.add('pressed');return}if(cuePhase!==1)return;speakKo(`${ownerNames(step-1)} 차례예요.`)});
+$('btnTtsQ').onclick=guard(()=>{if(step<1||step>NP())return;cueQ=step;speakKo('누구 차례예요?');flashBub('누구 차례예요?');$('btnTtsQ').classList.add('pressed')});
 $('btnTtsPf').onclick=guard(()=>{if(step<1||step>=NP()||cuePhase!==3)return;speakKo('다음은 누구 차례예요?')});
 $('phaseBar').onclick=guard(e=>{const b=e.target.closest('.phase-chip');if(!b)return;cuePhase=Number(b.dataset.phase)||1;renderCues()});
 $('btnWait').onclick=guard(toggleWaitTimer);$('timerRingBox').onclick=guard(stopWaitTimer);
