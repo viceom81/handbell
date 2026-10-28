@@ -989,6 +989,7 @@
                 }
                 window.dbOnDisconnect(R('info/teacherOnline')).set(false);
                 window.myRole = 0;
+                try { localStorage.setItem('hb_teacherName', name); } catch(e) {}
                 document.getElementById('entry-screen').style.display = 'none';
                 document.getElementById('main-app').classList.remove('hidden');
                 const chip = document.getElementById('room-name-chip'); chip.innerText = `🏫 ${name} 선생님 교실 (방 ${window.roomId})`; chip.classList.remove('hidden');
@@ -1837,6 +1838,18 @@
 
         // 초기 UI 상태 반영
         refreshSoundButtons();
+        // 수업 진행판의 「선생님 모드」 버튼: #teacher 로 열리면 선생님 입장 화면으로(저장된 이름이 있으면 자동 입장)
+        if (location.hash === '#teacher') {
+            try {
+                const nm = localStorage.getItem('hb_teacherName') || '';
+                window.showTeacherForm();
+                if (nm) {
+                    document.getElementById('teacher-name-input').value = nm;
+                    let tries = 0;
+                    const iv = setInterval(() => { tries++; if (window.dbGet || tries > 40) { clearInterval(iv); if (window.dbGet) window.enterAsTeacher(); } }, 150);
+                }
+            } catch(e) {}
+        }
     </script>
 </body>
 </html>
